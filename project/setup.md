@@ -22,14 +22,20 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-Copy `.env.example` to `.env` and fill in your Azure credentials:
+Copy `.env.example` to `.env` in the project root and fill in your Azure credentials:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Then open `.env` and paste your endpoint and key from the Azure Portal (Keys and Endpoint page of your Document Intelligence resource):
 
 ```
-AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT=https://...
-AZURE_DOCUMENT_INTELLIGENCE_KEY=...
+AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT=https://<your-resource>.cognitiveservices.azure.com/
+AZURE_DOCUMENT_INTELLIGENCE_KEY=<your-key>
 ```
 
-The application reads these values at startup. Never commit `.env` to version control.
+The application reads these values at startup. `.env` is gitignored — never commit it. `.env.example` (the blank template) is committed and safe to share.
 
 ---
 

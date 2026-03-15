@@ -28,6 +28,10 @@ Avoid decisions that are hard to undo. Use interfaces and configuration to keep 
 
 The delivery model itself is a reversibility question — the standalone desktop app may remain the final product or the pipeline may integrate into IT-LAW. Keeping the GUI as a thin layer over the pipeline ensures either path stays open.
 
+### Open/Closed
+
+Pipeline stages should be extendable without editing existing ones. The classification placeholder is a concrete example — when classification is ready, it slots between OCR and Extraction; neither of those stages changes. Write stages that consume a well-defined input and produce a well-defined output so new stages can be added around them.
+
 ---
 
 ## Python Practices
@@ -38,7 +42,7 @@ The delivery model itself is a reversibility question — the standalone desktop
 src/
   gui/             # Desktop GUI (presentation only)
   ingestion/       # Document loading, format conversion
-  ocr/             # OCR provider adapters
+  ocr/             # Azure Document Intelligence adapter
   classification/  # Document type detection (placeholder — not active in beta)
   extraction/      # Field extraction logic
   validation/      # Value and consistency checks
@@ -101,6 +105,8 @@ Each pipeline stage has a clear contract:
 - **Postconditions** — what the stage guarantees (e.g., extraction returns a typed dataclass or raises)
 - **Invariants** — what always holds (e.g., every extracted value carries a source reference)
 
+Keep stage contracts narrow. A caller that only needs extracted text should not depend on a type that also carries bounding boxes and confidence scores. Split contracts when consumers only need a subset — this keeps stages independently testable and prevents unintended coupling.
+
 Use `assert` in development to verify contracts. Use validation logic in production.
 
 ---
@@ -145,7 +151,7 @@ class ExtractedField:
 
 ## Configuration
 
-Use `.env` files for secrets (API keys, credentials) and YAML/TOML for application settings (OCR provider selection, output format preferences). Never hard-code configuration that might change between environments.
+Use `.env` files for secrets (API keys, credentials) and YAML/TOML for application settings (Azure endpoint, model selection, output format preferences). Never hard-code configuration that might change between environments.
 
 ---
 

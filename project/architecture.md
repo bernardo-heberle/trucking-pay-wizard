@@ -120,11 +120,7 @@ Responsible for:
 
 Converts images and PDFs into machine readable text.
 
-Possible providers include:
-
-- Azure Document Intelligence
-- AWS Textract
-- Google Document AI
+The selected provider is **Azure Document Intelligence**. The adapter pattern keeps the provider swappable if that changes.
 
 OCR returns:
 
@@ -201,5 +197,5 @@ The architecture prioritizes:
 - **modularity** — pipeline and GUI are independent layers
 - **traceability** — extracted values link back to source documents
 - **reliability** — deterministic rules over opaque models
-- **provider independence** — OCR providers are swappable
+- **provider independence** — the OCR layer wraps Azure Document Intelligence through an adapter; the adapter pattern keeps the provider swappable without touching the rest of the pipeline
 - **deliverability** — the tool ships as a self-contained executable

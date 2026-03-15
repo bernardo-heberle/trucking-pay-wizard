@@ -80,6 +80,6 @@ The beta works when:
 ## Known Constraints
 
 - **Income documents only** — the beta has no classification safety net; irrelevant documents will be processed and may produce garbage output
-- **OCR provider TBD** — the specific provider (Azure, AWS, Google) has not been locked in; the architecture supports swapping
+- **Azure Document Intelligence** — selected OCR provider; API key must be configured at runtime via `.env`
 - **Extraction coverage** — rule-based extraction will not handle all document formats; staff feedback will identify gaps
 - **No automated testing with real documents** — beta validation depends on staff review, not automated accuracy benchmarks

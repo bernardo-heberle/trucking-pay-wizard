@@ -57,10 +57,13 @@ pytest tests/integration/
 
 ## Packaging (Building the Executable)
 
-```bash
+The tool deploys as a Windows `.exe`. Build from Windows using PowerShell:
+
+```powershell
 pyinstaller --onefile --windowed src/gui/__main__.py
 ```
 
 - Output lands in `dist/`
-- Test the executable on a clean machine before distributing
+- Test the executable on a clean Windows machine before distributing
 - API key must be provided at runtime — do not bake it into the build
+- Use `pathlib.Path` throughout the codebase; never hardcode path separators

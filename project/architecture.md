@@ -6,7 +6,7 @@ The system processes documents through a structured pipeline where each stage pe
 
 # Deployment Model
 
-The tool is delivered as a standalone desktop application (executable). Staff select or create a working folder, drop documents into it, run the pipeline, and review the generated output artifacts.
+The tool is delivered as a standalone desktop application (executable) targeting **Windows**. All end users (downtime claims staff) are on Windows. Staff select or create a working folder, drop documents into it, run the pipeline, and review the generated output artifacts.
 
 This standalone model is the primary delivery path. Integration with IT-LAW remains a possibility depending on long-term need and feasibility, but the architecture does not assume it.
 
@@ -17,6 +17,8 @@ IT-LAW Integration      ←  possible future path
 ```
 
 To keep both options open, the processing pipeline is independent of the GUI. The GUI calls into the pipeline; the pipeline knows nothing about the GUI.
+
+The entire dependency stack (Python, PySide6, PyMuPDF, OpenCV, Azure SDK) is cross-platform. All file and directory operations use `pathlib.Path` to avoid OS-specific path separators. The Windows `.exe` is produced by running PyInstaller on Windows.
 
 ---
 

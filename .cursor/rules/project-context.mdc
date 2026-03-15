@@ -39,4 +39,10 @@ In the beta, every input document is assumed to be a valid income document — c
 
 ## Delivery
 
-Ships as a standalone executable. The GUI calls into the pipeline; the pipeline never imports from the GUI. This keeps both standalone and future IT-LAW integration paths open.
+Ships as a standalone **Windows** executable. All end users (downtime claims staff) are on Windows. The GUI calls into the pipeline; the pipeline never imports from the GUI. This keeps both standalone and future IT-LAW integration paths open.
+
+## Developer Environment
+
+- **OS:** Windows 10 (PowerShell)
+- **Shell:** PowerShell — use PowerShell syntax for all terminal commands (e.g. `$env:VAR`, `.venv\Scripts\activate`, `New-Item`, `Copy-Item`)
+- Code uses `pathlib.Path` throughout so it stays platform-neutral, but builds and deployment target Windows only

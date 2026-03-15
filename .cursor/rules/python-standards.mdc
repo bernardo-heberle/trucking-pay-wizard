@@ -60,3 +60,18 @@ Eliminate duplication of *knowledge*, not just similar-looking code. Two functio
 ## Orthogonality
 
 Changes to OCR processing must not ripple into validation or extraction. Changes to output format must not touch extraction logic. Keep components independent so each can be developed, tested, and replaced in isolation.
+
+## File Paths
+
+Always use `pathlib.Path` for file and directory operations. Never build paths with string concatenation or hardcoded separators.
+
+```python
+# ✅ GOOD
+from pathlib import Path
+cache_dir = working_folder / ".cache"
+
+# ❌ BAD
+cache_dir = working_folder + "\\.cache"
+```
+
+The tool deploys on Windows, but `pathlib.Path` keeps file operations clean and avoids fragile string-based path assumptions.

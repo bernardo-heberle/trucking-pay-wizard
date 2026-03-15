@@ -191,6 +191,37 @@ Keep GUI code in `src/gui/`. If you find yourself writing extraction logic or va
 
 ---
 
+## Platform-Neutral Code
+
+The tool deploys as a **Windows executable**, but code must be written in a platform-neutral way. This keeps the codebase clean and avoids OS-specific assumptions that are fragile even within Windows.
+
+### File Paths
+
+Always use `pathlib.Path` for file and directory operations. Never build paths with string concatenation or hardcoded separators (`\` or `/`).
+
+```python
+# ✅ GOOD
+from pathlib import Path
+cache_dir = working_folder / ".cache"
+output_pdf = working_folder / "combined_report.pdf"
+
+# ❌ BAD
+cache_dir = working_folder + "\\.cache"
+output_pdf = os.path.join(working_folder, "combined_report.pdf")
+```
+
+### No OS-Specific Assumptions
+
+- Do not use `os.system()` or shell commands that differ between platforms.
+- Do not assume file name case-sensitivity (macOS filesystems are case-insensitive by default; Windows always is; Linux is not).
+- Do not rely on platform-specific temp directories — use `pathlib.Path` and `tempfile` from the standard library.
+
+### `.cache/` Visibility
+
+On Windows, files and folders starting with `.` are not hidden by the OS. This is cosmetically different from macOS but does not affect functionality. Do not add platform-specific code to hide the `.cache/` directory.
+
+---
+
 ## Packaging and Distribution
 
 The application ships as a standalone executable. Keep packaging concerns in mind:
@@ -199,6 +230,7 @@ The application ships as a standalone executable. Keep packaging concerns in min
 - Test the packaged executable, not just the development environment.
 - Avoid hard-coded paths — use relative paths or user-configurable locations.
 - Secrets (API keys) should be configurable at runtime, not baked into the build.
+- **PyInstaller** — run on Windows to produce the `.exe`. Test on a clean Windows machine before distributing.
 
 ---
 

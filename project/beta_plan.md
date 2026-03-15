@@ -19,7 +19,7 @@ Get the tool into staff hands for real-world feedback. The beta should be functi
 - **Report assembly** — produce a combined PDF with a summary index page and a cross-referenced CSV/Excel spreadsheet
 - **Per-document caching** — re-runs only process new or unprocessed documents; output artifacts regenerate from the full set
 - **Desktop GUI** — folder selection, drag-and-drop document input, batch processing trigger, result review, access to output artifacts
-- **Packaging** — distributed as a standalone executable that runs on staff machines without installation
+- **Packaging** — distributed as a standalone Windows `.exe` that runs on staff machines without installation
 
 ---
 

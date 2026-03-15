@@ -63,7 +63,7 @@ The system improves gradually as additional documents are labeled and evaluated.
 
 ### Deliverability
 
-The tool must be easy to distribute and run. No server infrastructure, no browser dependency, no installation complexity. A single executable that works on staff machines.
+The tool must be easy to distribute and run. No server infrastructure, no browser dependency, no installation complexity. A single **Windows executable** that runs on staff machines without installation.
 
 ---
 

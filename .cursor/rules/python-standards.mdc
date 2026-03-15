@@ -1,0 +1,62 @@
+---
+description: Python coding standards for Trucking Pay Wizard
+globs: **/*.py
+alwaysApply: false
+---
+
+# Python Standards
+
+## Naming
+
+Use intention-revealing names. Prefer `extract_gross_pay()` over `process()`, `settlement_text` over `data`. If a name needs a comment to explain it, choose a better name.
+
+## Type Hints
+
+Required on all public function signatures. Internal helpers can be relaxed.
+
+```python
+# ✅ GOOD
+def extract_payment_date(text: str) -> date | None:
+    ...
+
+# ❌ BAD
+def extract_payment_date(text):
+    ...
+```
+
+## Error Handling
+
+Fail fast and fail loud. Raise specific exceptions for unexpected failures. Reserve `None` returns for genuinely optional results (a field that may legitimately not exist in a document).
+
+```python
+# ✅ GOOD
+class ExtractionError(Exception):
+    """Raised when extraction fails in an unexpected way."""
+
+class FieldNotFound(Exception):
+    """Raised when an expected field is missing from the document."""
+
+# ❌ BAD — silently returns None for an unexpected failure
+def extract_gross_pay(text: str) -> float | None:
+    try:
+        ...
+    except Exception:
+        return None
+```
+
+## Logging
+
+Use `loguru` everywhere. Never use `print()`. Every pipeline stage should log enough to reconstruct what happened to a document without re-running.
+
+```python
+from loguru import logger
+logger.info("Extracting fields from {doc}", doc=path)
+```
+
+## DRY
+
+Eliminate duplication of *knowledge*, not just similar-looking code. Two functions that look alike but serve different concerns can diverge freely — extract shared logic only when the duplication represents the same business rule.
+
+## Orthogonality
+
+Changes to OCR processing must not ripple into validation or extraction. Changes to output format must not touch extraction logic. Keep components independent so each can be developed, tested, and replaced in isolation.

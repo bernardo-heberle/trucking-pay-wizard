@@ -1,0 +1,42 @@
+---
+description: Project purpose, pipeline, session model, and beta scope for Trucking Pay Wizard
+alwaysApply: true
+---
+
+# Project Context: Trucking Pay Wizard
+
+A standalone desktop tool that processes trucking income documents for legal staff. Staff drop documents into a working folder, run the pipeline, and receive a combined PDF report and CSV spreadsheet with cross-referenced extracted values.
+
+## Pipeline (Beta)
+
+```
+Ingestion → OCR → Extraction → Validation → Report Assembly
+```
+
+- Per-document stages (Ingestion through Validation) are cacheable — only new/unprocessed documents re-run.
+- Report Assembly always rebuilds from the full set of cached results.
+- OCR provider: **Azure Document Intelligence** (credentials via `.env`).
+
+## Session Model
+
+```
+working-folder/
+  ├── <source documents>     # staff-provided, never modified
+  ├── .cache/                # per-document JSON results (keyed by content hash)
+  ├── combined_report.pdf    # generated output
+  └── extracted_data.csv     # generated output
+```
+
+The folder *is* the session — no database, no server.
+
+## Beta Scope
+
+**In scope:** folder-based batch processing, OCR, field extraction (gross pay, net pay, dates), validation, report assembly, desktop GUI, standalone executable packaging.
+
+**Deferred:** document classification, IT-LAW integration, template detection.
+
+In the beta, every input document is assumed to be a valid income document — classification is not active.
+
+## Delivery
+
+Ships as a standalone executable. The GUI calls into the pipeline; the pipeline never imports from the GUI. This keeps both standalone and future IT-LAW integration paths open.

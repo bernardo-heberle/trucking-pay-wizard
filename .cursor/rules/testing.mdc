@@ -1,0 +1,45 @@
+---
+description: Testing standards for Trucking Pay Wizard — priorities, levels, and fixtures
+globs: tests/**/*.py
+alwaysApply: false
+---
+
+# Testing
+
+## Priorities
+
+Prioritize tests for **extraction rules** and **validation logic** — bugs here produce incorrect financial values that staff rely on. Do not chase coverage metrics.
+
+## Test Levels
+
+**Unit tests** (`tests/unit/`)
+- Extraction functions — each rule, edge case, and failure mode
+- Validators — currency formats, date formats, numeric consistency checks
+- Formatting/output helpers
+
+**Integration tests** (`tests/integration/`)
+- Pipeline stage boundaries: OCR output → extraction input, extraction output → validation input
+- Verify that stage contracts hold across the handoff, not just within a stage
+
+**Sample document tests**
+- End-to-end verification using known documents with expected extracted values
+- Use when a real document surfaced a bug or gap in extraction coverage
+
+## Fixtures
+
+Keep sanitized sample OCR outputs in `tests/fixtures/`. Test extraction against realistic text that resembles actual Azure Document Intelligence output — not toy strings like `"gross pay: 1000"`.
+
+```
+tests/
+  fixtures/
+    settlement_statement_ocr.json   # realistic OCR output, PII removed
+    pay_summary_ocr.json
+  unit/
+  integration/
+```
+
+## What Not to Do
+
+- Do not write tests just to increase coverage numbers.
+- Do not test against oversimplified strings that don't reflect real OCR output variability (whitespace, line breaks, table structure).
+- Do not duplicate extraction logic inside a test to generate expected output — test against known, hand-verified values.

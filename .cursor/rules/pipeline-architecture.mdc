@@ -1,0 +1,49 @@
+---
+description: Pipeline architecture rules for src/ — dependency direction, stage contracts, OCP/ISP, traceability
+globs: src/**/*.py
+alwaysApply: false
+---
+
+# Pipeline Architecture
+
+## Dependency Direction
+
+`gui → pipeline` only. Pipeline packages (`ingestion`, `ocr`, `extraction`, `validation`, `report`) must never import from `src/gui/`. The GUI is a thin presentation layer over the pipeline.
+
+## Classification Placeholder
+
+`src/classification/` is a structural placeholder. **Do not add logic to it until explicitly instructed.** The beta assumes all input documents are valid income documents — classification is skipped entirely. When classification is ready, it will slot between OCR and Extraction without changing either stage.
+
+## Report vs. Extraction
+
+`src/report/` consumes cached extraction results and produces output artifacts. It must not perform field extraction. Extraction produces data; report assembly consumes it. Keep these concerns separate.
+
+## Stage Contracts
+
+Each stage has a defined contract:
+
+- **Preconditions** — what the stage expects as input (e.g., OCR expects an image or PDF path)
+- **Postconditions** — what the stage guarantees as output (e.g., extraction returns a typed dataclass or raises)
+- **Invariants** — what always holds (e.g., every extracted value carries `source_document` and `source_location`)
+
+Keep contracts narrow (ISP). A caller that only needs extracted text should not depend on a type that also carries bounding boxes and confidence scores. Split contracts when consumers only need a subset.
+
+## Open/Closed Principle
+
+New stages slot in without editing existing ones. Write stages that consume a well-defined input and produce a well-defined output so new stages can be inserted around them.
+
+## Traceability
+
+Every extracted value must carry provenance. This is a hard requirement.
+
+```python
+@dataclass
+class ExtractedField:
+    name: str
+    value: str
+    source_document: str
+    source_location: str | None = None
+    confidence: float | None = None
+```
+
+Never return a bare value from an extraction function when a traced dataclass is expected.

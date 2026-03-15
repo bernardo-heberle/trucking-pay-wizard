@@ -8,15 +8,7 @@ The system processes documents through a structured pipeline where each stage pe
 
 Documents pass through the following stages:
 
-
-
-
-
-
-
-
-
-
+Documents pass through the following stages: Documents │ ▼ OCR │ ▼ Document Classification │ ▼ Field Extraction │ ▼ Validation │ ▼ Structured Output │ ▼ Human Review
 
 ---
 

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import datetime
 from pathlib import Path
 
 from loguru import logger
@@ -11,6 +12,7 @@ from src.extract.models import DocumentExtractionResult
 from src.report.exceptions import ReportAssemblyError
 
 _CURRENCY_FORMAT = '$#,##0.00'
+_DATE_FORMATS = ("%m/%d/%Y", "%B %d, %Y", "%b %d, %Y")
 
 
 def build_excel(
@@ -49,7 +51,10 @@ def build_excel(
         ws.cell(row=row_idx, column=2, value=pdf_page)
 
         for col_offset, field_name in enumerate(field_names):
-            cell = ws.cell(row=row_idx, column=3 + col_offset, value=field_map.get(field_name, ""))
+            raw_value = field_map.get(field_name, "")
+            if field_name == "date" and raw_value:
+                raw_value = _normalize_date(raw_value)
+            cell = ws.cell(row=row_idx, column=3 + col_offset, value=raw_value)
             if "pay" in field_name.lower():
                 cell.number_format = _CURRENCY_FORMAT
 
@@ -78,6 +83,21 @@ def _collect_field_names(results: list[DocumentExtractionResult]) -> list[str]:
         for field in result.fields:
             seen.setdefault(field.name, None)
     return list(seen)
+
+
+def _normalize_date(value: str) -> str:
+    """Return *value* formatted as ``MM/DD/YYYY``.
+
+    Handles the raw date formats produced by the extraction rules:
+    ``MM/DD/YYYY``, ``Month D, YYYY``, and abbreviated ``Mon D, YYYY``.
+    Returns the original string unchanged if none of the formats match.
+    """
+    for fmt in _DATE_FORMATS:
+        try:
+            return datetime.datetime.strptime(value.strip(), fmt).strftime("%m/%d/%Y")
+        except ValueError:
+            continue
+    return value
 
 
 def _write_header_row(ws, headers: list[str]) -> None:

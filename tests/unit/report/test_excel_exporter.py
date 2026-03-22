@@ -122,3 +122,72 @@ class TestDynamicColumns:
         # r1 has pay but not date — that cell should be empty
         dd_col = header_map["Date"]
         assert ws.cell(row=2, column=dd_col).value in (None, "")
+
+
+class TestDateNormalization:
+
+    def test_month_name_date_normalized_to_mm_dd_yyyy(
+        self, synthetic_source_pdf: Path, tmp_path: Path
+    ) -> None:
+        """'March 20, 2024' is written to Excel as '03/20/2024'."""
+        result = make_extraction_result(
+            synthetic_source_pdf,
+            fields=[
+                ExtractedField(
+                    name="date", value="March 20, 2024",
+                    source_document=synthetic_source_pdf.name, source_page=1,
+                ),
+            ],
+        )
+        out = tmp_path / "out.xlsx"
+        build_excel([result], out, {synthetic_source_pdf.name: 2})
+
+        wb = openpyxl.load_workbook(str(out))
+        ws = wb.active
+        header_map = {ws.cell(row=1, column=c).value: c for c in range(1, ws.max_column + 1)}
+        date_col = header_map["Date"]
+        assert ws.cell(row=2, column=date_col).value == "03/20/2024"
+
+    def test_abbreviated_month_date_normalized(
+        self, synthetic_source_pdf: Path, tmp_path: Path
+    ) -> None:
+        """'Mar 11, 2024' (abbreviated) is normalized to '03/11/2024'."""
+        result = make_extraction_result(
+            synthetic_source_pdf,
+            fields=[
+                ExtractedField(
+                    name="date", value="Mar 11, 2024",
+                    source_document=synthetic_source_pdf.name, source_page=1,
+                ),
+            ],
+        )
+        out = tmp_path / "out.xlsx"
+        build_excel([result], out, {synthetic_source_pdf.name: 2})
+
+        wb = openpyxl.load_workbook(str(out))
+        ws = wb.active
+        header_map = {ws.cell(row=1, column=c).value: c for c in range(1, ws.max_column + 1)}
+        date_col = header_map["Date"]
+        assert ws.cell(row=2, column=date_col).value == "03/11/2024"
+
+    def test_already_normalized_date_unchanged(
+        self, synthetic_source_pdf: Path, tmp_path: Path
+    ) -> None:
+        """A date already in MM/DD/YYYY format is written without modification."""
+        result = make_extraction_result(
+            synthetic_source_pdf,
+            fields=[
+                ExtractedField(
+                    name="date", value="05/15/2024",
+                    source_document=synthetic_source_pdf.name, source_page=1,
+                ),
+            ],
+        )
+        out = tmp_path / "out.xlsx"
+        build_excel([result], out, {synthetic_source_pdf.name: 2})
+
+        wb = openpyxl.load_workbook(str(out))
+        ws = wb.active
+        header_map = {ws.cell(row=1, column=c).value: c for c in range(1, ws.max_column + 1)}
+        date_col = header_map["Date"]
+        assert ws.cell(row=2, column=date_col).value == "05/15/2024"

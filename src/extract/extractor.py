@@ -4,7 +4,12 @@ import re
 
 from loguru import logger
 
-from src.extract.models import DocumentExtractionResult, ExtractedField, SourceSpan
+from src.extract.models import Certainty, DocumentExtractionResult, ExtractedField, SourceSpan
+
+_CERTAINTY_MAP: dict[str, Certainty] = {
+    "high": Certainty.HIGH,
+    "review": Certainty.REVIEW,
+}
 from src.extract.rules import ALL_RULES
 from src.ocr.models import OcrResult
 
@@ -47,6 +52,10 @@ def extract_document(ocr_result: OcrResult, page_count: int) -> DocumentExtracti
 
             primary_page = spans[0].page_number if spans else None
 
+            certainty = _CERTAINTY_MAP.get(
+                pattern_def.get("certainty", ""), Certainty.REVIEW
+            )
+
             fields.append(
                 ExtractedField(
                     name=column,
@@ -54,6 +63,7 @@ def extract_document(ocr_result: OcrResult, page_count: int) -> DocumentExtracti
                     source_document=source_name,
                     source_page=primary_page,
                     source_spans=spans,
+                    certainty=certainty,
                 )
             )
 

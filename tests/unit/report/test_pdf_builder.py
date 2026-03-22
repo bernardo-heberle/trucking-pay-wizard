@@ -7,9 +7,9 @@ from pathlib import Path
 import fitz
 import pytest
 
-from src.extract.models import DocumentExtractionResult, ExtractedField, SourceSpan
+from src.extract.models import Certainty, DocumentExtractionResult, ExtractedField, SourceSpan
 from src.ocr.models import BoundingBox
-from src.report.pdf_builder import _count_index_pages, build_pdf
+from src.report.pdf_builder import _count_index_pages, _COLOR_GREEN, _COLOR_YELLOW, build_pdf
 from tests.unit.report.conftest import make_extraction_result
 
 
@@ -170,5 +170,58 @@ class TestMultiPageIndex:
         n_index = _count_index_pages(results)
         # Verify that every source page slot exists in the document
         assert len(doc) == n_index + 15
+        doc.close()
+
+
+class TestCertaintyHighlightColors:
+
+    def test_high_certainty_uses_green_highlight(self, synthetic_source_pdf: Path, tmp_path: Path) -> None:
+        result = make_extraction_result(
+            synthetic_source_pdf,
+            fields=[
+                ExtractedField(
+                    name="pay", value="750.00",
+                    source_document=synthetic_source_pdf.name, source_page=1,
+                    source_spans=[SourceSpan(page_number=1, bounding_box=BoundingBox(x=1.0, y=4.5, width=4.0, height=0.25))],
+                    certainty=Certainty.HIGH,
+                ),
+            ],
+        )
+        out = tmp_path / "combined.pdf"
+        build_pdf([result], out)
+
+        doc = fitz.open(str(out))
+        source_page = doc[1]
+        annots = list(source_page.annots() or [])
+        assert len(annots) == 1
+        colors = annots[0].colors
+        stroke = tuple(round(c, 2) for c in colors["stroke"])
+        expected = tuple(round(c, 2) for c in _COLOR_GREEN)
+        assert stroke == expected
+        doc.close()
+
+    def test_review_certainty_uses_yellow_highlight(self, synthetic_source_pdf: Path, tmp_path: Path) -> None:
+        result = make_extraction_result(
+            synthetic_source_pdf,
+            fields=[
+                ExtractedField(
+                    name="pay", value="750.00",
+                    source_document=synthetic_source_pdf.name, source_page=1,
+                    source_spans=[SourceSpan(page_number=1, bounding_box=BoundingBox(x=1.0, y=4.5, width=4.0, height=0.25))],
+                    certainty=Certainty.REVIEW,
+                ),
+            ],
+        )
+        out = tmp_path / "combined.pdf"
+        build_pdf([result], out)
+
+        doc = fitz.open(str(out))
+        source_page = doc[1]
+        annots = list(source_page.annots() or [])
+        assert len(annots) == 1
+        colors = annots[0].colors
+        stroke = tuple(round(c, 2) for c in colors["stroke"])
+        expected = tuple(round(c, 2) for c in _COLOR_YELLOW)
+        assert stroke == expected
         doc.close()
 

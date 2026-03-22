@@ -5,14 +5,31 @@ from pathlib import Path
 
 from loguru import logger
 from openpyxl import Workbook
-from openpyxl.styles import Alignment, Font, numbers
+from openpyxl.styles import Alignment, Font, PatternFill, numbers
 from openpyxl.utils import get_column_letter
 
-from src.extract.models import DocumentExtractionResult
+from src.extract.models import Certainty, DocumentExtractionResult
+from src.extract.rules import EXPECTED_FIELDS
 from src.report.exceptions import ReportAssemblyError
 
 _CURRENCY_FORMAT = '$#,##0.00'
 _DATE_FORMATS = ("%m/%d/%Y", "%B %d, %Y", "%b %d, %Y")
+
+_FILL_GREEN = PatternFill(start_color="C6EFCE", end_color="C6EFCE", fill_type="solid")
+_FILL_YELLOW = PatternFill(start_color="FFEB9C", end_color="FFEB9C", fill_type="solid")
+_FILL_RED = PatternFill(start_color="FFC7CE", end_color="FFC7CE", fill_type="solid")
+
+_CERTAINTY_FILLS: dict[Certainty, PatternFill] = {
+    Certainty.HIGH: _FILL_GREEN,
+    Certainty.REVIEW: _FILL_YELLOW,
+    Certainty.NOT_FOUND: _FILL_RED,
+}
+
+
+def _fill_for_certainty(certainty: Certainty | None) -> PatternFill:
+    if certainty is None:
+        return _FILL_YELLOW
+    return _CERTAINTY_FILLS.get(certainty, _FILL_YELLOW)
 
 
 def build_excel(
@@ -22,9 +39,11 @@ def build_excel(
 ) -> Path:
     """Build an Excel spreadsheet with one row per document.
 
-    Columns: ``Document``, ``PDF Page``, then one column per unique extracted
-    field name (derived dynamically so new extraction rules automatically
-    get columns).
+    Columns: ``Document``, ``PDF Page``, ``Certainty``, then one column per
+    unique extracted field name (derived dynamically so new extraction rules
+    automatically get columns).  Data cells are color-filled by their
+    individual field certainty; the ``Certainty`` column shows the worst
+    certainty across all expected fields for the document.
 
     Returns *output_path* on success.
 
@@ -38,25 +57,35 @@ def build_excel(
     ws.title = "Extracted Data"
 
     display_names = [name.replace("_", " ").title() for name in field_names]
-    headers = ["Document", "PDF Page"] + display_names
+    headers = ["Document", "PDF Page", "Certainty"] + display_names
     _write_header_row(ws, headers)
 
     for row_idx, result in enumerate(results, start=2):
         doc_name = result.source_path.name
         pdf_page = page_offsets.get(doc_name, "")
 
-        field_map = {f.name: f.value for f in result.fields}
+        field_map = {f.name: f for f in result.fields}
 
         ws.cell(row=row_idx, column=1, value=doc_name)
         ws.cell(row=row_idx, column=2, value=pdf_page)
 
+        doc_certainty = result.overall_certainty(EXPECTED_FIELDS)
+        cert_cell = ws.cell(row=row_idx, column=3, value=doc_certainty.value)
+        cert_cell.fill = _fill_for_certainty(doc_certainty)
+
         for col_offset, field_name in enumerate(field_names):
-            raw_value = field_map.get(field_name, "")
+            extracted = field_map.get(field_name)
+            raw_value = extracted.value if extracted else ""
             if field_name == "date" and raw_value:
                 raw_value = _normalize_date(raw_value)
-            cell = ws.cell(row=row_idx, column=3 + col_offset, value=raw_value)
+            cell = ws.cell(row=row_idx, column=4 + col_offset, value=raw_value)
             if "pay" in field_name.lower():
                 cell.number_format = _CURRENCY_FORMAT
+
+            if extracted:
+                cell.fill = _fill_for_certainty(extracted.certainty)
+            else:
+                cell.fill = _fill_for_certainty(Certainty.NOT_FOUND)
 
     _auto_width(ws, len(headers))
 

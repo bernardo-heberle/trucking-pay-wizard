@@ -15,6 +15,7 @@ import openpyxl
 import pytest
 
 from src.extract.extractor import extract_document
+from src.extract.models import Certainty
 from src.ingest import ingest_document
 from src.ocr.models import BoundingBox, OcrLine, OcrPage, OcrResult
 from src.report import build_report
@@ -88,9 +89,11 @@ class TestFullPipeline:
 
         pay = next(f for f in extraction.fields if f.name == "pay")
         assert pay.value == "1,200.50"
+        assert pay.certainty == Certainty.HIGH
 
         date = next(f for f in extraction.fields if f.name == "date")
         assert date.value == "05/15/2024"
+        assert date.certainty == Certainty.HIGH
 
         # 5. Report assembly
         output_dir = tmp_path / "output"
@@ -116,6 +119,9 @@ class TestFullPipeline:
         assert ws.cell(row=2, column=header_map["Pay"]).value == "1,200.50"
         assert ws.cell(row=2, column=header_map["Date"]).value == "05/15/2024"
         assert ws.cell(row=2, column=header_map["PDF Page"]).value == 2
+
+        assert "Certainty" in header_map
+        assert ws.cell(row=2, column=header_map["Certainty"]).value == "High"
 
     def test_multiple_documents(self, tmp_path: Path) -> None:
         """Verify the pipeline handles multiple documents correctly."""

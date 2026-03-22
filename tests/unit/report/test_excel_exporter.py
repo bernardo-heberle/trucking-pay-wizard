@@ -7,8 +7,8 @@ from pathlib import Path
 import openpyxl
 import pytest
 
-from src.extract.models import DocumentExtractionResult, ExtractedField
-from src.report.excel_exporter import build_excel
+from src.extract.models import Certainty, DocumentExtractionResult, ExtractedField
+from src.report.excel_exporter import build_excel, _FILL_GREEN, _FILL_YELLOW, _FILL_RED
 from tests.unit.report.conftest import make_extraction_result
 
 
@@ -21,9 +21,10 @@ class TestExcelStructure:
 
         wb = openpyxl.load_workbook(str(out))
         ws = wb.active
-        headers = [ws.cell(row=1, column=c).value for c in range(1, 5)]
+        headers = [ws.cell(row=1, column=c).value for c in range(1, ws.max_column + 1)]
         assert headers[0] == "Document"
         assert headers[1] == "PDF Page"
+        assert headers[2] == "Certainty"
         assert "Pay" in headers
         assert "Date" in headers
 
@@ -119,7 +120,6 @@ class TestDynamicColumns:
         assert "Date" in headers
 
         header_map = {ws.cell(row=1, column=c).value: c for c in range(1, ws.max_column + 1)}
-        # r1 has pay but not date — that cell should be empty
         dd_col = header_map["Date"]
         assert ws.cell(row=2, column=dd_col).value in (None, "")
 
@@ -191,3 +191,98 @@ class TestDateNormalization:
         header_map = {ws.cell(row=1, column=c).value: c for c in range(1, ws.max_column + 1)}
         date_col = header_map["Date"]
         assert ws.cell(row=2, column=date_col).value == "05/15/2024"
+
+
+class TestCertaintyColumn:
+
+    def test_certainty_column_present(self, synthetic_source_pdf: Path, tmp_path: Path) -> None:
+        result = make_extraction_result(synthetic_source_pdf)
+        out = tmp_path / "out.xlsx"
+        build_excel([result], out, {synthetic_source_pdf.name: 2})
+
+        wb = openpyxl.load_workbook(str(out))
+        ws = wb.active
+        header_map = {ws.cell(row=1, column=c).value: c for c in range(1, ws.max_column + 1)}
+        assert "Certainty" in header_map
+
+    def test_certainty_value_all_high(self, synthetic_source_pdf: Path, tmp_path: Path) -> None:
+        """Default fixture has both fields HIGH -> overall is 'High'."""
+        result = make_extraction_result(synthetic_source_pdf)
+        out = tmp_path / "out.xlsx"
+        build_excel([result], out, {synthetic_source_pdf.name: 2})
+
+        wb = openpyxl.load_workbook(str(out))
+        ws = wb.active
+        header_map = {ws.cell(row=1, column=c).value: c for c in range(1, ws.max_column + 1)}
+        cert_col = header_map["Certainty"]
+        assert ws.cell(row=2, column=cert_col).value == "High"
+
+    def test_certainty_value_mixed(self, synthetic_source_pdf: Path, tmp_path: Path) -> None:
+        result = make_extraction_result(
+            synthetic_source_pdf,
+            fields=[
+                ExtractedField(
+                    name="pay", value="100", source_document="t.pdf",
+                    source_page=1, certainty=Certainty.HIGH,
+                ),
+                ExtractedField(
+                    name="date", value="01/01/2024", source_document="t.pdf",
+                    source_page=1, certainty=Certainty.REVIEW,
+                ),
+            ],
+        )
+        out = tmp_path / "out.xlsx"
+        build_excel([result], out, {synthetic_source_pdf.name: 2})
+
+        wb = openpyxl.load_workbook(str(out))
+        ws = wb.active
+        header_map = {ws.cell(row=1, column=c).value: c for c in range(1, ws.max_column + 1)}
+        cert_col = header_map["Certainty"]
+        assert ws.cell(row=2, column=cert_col).value == "Review"
+
+    def test_certainty_fill_colors(self, synthetic_source_pdf: Path, tmp_path: Path) -> None:
+        """Data cells and certainty cell should carry the right fill color."""
+        result = make_extraction_result(synthetic_source_pdf)
+        out = tmp_path / "out.xlsx"
+        build_excel([result], out, {synthetic_source_pdf.name: 2})
+
+        wb = openpyxl.load_workbook(str(out))
+        ws = wb.active
+        header_map = {ws.cell(row=1, column=c).value: c for c in range(1, ws.max_column + 1)}
+
+        cert_cell = ws.cell(row=2, column=header_map["Certainty"])
+        assert cert_cell.fill.start_color.rgb == "00C6EFCE"
+
+        pay_cell = ws.cell(row=2, column=header_map["Pay"])
+        assert pay_cell.fill.start_color.rgb == "00C6EFCE"
+
+    def test_missing_field_gets_red_fill(
+        self, synthetic_source_pdf: Path, synthetic_source_pdf_b: Path, tmp_path: Path
+    ) -> None:
+        """When a field is absent for a document, its cell should be red."""
+        r1 = make_extraction_result(
+            synthetic_source_pdf,
+            content_hash="h1",
+            fields=[
+                ExtractedField(name="pay", value="100", source_document="a.pdf", source_page=1, certainty=Certainty.HIGH),
+            ],
+        )
+        r2 = make_extraction_result(
+            synthetic_source_pdf_b,
+            content_hash="h2",
+            page_count=2,
+            fields=[
+                ExtractedField(name="pay", value="200", source_document="b.pdf", source_page=1, certainty=Certainty.HIGH),
+                ExtractedField(name="date", value="01/01/2024", source_document="b.pdf", source_page=1, certainty=Certainty.HIGH),
+            ],
+        )
+        offsets = {synthetic_source_pdf.name: 2, synthetic_source_pdf_b.name: 3}
+        out = tmp_path / "out.xlsx"
+        build_excel([r1, r2], out, offsets)
+
+        wb = openpyxl.load_workbook(str(out))
+        ws = wb.active
+        header_map = {ws.cell(row=1, column=c).value: c for c in range(1, ws.max_column + 1)}
+
+        date_cell_r1 = ws.cell(row=2, column=header_map["Date"])
+        assert date_cell_r1.fill.start_color.rgb == "00FFC7CE"

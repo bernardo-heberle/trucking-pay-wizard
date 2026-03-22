@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from src.extract.extractor import extract_document
+from src.extract.models import Certainty
 from src.ocr.models import OcrResult
 
 
@@ -34,6 +35,19 @@ class TestSettlementExtraction:
                 assert span.bounding_box.width > 0
                 assert span.bounding_box.height > 0
 
+    def test_pay_certainty_is_high(self, settlement_ocr: OcrResult) -> None:
+        """Settlement uses 'Total Payment to Carrier' — a high-certainty pattern."""
+        result = extract_document(settlement_ocr, page_count=1)
+        field = _field_by_name(result.fields, "pay")
+        assert field is not None
+        assert field.certainty == Certainty.HIGH
+
+    def test_date_certainty(self, settlement_ocr: OcrResult) -> None:
+        result = extract_document(settlement_ocr, page_count=1)
+        field = _field_by_name(result.fields, "date")
+        assert field is not None
+        assert field.certainty is not None
+
 
 class TestPaySummaryExtraction:
     """Extraction against pay_summary_ocr.json fixture (V2Dispatch-style)."""
@@ -56,6 +70,19 @@ class TestPaySummaryExtraction:
         field = _field_by_name(result.fields, "pay")
         assert field is not None
         assert len(field.source_spans) == 2
+
+    def test_pay_certainty(self, pay_summary_ocr: OcrResult) -> None:
+        result = extract_document(pay_summary_ocr, page_count=1)
+        field = _field_by_name(result.fields, "pay")
+        assert field is not None
+        assert field.certainty is not None
+
+    def test_date_certainty_is_high(self, pay_summary_ocr: OcrResult) -> None:
+        """V2Dispatch 'Pickup Date' is a high-certainty pattern."""
+        result = extract_document(pay_summary_ocr, page_count=1)
+        field = _field_by_name(result.fields, "date")
+        assert field is not None
+        assert field.certainty == Certainty.HIGH
 
 
 class TestEdgeCases:

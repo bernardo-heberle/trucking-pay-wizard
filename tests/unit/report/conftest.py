@@ -7,7 +7,7 @@ from pathlib import Path
 import fitz
 import pytest
 
-from src.extract.models import DocumentExtractionResult, ExtractedField, SourceSpan
+from src.extract.models import Certainty, DocumentExtractionResult, ExtractedField, SourceSpan
 from src.ocr.models import BoundingBox
 
 
@@ -54,6 +54,7 @@ def make_extraction_result(
                 source_spans=[
                     SourceSpan(page_number=1, bounding_box=BoundingBox(x=1.0, y=4.5, width=4.0, height=0.25)),
                 ],
+                certainty=Certainty.HIGH,
             ),
             ExtractedField(
                 name="date",
@@ -63,6 +64,7 @@ def make_extraction_result(
                 source_spans=[
                     SourceSpan(page_number=1, bounding_box=BoundingBox(x=1.0, y=6.0, width=3.5, height=0.25)),
                 ],
+                certainty=Certainty.HIGH,
             ),
         ]
     return DocumentExtractionResult(

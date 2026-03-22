@@ -26,6 +26,7 @@ PATTERNS = [
         "name": "tms_picked_up_on",
         "regex": r"Picked Up on ([\w]+ \d{1,2}, \d{4})",
         "formats": ["CarrierTMS"],
+        "certainty": "high",
     },
     {
         # "Pickup Date\nMarch 13, 2024 (Wed)"
@@ -33,6 +34,7 @@ PATTERNS = [
         "name": "v2dispatch_pickup_date",
         "regex": r"Pickup Date\s*\n([\w]+ \d{1,2},? \d{4})",
         "formats": ["V2Dispatch"],
+        "certainty": "high",
     },
     {
         # "Pickup Exactly: 03/09/2024"
@@ -40,6 +42,7 @@ PATTERNS = [
         "name": "centraldispatch_pickup_exactly",
         "regex": r"Pickup Exactly:\s*(\d{1,2}/\d{1,2}/\d{4})",
         "formats": ["CentralDispatch"],
+        "certainty": "high",
     },
     {
         # "Carrier Pickup Exact: 03/12/2024"
@@ -47,6 +50,7 @@ PATTERNS = [
         "name": "shipyourcarnow_pickup_exact",
         "regex": r"Carrier Pickup Exact:\s*(\d{1,2}/\d{1,2}/\d{4})",
         "formats": ["ShipYourCarNow"],
+        "certainty": "high",
     },
     {
         # "Carrier Pickup Estimated:\n03/12/2024"
@@ -54,6 +58,7 @@ PATTERNS = [
         "name": "carrier_pickup_estimated",
         "regex": r"Carrier Pickup Estimated:\s*\n?(\d{1,2}/\d{1,2}/\d{4})",
         "formats": ["BacklotCars", "OPENLANE"],
+        "certainty": "review",
     },
     {
         # "Pickup Estimated: 03/11/2024"
@@ -61,6 +66,7 @@ PATTERNS = [
         "name": "centraldispatch_pickup_estimated",
         "regex": r"Pickup Estimated:\s*(\d{1,2}/\d{1,2}/\d{4})",
         "formats": ["CentralDispatch"],
+        "certainty": "review",
     },
     {
         # "Pick-up Location\nDate\nTime\n<city>\n3/13/2024"
@@ -68,6 +74,7 @@ PATTERNS = [
         "name": "tql_pickup_date",
         "regex": r"Pick-up Location\nDate\nTime\n.+\n(\d{1,2}/\d{1,2}/\d{4})",
         "formats": ["TQL"],
+        "certainty": "review",
     },
     {
         # "Dispatch Date: 03/09/2024"
@@ -75,6 +82,7 @@ PATTERNS = [
         "name": "dispatch_date",
         "regex": r"Dispatch Date:\s*(\d{1,2}/\d{1,2}/\d{4})",
         "formats": ["CentralDispatch", "ShipYourCarNow"],
+        "certainty": "review",
     },
     {
         # "Scheduled for Mar 11, 2024"
@@ -82,6 +90,7 @@ PATTERNS = [
         "name": "tms_scheduled_for",
         "regex": r"Scheduled for ([\w]+ \d{1,2}, \d{4})",
         "formats": ["CarrierTMS"],
+        "certainty": "review",
     },
 ]
 

@@ -5,7 +5,8 @@ from pathlib import Path
 import fitz
 from loguru import logger
 
-from src.extract.models import DocumentExtractionResult, ExtractedField
+from src.extract.models import Certainty, DocumentExtractionResult, ExtractedField
+from src.extract.rules import EXPECTED_FIELDS
 from src.report.exceptions import ReportAssemblyError
 
 _INDEX_FONT_SIZE = 11
@@ -15,6 +16,22 @@ _INDEX_MARGIN = 54  # 0.75 inch
 _PAGE_WIDTH = 612
 _PAGE_HEIGHT = 792
 _INDEX_BOTTOM_LIMIT = _PAGE_HEIGHT - _INDEX_MARGIN
+
+_COLOR_GREEN = (0.0, 0.6, 0.0)
+_COLOR_YELLOW = (0.85, 0.65, 0.0)
+_COLOR_RED = (0.8, 0.0, 0.0)
+
+_CERTAINTY_COLORS: dict[Certainty, tuple[float, float, float]] = {
+    Certainty.HIGH: _COLOR_GREEN,
+    Certainty.REVIEW: _COLOR_YELLOW,
+    Certainty.NOT_FOUND: _COLOR_RED,
+}
+
+
+def _color_for_certainty(certainty: Certainty | None) -> tuple[float, float, float]:
+    if certainty is None:
+        return _COLOR_YELLOW
+    return _CERTAINTY_COLORS.get(certainty, _COLOR_YELLOW)
 
 
 def build_pdf(
@@ -110,6 +127,8 @@ def _build_index_pages(
 ) -> fitz.Document:
     """Create a multi-page index document.
 
+    Document names are colored by overall certainty (worst across expected
+    fields).  Individual field lines are colored by their own certainty.
     Automatically overflows onto additional pages when content exceeds the
     printable area of a US Letter page.
     """
@@ -129,10 +148,9 @@ def _build_index_pages(
     for result in results:
         doc_name = result.source_path.name
         start_page = page_offsets.get(doc_name, 0)
+        doc_certainty = result.overall_certainty(EXPECTED_FIELDS)
+        doc_color = _color_for_certainty(doc_certainty)
 
-        # Check whether the entire entry fits before writing any of it.
-        # Only break to a new page when we are not already at the top of one
-        # (guards against an entry taller than a full page).
         entry_height = _INDEX_LINE_HEIGHT * (1 + len(result.fields))
         if y > _INDEX_MARGIN and y + entry_height > _INDEX_BOTTOM_LIMIT:
             page = doc.new_page(width=_PAGE_WIDTH, height=_PAGE_HEIGHT)
@@ -143,15 +161,18 @@ def _build_index_pages(
             f"\u2022 {doc_name}  (page {start_page})",
             fontsize=_INDEX_FONT_SIZE,
             fontname="helv",
+            color=doc_color,
         )
         y += _INDEX_LINE_HEIGHT
 
         for field in result.fields:
+            field_color = _color_for_certainty(field.certainty)
             page.insert_text(
                 (x, y),
                 f"    {field.name}: {field.value}",
                 fontsize=_INDEX_FONT_SIZE - 1,
                 fontname="helv",
+                color=field_color,
             )
             y += _INDEX_LINE_HEIGHT
 
@@ -185,10 +206,11 @@ def _add_highlights(
     results: list[DocumentExtractionResult],
     page_offsets: dict[str, int],
 ) -> None:
-    """Draw semi-transparent yellow highlight annotations on extracted field locations.
+    """Draw color-coded highlight annotations on extracted field locations.
 
-    page_offsets values are 1-indexed (page 1+ = index pages, then source pages).
-    The combined doc is 0-indexed, so the 0-based index is ``offset - 1``.
+    Each field is highlighted using its own certainty color (green for HIGH,
+    yellow/amber for REVIEW).  page_offsets values are 1-indexed; the combined
+    doc is 0-indexed, so the 0-based index is ``offset - 1``.
     """
     for result in results:
         doc_name = result.source_path.name
@@ -196,13 +218,15 @@ def _add_highlights(
         base_page_0indexed = base_page_1indexed - 1
 
         for field in result.fields:
-            _highlight_field(combined, field, base_page_0indexed)
+            color = _color_for_certainty(field.certainty)
+            _highlight_field(combined, field, base_page_0indexed, color)
 
 
 def _highlight_field(
     combined: fitz.Document,
     field: ExtractedField,
     base_page_0indexed: int,
+    color: tuple[float, float, float],
 ) -> None:
     """Add highlight annotations for a single extracted field."""
     for span in field.source_spans:
@@ -220,4 +244,5 @@ def _highlight_field(
         page = combined[page_idx]
         annot = page.add_highlight_annot(rect)
         if annot:
+            annot.set_colors(stroke=color)
             annot.update()

@@ -6,8 +6,10 @@ from pathlib import Path
 
 from loguru import logger
 
-from src.extract.models import DocumentExtractionResult, ExtractedField, SourceSpan
+from src.extract.models import Certainty, DocumentExtractionResult, ExtractedField, SourceSpan
 from src.ocr.models import BoundingBox
+
+_CERTAINTY_LOOKUP: dict[str, Certainty] = {c.value: c for c in Certainty}
 
 
 def _cache_dir(working_folder: Path) -> Path:
@@ -83,6 +85,7 @@ def _deserialize(data: dict, source_path: Path) -> DocumentExtractionResult:
             source_document=f["source_document"],
             source_page=f["source_page"],
             confidence=f.get("confidence"),
+            certainty=_CERTAINTY_LOOKUP.get(f.get("certainty", ""), None),
             source_spans=[
                 SourceSpan(
                     page_number=s["page_number"],

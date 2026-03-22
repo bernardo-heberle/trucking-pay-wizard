@@ -1,9 +1,23 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from enum import Enum
 from pathlib import Path
 
 from src.ocr.models import BoundingBox
+
+
+class Certainty(str, Enum):
+    """How reliable an extracted value is.
+
+    HIGH — the pattern is a strong, unambiguous anchor.
+    REVIEW — the pattern is a fallback, estimated, or positional extraction.
+    NOT_FOUND — no pattern matched for the field.
+    """
+
+    HIGH = "High"
+    REVIEW = "Review"
+    NOT_FOUND = "Not Found"
 
 
 @dataclass
@@ -28,6 +42,7 @@ class ExtractedField:
     source_page: int | None
     source_spans: list[SourceSpan] = field(default_factory=list)
     confidence: float | None = None
+    certainty: Certainty | None = None
 
 
 @dataclass
@@ -38,3 +53,26 @@ class DocumentExtractionResult:
     content_hash: str
     fields: list[ExtractedField] = field(default_factory=list)
     page_count: int = 0
+
+    def overall_certainty(self, expected_fields: list[str]) -> Certainty:
+        """Return the worst certainty across *expected_fields*.
+
+        If any expected field is missing entirely, returns ``NOT_FOUND``.
+        If all are present but any has ``REVIEW``, returns ``REVIEW``.
+        Otherwise returns ``HIGH``.
+        """
+        field_map = {f.name: f for f in self.fields}
+
+        for name in expected_fields:
+            if name not in field_map:
+                return Certainty.NOT_FOUND
+
+        worst = Certainty.HIGH
+        for name in expected_fields:
+            cert = field_map[name].certainty
+            if cert is None or cert == Certainty.NOT_FOUND:
+                return Certainty.NOT_FOUND
+            if cert == Certainty.REVIEW:
+                worst = Certainty.REVIEW
+
+        return worst

@@ -20,6 +20,7 @@ PATTERNS = [
         "name": "total_payment_to_carrier",
         "regex": r"Total Payment to Carrier:\s*\$([\d,]+(?:\.\d{2})?)",
         "formats": ["CentralDispatch", "BacklotCars", "SuperDispatch"],
+        "certainty": "high",
     },
     {
         # "Shipper owes Carrier: $944.00"
@@ -28,6 +29,7 @@ PATTERNS = [
         "name": "shipper_owes_carrier",
         "regex": r"Shipper owes Carrier:\s*\$([\d,]+(?:\.\d{2})?)",
         "formats": ["BacklotCars", "SuperDispatch"],
+        "certainty": "high",
     },
     {
         # "Company* owes Carrier: $750.00"
@@ -35,6 +37,7 @@ PATTERNS = [
         "name": "company_owes_carrier",
         "regex": r"Company\*?\s*owes Carrier:\s*\$([\d,]+(?:\.\d{2})?)",
         "formats": ["CentralDispatch"],
+        "certainty": "high",
     },
     {
         # "Total: $1,500.00 USD"
@@ -42,6 +45,7 @@ PATTERNS = [
         "name": "tql_total",
         "regex": r"Total:\s*\$([\d,]+(?:\.\d{2})?)\s*USD",
         "formats": ["TQL"],
+        "certainty": "high",
     },
     {
         # "Agent Pays Carrier\n$820"
@@ -49,6 +53,7 @@ PATTERNS = [
         "name": "v2dispatch_agent_pays_carrier",
         "regex": r"Agent Pays Carrier\s*\n\s*\$([\d,]+(?:\.\d{2})?)",
         "formats": ["V2Dispatch"],
+        "certainty": "high",
     },
     {
         # "Total Payment\n$820"
@@ -56,6 +61,7 @@ PATTERNS = [
         "name": "v2dispatch_total_payment",
         "regex": r"Total Payment\s*\n\s*\$([\d,]+(?:\.\d{2})?)",
         "formats": ["V2Dispatch"],
+        "certainty": "review",
     },
     {
         # "Invoiced on Mar 14, 2024, 10:15 AM\nPrice\n$800.00"
@@ -66,6 +72,7 @@ PATTERNS = [
         "name": "carrier_tms_invoiced_price",
         "regex": r"Invoiced on .+\nPrice\n\$([\d,]+(?:\.\d{2})?)",
         "formats": ["CarrierTMS"],
+        "certainty": "review",
     },
 ]
 

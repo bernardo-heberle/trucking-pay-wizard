@@ -26,7 +26,7 @@ class WelcomePage(QWidget):
 
         root.addSpacing(6)
 
-        tagline = QLabel("A batch OCR tool for downtime claims staff.")
+        tagline = QLabel("Income document processing for downtime claims")
         tagline_font = QFont()
         tagline_font.setPointSize(10)
         tagline.setFont(tagline_font)
@@ -35,9 +35,9 @@ class WelcomePage(QWidget):
         root.addSpacing(18)
 
         desc = QLabel(
-            "Drop your income documents into a folder, tell the tool where they are, "
-            "and it will read every page using Azure OCR, pull out the key financial "
-            "fields, and write two ready-to-file output files back to the same folder."
+            "Collect the income documents for a claim into a folder, point this tool "
+            "at that folder, and it will read every page, pull out the key payment "
+            "figures, and create two ready-to-use files."
         )
         desc.setWordWrap(True)
         root.addWidget(desc)
@@ -50,14 +50,14 @@ class WelcomePage(QWidget):
 
         for bullet, detail in [
             (
-                "&lt;prefix&gt;_combined.pdf",
-                "all source pages in one PDF, with gross pay and delivery date "
-                "highlighted in yellow",
+                "Combined PDF",
+                "all your documents in one file, easy to attach to a claim or share "
+                "with co-counsel",
             ),
             (
-                "&lt;prefix&gt;_extracted.xlsx",
-                "one row per document — document name, starting page in the PDF, "
-                "gross pay, delivery date",
+                "Excel spreadsheet",
+                "one row per document — gross pay, net pay, and payment dates — "
+                "with a page reference back to the PDF",
             ),
         ]:
             row = QLabel(f"\u2022  <b>{bullet}</b> &mdash; {detail}")
@@ -68,28 +68,22 @@ class WelcomePage(QWidget):
 
         root.addSpacing(16)
 
-        stages_label = QLabel(
-            "<b>Pipeline:</b> &nbsp;Ingestion &rarr; OCR &rarr; Extraction &rarr; Report"
-        )
-        stages_label.setTextFormat(Qt.TextFormat.RichText)
-        root.addWidget(stages_label)
-
-        root.addSpacing(10)
-
         note = QLabel(
-            "<i>Requires Azure Document Intelligence credentials in a "
-            "<code>.env</code> file in the project folder before running.</i>"
+            "<i>First time using this tool? Ask your IT contact to confirm the "
+            "configuration file is in place on your machine before you run.</i>"
         )
         note.setWordWrap(True)
         note.setTextFormat(Qt.TextFormat.RichText)
+        note.setStyleSheet("color: gray;")
         root.addWidget(note)
 
         root.addStretch()
 
         btn_row = QHBoxLayout()
         btn_row.addStretch()
-        next_btn = QPushButton("Next \u2192")
-        next_btn.setFixedWidth(100)
+        next_btn = QPushButton("Get Started \u2192")
+        next_btn.setFixedWidth(120)
+        next_btn.setFixedHeight(34)
         next_btn.clicked.connect(self.next_requested)
         btn_row.addWidget(next_btn)
         root.addLayout(btn_row)

@@ -17,7 +17,7 @@ class MainWindow(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
         self.setWindowTitle("Trucking Pay Wizard")
-        self.setFixedSize(600, 460)
+        self.setFixedSize(600, 480)
 
         self._stack = QStackedWidget()
         self._welcome = WelcomePage()

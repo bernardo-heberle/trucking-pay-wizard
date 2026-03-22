@@ -8,6 +8,7 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QLineEdit,
+    QProgressBar,
     QPushButton,
     QVBoxLayout,
     QWidget,
@@ -19,12 +20,14 @@ from src.ingest import collect_source_files
 class _PipelineWorker(QObject):
     """Runs all pipeline stages on a background thread.
 
-    Emits ``progress`` for each step, ``finished`` on success, or
-    ``error`` with an error message on failure.
+    Emits ``progress`` with a status string, ``progress_step`` with
+    (current, total) for the progress bar, ``finished`` on success,
+    or ``error`` with a message on failure.
     """
 
     progress: Signal = Signal(str)
-    finished: Signal = Signal(str, str)   # pdf_path, excel_path
+    progress_step: Signal = Signal(int, int)   # current, total
+    finished: Signal = Signal(str, str)        # pdf_path, excel_path
     error: Signal = Signal(str)
 
     def __init__(self, folder: Path, prefix: str) -> None:
@@ -43,7 +46,12 @@ class _PipelineWorker(QObject):
 
             source_files = collect_source_files(self._folder)
             n = len(source_files)
-            self.progress.emit(f"Found {n} document(s)…")
+            # total steps = one per document + one for report assembly
+            total = n + 1
+            self.progress.emit(
+                f"Found {n} document{'s' if n != 1 else ''} — starting…"
+            )
+            self.progress_step.emit(0, total)
 
             client = None
             results = []
@@ -53,22 +61,27 @@ class _PipelineWorker(QObject):
                 extraction = cache_get(self._folder, ingested.content_hash)
 
                 if extraction is not None:
-                    self.progress.emit(f"[{i}/{n}] {source_path.name} — cached, skipping OCR")
+                    self.progress.emit(
+                        f"Document {i} of {n}: {source_path.name} — already processed"
+                    )
                 else:
-                    self.progress.emit(f"[{i}/{n}] Processing {source_path.name}…")
+                    self.progress.emit(
+                        f"Document {i} of {n}: reading {source_path.name}…"
+                    )
                     if client is None:
-                        self.progress.emit(f"[{i}/{n}] Connecting to Azure…")
                         client = build_client()
                     ocr_result = analyze_document(ingested, client)
                     extraction = extract_document(ocr_result, page_count=ingested.page_count)
                     cache_put(self._folder, extraction)
 
                 results.append(extraction)
+                self.progress_step.emit(i, total)
 
-            self.progress.emit("Assembling report…")
+            self.progress.emit("Building your report…")
             pdf_path, excel_path = build_report(
                 results, self._folder / "results", prefix=self._prefix
             )
+            self.progress_step.emit(total, total)
             self.finished.emit(str(pdf_path), str(excel_path))
 
         except Exception as exc:
@@ -89,13 +102,15 @@ class SetupPage(QWidget):
         root.setContentsMargins(40, 28, 40, 24)
         root.setSpacing(8)
 
-        # ── Input section ────────────────────────────────────────────────────
-        root.addWidget(QLabel("<b>Input folder</b>"))
+        # ── Folder section ───────────────────────────────────────────────────
+        root.addWidget(QLabel("<b>Documents folder</b>"))
 
         folder_row = QHBoxLayout()
         self._folder_edit = QLineEdit()
         self._folder_edit.setReadOnly(True)
-        self._folder_edit.setPlaceholderText("Select a folder containing income documents…")
+        self._folder_edit.setPlaceholderText(
+            "Select the folder containing the income documents…"
+        )
         browse_btn = QPushButton("Browse…")
         browse_btn.setFixedWidth(90)
         browse_btn.clicked.connect(self._browse_folder)
@@ -109,14 +124,19 @@ class SetupPage(QWidget):
 
         root.addSpacing(12)
 
-        # ── Output section ───────────────────────────────────────────────────
-        root.addWidget(QLabel("<b>Output</b>"))
+        # ── Report naming ────────────────────────────────────────────────────
+        root.addWidget(QLabel("<b>Choose a file name for your report</b>"))
 
         prefix_row = QHBoxLayout()
-        prefix_lbl = QLabel("File prefix:")
-        prefix_lbl.setFixedWidth(74)
+        prefix_lbl = QLabel("File name:")
+        prefix_lbl.setFixedWidth(48)
         self._prefix_edit = QLineEdit("report")
         self._prefix_edit.setMaximumWidth(180)
+        self._prefix_edit.setToolTip(
+            "Used as the filename base for the PDF and spreadsheet (e.g. "
+            "\u201cclaim_123\u201d produces claim_123_combined.pdf and "
+            "claim_123_data.xlsx)"
+        )
         self._prefix_edit.textChanged.connect(self._refresh_output_label)
         prefix_row.addWidget(prefix_lbl)
         prefix_row.addWidget(self._prefix_edit)
@@ -131,12 +151,21 @@ class SetupPage(QWidget):
 
         root.addStretch()
 
+        # ── Progress bar ─────────────────────────────────────────────────────
+        self._progress_bar = QProgressBar()
+        self._progress_bar.setTextVisible(False)
+        self._progress_bar.setFixedHeight(6)
+        self._progress_bar.setVisible(False)
+        root.addWidget(self._progress_bar)
+
+        root.addSpacing(4)
+
         # ── Run button ───────────────────────────────────────────────────────
         btn_row = QHBoxLayout()
         btn_row.addStretch()
-        self._run_btn = QPushButton("Run Pipeline")
+        self._run_btn = QPushButton("Generate Report")
         self._run_btn.setEnabled(False)
-        self._run_btn.setFixedWidth(130)
+        self._run_btn.setFixedWidth(160)
         self._run_btn.setFixedHeight(34)
         self._run_btn.clicked.connect(self._start_pipeline)
         btn_row.addWidget(self._run_btn)
@@ -152,7 +181,7 @@ class SetupPage(QWidget):
     # ── Folder picker ────────────────────────────────────────────────────────
 
     def _browse_folder(self) -> None:
-        folder = QFileDialog.getExistingDirectory(self, "Select input folder")
+        folder = QFileDialog.getExistingDirectory(self, "Select documents folder")
         if not folder:
             return
 
@@ -162,21 +191,21 @@ class SetupPage(QWidget):
         try:
             files = collect_source_files(path)
         except Exception as exc:
-            self._doc_count_label.setText(f"Error scanning folder: {exc}")
+            self._doc_count_label.setText(f"Could not read folder: {exc}")
             self._doc_count_label.setStyleSheet("color: red; font-size: 11px;")
             self._run_btn.setEnabled(False)
             return
 
         if not files:
             self._doc_count_label.setText(
-                "No supported documents found (PDF, PNG, JPG, TIFF)."
+                "No documents found in this folder (PDF, PNG, JPG, TIFF are supported)."
             )
             self._doc_count_label.setStyleSheet("color: red; font-size: 11px;")
             self._run_btn.setEnabled(False)
         else:
-            ext_note = ", ".join(sorted({f.suffix.upper().lstrip(".") for f in files}))
+            n = len(files)
             self._doc_count_label.setText(
-                f"{len(files)} document(s) found ({ext_note})."
+                f"{n} document{'s' if n != 1 else ''} ready to process."
             )
             self._doc_count_label.setStyleSheet("color: green; font-size: 11px;")
             self._run_btn.setEnabled(True)
@@ -186,8 +215,8 @@ class SetupPage(QWidget):
     def _refresh_output_label(self) -> None:
         prefix = self._prefix_edit.text().strip() or "report"
         self._output_label.setText(
-            f"Both files will be saved into results/:  "
-            f"results/{prefix}_combined.pdf  \u00b7  results/{prefix}_extracted.xlsx"
+            f"Saved to results/:  "
+            f"{prefix}_combined.pdf  \u00b7  {prefix}_data.xlsx"
         )
 
     # ── Pipeline execution ───────────────────────────────────────────────────
@@ -197,6 +226,8 @@ class SetupPage(QWidget):
         prefix = self._prefix_edit.text().strip() or "report"
 
         self._run_btn.setEnabled(False)
+        self._progress_bar.setRange(0, 0)   # indeterminate until we know the count
+        self._progress_bar.setVisible(True)
         self._set_status("Starting…", "gray")
 
         self._worker = _PipelineWorker(folder, prefix)
@@ -205,6 +236,7 @@ class SetupPage(QWidget):
 
         self._thread.started.connect(self._worker.run)
         self._worker.progress.connect(self._on_progress)
+        self._worker.progress_step.connect(self._on_progress_step)
         self._worker.finished.connect(self._on_finished)
         self._worker.error.connect(self._on_error)
 
@@ -219,15 +251,22 @@ class SetupPage(QWidget):
     def _on_progress(self, message: str) -> None:
         self._set_status(message, "gray")
 
+    @Slot(int, int)
+    def _on_progress_step(self, current: int, total: int) -> None:
+        self._progress_bar.setRange(0, total)
+        self._progress_bar.setValue(current)
+
     @Slot(str, str)
     def _on_finished(self, pdf_path: str, excel_path: str) -> None:
+        self._progress_bar.setVisible(False)
         self._set_status("Ready.", "gray")
         self._run_btn.setEnabled(True)
         self.pipeline_finished.emit(pdf_path, excel_path)
 
     @Slot(str)
     def _on_error(self, message: str) -> None:
-        self._set_status(f"Error: {message}", "red")
+        self._progress_bar.setVisible(False)
+        self._set_status(f"Something went wrong: {message}", "red")
         self._run_btn.setEnabled(True)
 
     def _set_status(self, text: str, color: str) -> None:

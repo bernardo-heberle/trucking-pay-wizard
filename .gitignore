@@ -51,6 +51,7 @@ $RECYCLE.BIN/
 # =========================
 # Logs / temp / artifacts
 # =========================
+prototyping/
 *.log
 logs/
 tmp/

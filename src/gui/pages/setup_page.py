@@ -76,6 +76,8 @@ class _PipelineWorker(QObject):
 
 
 class SetupPage(QWidget):
+    pipeline_finished = Signal(str, str)  # pdf_path, excel_path
+
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self._thread: QThread | None = None
@@ -219,10 +221,9 @@ class SetupPage(QWidget):
 
     @Slot(str, str)
     def _on_finished(self, pdf_path: str, excel_path: str) -> None:
-        pdf_name = Path(pdf_path).name
-        xlsx_name = Path(excel_path).name
-        self._set_status(f"Done.  {pdf_name}  \u00b7  {xlsx_name}", "green")
+        self._set_status("Ready.", "gray")
         self._run_btn.setEnabled(True)
+        self.pipeline_finished.emit(pdf_path, excel_path)
 
     @Slot(str)
     def _on_error(self, message: str) -> None:

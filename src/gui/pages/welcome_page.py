@@ -16,7 +16,7 @@ from PySide6.QtWidgets import (
 from src.gui._widgets import add_corner_sparkles, ui_scale
 
 _TITLE_PT = 18.0
-_LOGO_BASE_PX = 100   # logo height/width at the 640×520 base window size
+_LOGO_BASE_PX = 300
 
 _LOGO_PATH = Path(__file__).parent.parent / "assets" / "logo.png"
 
@@ -31,43 +31,32 @@ class WelcomePage(QWidget):
 
     def _build_ui(self) -> None:
         root = QVBoxLayout(self)
-        root.setContentsMargins(40, 32, 40, 24)
+        root.setContentsMargins(40, 20, 40, 20)
         root.setSpacing(0)
 
-        # ── Header: title/tagline left, logo right ────────────────────────────
-        header_row = QHBoxLayout()
-        header_row.setSpacing(16)
+        # ── Logo (centered) ──────────────────────────────────────────────────
+        self._logo_label = QLabel()
+        self._logo_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._logo_label.setStyleSheet("background: transparent;")
+        self._update_logo(_LOGO_BASE_PX)
+        root.addWidget(self._logo_label)
 
-        text_col = QVBoxLayout()
-        text_col.setSpacing(0)
+        root.addSpacing(10)
 
+        # ── Title & tagline ──────────────────────────────────────────────────
         self._title = QLabel("Trucking Pay Wizard")
         title_font = QFont()
         title_font.setPointSizeF(_TITLE_PT)
         title_font.setBold(True)
         self._title.setFont(title_font)
-        text_col.addWidget(self._title)
+        root.addWidget(self._title)
 
-        text_col.addSpacing(6)
+        root.addSpacing(4)
 
-        # Tagline inherits the dynamic app font — no explicit setFont needed.
         tagline = QLabel("Income document processing for downtime claims")
-        text_col.addWidget(tagline)
+        root.addWidget(tagline)
 
-        header_row.addLayout(text_col)
-        header_row.addStretch()
-
-        self._logo_label = QLabel()
-        self._logo_label.setAlignment(
-            Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignRight
-        )
-        self._logo_label.setStyleSheet("background: transparent;")
-        self._update_logo(_LOGO_BASE_PX)
-        header_row.addWidget(self._logo_label)
-
-        root.addLayout(header_row)
-
-        root.addSpacing(18)
+        root.addSpacing(14)
 
         desc = QLabel(
             "Collect the income documents for a claim into a folder, point this tool "
@@ -77,11 +66,11 @@ class WelcomePage(QWidget):
         desc.setWordWrap(True)
         root.addWidget(desc)
 
-        root.addSpacing(16)
+        root.addSpacing(12)
 
         outputs_header = QLabel("<b>What you get</b>")
         root.addWidget(outputs_header)
-        root.addSpacing(6)
+        root.addSpacing(4)
 
         for bullet, detail in [
             (
@@ -99,9 +88,9 @@ class WelcomePage(QWidget):
             row.setWordWrap(True)
             row.setTextFormat(Qt.TextFormat.RichText)
             root.addWidget(row)
-            root.addSpacing(4)
+            root.addSpacing(3)
 
-        root.addSpacing(16)
+        root.addSpacing(10)
 
         note = QLabel(
             "<i>First time using this tool? Ask your IT contact to confirm the "

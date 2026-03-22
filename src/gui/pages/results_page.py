@@ -4,7 +4,6 @@ import os
 from pathlib import Path
 
 from PySide6.QtCore import Qt, Signal
-from PySide6.QtGui import QFont
 from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
@@ -66,10 +65,8 @@ class ResultsPage(QWidget):
         pdf_info = QVBoxLayout()
         pdf_info.setSpacing(2)
 
-        pdf_heading = QLabel("Combined PDF")
-        pdf_heading_font = QFont()
-        pdf_heading_font.setBold(True)
-        pdf_heading.setFont(pdf_heading_font)
+        pdf_heading = QLabel("<b>Combined PDF</b>")
+        pdf_heading.setTextFormat(Qt.TextFormat.RichText)
         pdf_info.addWidget(pdf_heading)
 
         self._pdf_name_label = QLabel()
@@ -94,10 +91,8 @@ class ResultsPage(QWidget):
         excel_info = QVBoxLayout()
         excel_info.setSpacing(2)
 
-        excel_heading = QLabel("Excel Spreadsheet")
-        excel_heading_font = QFont()
-        excel_heading_font.setBold(True)
-        excel_heading.setFont(excel_heading_font)
+        excel_heading = QLabel("<b>Excel Spreadsheet</b>")
+        excel_heading.setTextFormat(Qt.TextFormat.RichText)
         excel_info.addWidget(excel_heading)
 
         self._excel_name_label = QLabel()

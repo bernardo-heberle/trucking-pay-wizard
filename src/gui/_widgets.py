@@ -7,9 +7,9 @@ from PySide6.QtWidgets import QLabel, QProgressBar, QWidget
 
 # ── Scaling ───────────────────────────────────────────────────────────────────
 
-_BASE_W: int = 640
-_BASE_H: int = 520
-_BASE_PT: float = 10.0   # point size that matches the 640×520 base size
+_BASE_W: int = 700
+_BASE_H: int = 700
+_BASE_PT: float = 10.0   # point size that matches the 700×700 base size
 
 
 def ui_scale(width: int, height: int) -> float:

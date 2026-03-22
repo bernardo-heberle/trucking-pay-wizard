@@ -13,8 +13,14 @@ from src.report.pdf_builder import build_pdf
 def build_report(
     results: list[DocumentExtractionResult],
     output_folder: Path,
+    prefix: str = "",
 ) -> tuple[Path, Path]:
     """Orchestrate report assembly: combined PDF then Excel spreadsheet.
+
+    When *prefix* is provided the output files are named
+    ``<prefix>_combined.pdf`` and ``<prefix>_extracted.xlsx``.
+    When omitted the legacy names ``combined_report.pdf`` /
+    ``extracted_data.xlsx`` are used.
 
     Returns ``(pdf_path, excel_path)``.
 
@@ -23,8 +29,12 @@ def build_report(
     """
     output_folder.mkdir(parents=True, exist_ok=True)
 
-    pdf_path = output_folder / "combined_report.pdf"
-    excel_path = output_folder / "extracted_data.xlsx"
+    if prefix:
+        pdf_path = output_folder / f"{prefix}_combined.pdf"
+        excel_path = output_folder / f"{prefix}_extracted.xlsx"
+    else:
+        pdf_path = output_folder / "combined_report.pdf"
+        excel_path = output_folder / "extracted_data.xlsx"
 
     logger.info("Building combined PDF report …")
     pdf_path, page_offsets = build_pdf(results, pdf_path)

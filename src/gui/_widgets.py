@@ -1,12 +1,49 @@
 """Shared GUI widgets used across pages."""
 from __future__ import annotations
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import QEvent, QObject, Qt
+from PySide6.QtGui import QFont, QPainter
 from PySide6.QtWidgets import QLabel, QProgressBar, QWidget
 
+# ── Scaling ───────────────────────────────────────────────────────────────────
+
+_BASE_W: int = 640
+_BASE_H: int = 520
+_BASE_PT: float = 10.0   # point size that matches the 640×520 base size
+
+
+def ui_scale(width: int, height: int) -> float:
+    """Scale factor relative to the 640×520 base window, capped at 1.5×."""
+    return max(1.0, min(width / _BASE_W, height / _BASE_H, 1.5))
+
+
+# ── Flipped truck ─────────────────────────────────────────────────────────────
+
+class _FlippedTruckLabel(QWidget):
+    """Renders the 🚛 emoji mirrored horizontally so it faces right."""
+
+    _SIZE_PX = 28   # fixed square size of the widget
+
+    def __init__(self, parent: QWidget | None = None) -> None:
+        super().__init__(parent)
+        self.setFixedSize(self._SIZE_PX + 8, self._SIZE_PX + 8)
+
+    def paintEvent(self, event) -> None:  # type: ignore[override]
+        painter = QPainter(self)
+        font = QFont()
+        font.setPixelSize(self._SIZE_PX)
+        painter.setFont(font)
+        # Translate right then scale x by -1 to mirror the emoji.
+        painter.translate(self.width(), 0)
+        painter.scale(-1.0, 1.0)
+        painter.drawText(self.rect(), Qt.AlignmentFlag.AlignCenter, "🚛")
+        painter.end()
+
+
+# ── Truck progress widget ─────────────────────────────────────────────────────
 
 class TruckProgressWidget(QWidget):
-    """A progress bar with a truck emoji that rolls along above it.
+    """A progress bar with a truck that rolls along above it.
 
     Use ``setRange`` / ``setValue`` exactly as you would ``QProgressBar``.
     Call ``setRange(0, 0)`` for indeterminate (pulsing) mode.
@@ -14,12 +51,10 @@ class TruckProgressWidget(QWidget):
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
-        self.setFixedHeight(52)
+        self.setFixedHeight(56)
         self.setVisible(False)
 
-        self._truck = QLabel("🚛", self)
-        self._truck.setStyleSheet("font-size: 22px; background: transparent;")
-        self._truck.adjustSize()
+        self._truck = _FlippedTruckLabel(self)
 
         self._bar = QProgressBar(self)
         self._bar.setTextVisible(False)
@@ -60,8 +95,6 @@ class TruckProgressWidget(QWidget):
         bar_y = self.height() - bar_h
         self._bar.setGeometry(0, bar_y, w, bar_h)
 
-        # Re-measure the truck label in case the font hasn't been laid out yet.
-        self._truck.adjustSize()
         truck_w = self._truck.width()
         truck_h = self._truck.height()
 
@@ -80,16 +113,44 @@ class TruckProgressWidget(QWidget):
         self._truck.move(max(0, truck_x), truck_y)
 
 
-def add_corner_sparkles(widget: QWidget, symbol: str = "✨") -> None:
-    """Add two small sparkle decorations in the top corners of *widget*.
+# ── Resize-aware corner sparkles ──────────────────────────────────────────────
 
-    The sparkles are sized to sit inside the top margin (≈28 px) without
-    overlapping content. They are transparent to mouse events.
+class _SparkleManager(QObject):
+    """Event-filter that keeps two sparkle labels in the top corners of a
+    parent widget as it resizes."""
+
+    def __init__(self, labels: list[QLabel], parent: QWidget) -> None:
+        super().__init__(parent)
+        self._labels = labels
+        parent.installEventFilter(self)
+        self._reposition(parent.width())
+
+    def eventFilter(self, obj: QObject, event: QEvent) -> bool:
+        if event.type() == QEvent.Type.Resize:
+            self._reposition(event.size().width())  # type: ignore[attr-defined]
+        return False
+
+    def _reposition(self, width: int) -> None:
+        if not self._labels:
+            return
+        self._labels[0].move(8, 6)
+        if len(self._labels) > 1:
+            right_x = width - self._labels[1].width() - 8
+            self._labels[1].move(max(8, right_x), 6)
+
+
+def add_corner_sparkles(widget: QWidget, symbol: str = "✨") -> None:
+    """Add two sparkle decorations in the top corners of *widget*.
+
+    The sparkles reposition themselves when the widget is resized and are
+    transparent to mouse events.
     """
-    for x in (8, 555):
+    labels: list[QLabel] = []
+    for _ in range(2):
         lbl = QLabel(symbol, widget)
         lbl.setStyleSheet("font-size: 16px; background: transparent;")
         lbl.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
         lbl.adjustSize()
-        lbl.move(x, 6)
         lbl.raise_()
+        labels.append(lbl)
+    _SparkleManager(labels, widget)

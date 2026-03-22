@@ -9,11 +9,14 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QPushButton,
+    QSizePolicy,
     QVBoxLayout,
     QWidget,
 )
 
-from src.gui._widgets import add_corner_sparkles
+from src.gui._widgets import add_corner_sparkles, ui_scale
+
+_HEADING_PT = 18.0
 
 
 class ResultsPage(QWidget):
@@ -42,26 +45,17 @@ class ResultsPage(QWidget):
         root.setSpacing(0)
 
         # ── Celebration header ────────────────────────────────────────────────
-        confetti = QLabel("🎉🚛✨")
-        confetti.setStyleSheet("font-size: 32px; background: transparent;")
-        confetti.setAlignment(Qt.AlignmentFlag.AlignLeft)
-        root.addWidget(confetti)
-
-        root.addSpacing(8)
-
-        heading = QLabel("All done!")
+        self._heading = QLabel("All done!")
         heading_font = QFont()
-        heading_font.setPointSize(18)
+        heading_font.setPointSizeF(_HEADING_PT)
         heading_font.setBold(True)
-        heading.setFont(heading_font)
-        root.addWidget(heading)
+        self._heading.setFont(heading_font)
+        root.addWidget(self._heading)
 
         root.addSpacing(4)
 
-        subtitle = QLabel("Your reports are ready — time to file that claim! 🏆")
-        subtitle_font = QFont()
-        subtitle_font.setPointSize(10)
-        subtitle.setFont(subtitle_font)
+        # Subtitle inherits the dynamic app font — no explicit setFont needed.
+        subtitle = QLabel("Your reports are ready — time to file that claim!")
         subtitle.setStyleSheet("color: #7c3aed;")
         root.addWidget(subtitle)
 
@@ -79,12 +73,13 @@ class ResultsPage(QWidget):
         pdf_info.addWidget(pdf_heading)
 
         self._pdf_name_label = QLabel()
-        self._pdf_name_label.setStyleSheet("color: gray; font-size: 11px;")
+        self._pdf_name_label.setStyleSheet("color: gray;")
         pdf_info.addWidget(self._pdf_name_label)
 
         open_pdf_btn = QPushButton("Open PDF")
-        open_pdf_btn.setFixedWidth(100)
-        open_pdf_btn.setFixedHeight(30)
+        open_pdf_btn.setMinimumWidth(100)
+        open_pdf_btn.setMinimumHeight(30)
+        open_pdf_btn.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
         open_pdf_btn.clicked.connect(self._open_pdf)
 
         pdf_row.addLayout(pdf_info)
@@ -106,12 +101,13 @@ class ResultsPage(QWidget):
         excel_info.addWidget(excel_heading)
 
         self._excel_name_label = QLabel()
-        self._excel_name_label.setStyleSheet("color: gray; font-size: 11px;")
+        self._excel_name_label.setStyleSheet("color: gray;")
         excel_info.addWidget(self._excel_name_label)
 
         open_excel_btn = QPushButton("Open Spreadsheet")
-        open_excel_btn.setFixedWidth(130)
-        open_excel_btn.setFixedHeight(30)
+        open_excel_btn.setMinimumWidth(160)
+        open_excel_btn.setMinimumHeight(30)
+        open_excel_btn.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
         open_excel_btn.clicked.connect(self._open_excel)
 
         excel_row.addLayout(excel_info)
@@ -123,7 +119,7 @@ class ResultsPage(QWidget):
 
         self._folder_label = QLabel()
         self._folder_label.setWordWrap(True)
-        self._folder_label.setStyleSheet("color: gray; font-size: 11px;")
+        self._folder_label.setStyleSheet("color: gray;")
         root.addWidget(self._folder_label)
 
         root.addStretch()
@@ -132,23 +128,25 @@ class ResultsPage(QWidget):
         btn_row = QHBoxLayout()
         btn_row.addStretch()
 
-        open_folder_btn = QPushButton("Open Folder")
-        open_folder_btn.setFixedWidth(120)
-        open_folder_btn.setFixedHeight(34)
+        open_folder_btn = QPushButton("Open Results Folder")
+        open_folder_btn.setMinimumWidth(160)
+        open_folder_btn.setMinimumHeight(34)
+        open_folder_btn.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
         open_folder_btn.clicked.connect(self._open_output_folder)
         btn_row.addWidget(open_folder_btn)
 
         btn_row.addSpacing(10)
 
         again_btn = QPushButton("Process Another Folder")
-        again_btn.setFixedWidth(170)
-        again_btn.setFixedHeight(34)
+        again_btn.setMinimumWidth(170)
+        again_btn.setMinimumHeight(34)
+        again_btn.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
         again_btn.clicked.connect(self.run_another_requested)
         btn_row.addWidget(again_btn)
 
         root.addLayout(btn_row)
 
-        add_corner_sparkles(self, symbol="🎊")
+        add_corner_sparkles(self, symbol="✨")
 
     def _open_pdf(self) -> None:
         if self._pdf_path is not None:
@@ -161,3 +159,10 @@ class ResultsPage(QWidget):
     def _open_output_folder(self) -> None:
         if self._pdf_path is not None:
             os.startfile(str(self._pdf_path.parent))
+
+    def resizeEvent(self, event) -> None:  # type: ignore[override]
+        super().resizeEvent(event)
+        scale = ui_scale(self.width(), self.height())
+        font = self._heading.font()
+        font.setPointSizeF(_HEADING_PT * scale)
+        self._heading.setFont(font)

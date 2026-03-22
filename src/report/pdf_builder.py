@@ -80,20 +80,23 @@ def _count_index_pages(results: list[DocumentExtractionResult]) -> int:
 
     Mirrors the layout logic in ``_build_index_pages`` without rendering,
     so ``build_pdf`` can compute correct page offsets before building the PDF.
+    Each document entry is treated as an atomic block — it is never split
+    across a page boundary.
     """
     y = _INDEX_MARGIN + _INDEX_LINE_HEIGHT * 2  # space consumed by heading
     pages = 1
 
     for result in results:
-        # Each document entry: one doc-name line, one line per field, then a gap.
-        lines = [_INDEX_LINE_HEIGHT] * (1 + len(result.fields))
+        entry_height = _INDEX_LINE_HEIGHT * (1 + len(result.fields))
         gap = _INDEX_LINE_HEIGHT * 0.5
 
-        for line_h in lines:
-            if y + line_h > _INDEX_BOTTOM_LIMIT:
-                pages += 1
-                y = _INDEX_MARGIN
-            y += line_h
+        # Move to a new page only when we are not already at the top of one
+        # (guards against an entry taller than a full page).
+        if y > _INDEX_MARGIN and y + entry_height > _INDEX_BOTTOM_LIMIT:
+            pages += 1
+            y = _INDEX_MARGIN
+
+        y += entry_height
 
         if y + gap <= _INDEX_BOTTOM_LIMIT:
             y += gap
@@ -123,18 +126,18 @@ def _build_index_pages(
     )
     y += _INDEX_LINE_HEIGHT * 2
 
-    def _ensure_space(needed: float) -> None:
-        """Add a new page if *needed* pts of vertical space is unavailable."""
-        nonlocal page, y
-        if y + needed > _INDEX_BOTTOM_LIMIT:
-            page = doc.new_page(width=_PAGE_WIDTH, height=_PAGE_HEIGHT)
-            y = _INDEX_MARGIN
-
     for result in results:
         doc_name = result.source_path.name
         start_page = page_offsets.get(doc_name, 0)
 
-        _ensure_space(_INDEX_LINE_HEIGHT)
+        # Check whether the entire entry fits before writing any of it.
+        # Only break to a new page when we are not already at the top of one
+        # (guards against an entry taller than a full page).
+        entry_height = _INDEX_LINE_HEIGHT * (1 + len(result.fields))
+        if y > _INDEX_MARGIN and y + entry_height > _INDEX_BOTTOM_LIMIT:
+            page = doc.new_page(width=_PAGE_WIDTH, height=_PAGE_HEIGHT)
+            y = _INDEX_MARGIN
+
         page.insert_text(
             (x, y),
             f"\u2022 {doc_name}  (page {start_page})",
@@ -144,7 +147,6 @@ def _build_index_pages(
         y += _INDEX_LINE_HEIGHT
 
         for field in result.fields:
-            _ensure_space(_INDEX_LINE_HEIGHT)
             page.insert_text(
                 (x, y),
                 f"    {field.name}: {field.value}",

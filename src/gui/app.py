@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import sys
 
+from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QApplication, QMainWindow, QStackedWidget
 
+from src.gui._widgets import _BASE_PT, ui_scale
 from src.gui.pages.results_page import ResultsPage
 from src.gui.pages.setup_page import SetupPage
 from src.gui.pages.welcome_page import WelcomePage
@@ -17,7 +19,8 @@ class MainWindow(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
         self.setWindowTitle("Trucking Pay Wizard")
-        self.setFixedSize(600, 480)
+        self.setMinimumSize(560, 460)
+        self.resize(640, 520)
 
         self._stack = QStackedWidget()
         self._welcome = WelcomePage()
@@ -37,6 +40,15 @@ class MainWindow(QMainWindow):
     def _show_results(self, pdf_path: str, excel_path: str) -> None:
         self._results.set_results(pdf_path, excel_path)
         self._stack.setCurrentIndex(_IDX_RESULTS)
+
+    def resizeEvent(self, event) -> None:  # type: ignore[override]
+        super().resizeEvent(event)
+        scale = ui_scale(event.size().width(), event.size().height())
+        font = QFont()
+        font.setPointSizeF(_BASE_PT * scale)
+        app = QApplication.instance()
+        if app is not None:
+            app.setFont(font)
 
 
 _STYLESHEET = """
@@ -84,6 +96,10 @@ QProgressBar::chunk {
 def main() -> None:
     app = QApplication.instance() or QApplication(sys.argv)
     app.setStyle("Fusion")
+    # Set the baseline font — MainWindow.resizeEvent scales this dynamically.
+    base_font = QFont()
+    base_font.setPointSizeF(_BASE_PT)
+    app.setFont(base_font)
     app.setStyleSheet(_STYLESHEET)
     window = MainWindow()
     window.show()

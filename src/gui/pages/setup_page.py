@@ -8,7 +8,9 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QLineEdit,
+    QMessageBox,
     QPushButton,
+    QSizePolicy,
     QVBoxLayout,
     QWidget,
 )
@@ -112,14 +114,15 @@ class SetupPage(QWidget):
             "Select the folder containing the income documents…"
         )
         browse_btn = QPushButton("Browse…")
-        browse_btn.setFixedWidth(90)
+        browse_btn.setMinimumWidth(90)
+        browse_btn.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
         browse_btn.clicked.connect(self._browse_folder)
         folder_row.addWidget(self._folder_edit)
         folder_row.addWidget(browse_btn)
         root.addLayout(folder_row)
 
         self._doc_count_label = QLabel("No folder selected.")
-        self._doc_count_label.setStyleSheet("color: gray; font-size: 11px;")
+        self._doc_count_label.setStyleSheet("color: gray;")
         root.addWidget(self._doc_count_label)
 
         root.addSpacing(12)
@@ -129,13 +132,11 @@ class SetupPage(QWidget):
 
         prefix_row = QHBoxLayout()
         prefix_lbl = QLabel("File name:")
-        prefix_lbl.setFixedWidth(48)
         self._prefix_edit = QLineEdit("report")
-        self._prefix_edit.setMaximumWidth(180)
         self._prefix_edit.setToolTip(
             "Used as the filename base for the PDF and spreadsheet (e.g. "
             "\u201cclaim_123\u201d produces claim_123_combined.pdf and "
-            "claim_123_data.xlsx)"
+            "claim_123_extracted.xlsx)"
         )
         self._prefix_edit.textChanged.connect(self._refresh_output_label)
         prefix_row.addWidget(prefix_lbl)
@@ -144,7 +145,7 @@ class SetupPage(QWidget):
         root.addLayout(prefix_row)
 
         self._output_label = QLabel()
-        self._output_label.setStyleSheet("color: gray; font-size: 11px;")
+        self._output_label.setStyleSheet("color: gray;")
         self._output_label.setWordWrap(True)
         root.addWidget(self._output_label)
         self._refresh_output_label()
@@ -162,8 +163,9 @@ class SetupPage(QWidget):
         btn_row.addStretch()
         self._run_btn = QPushButton("Generate Report")
         self._run_btn.setEnabled(False)
-        self._run_btn.setFixedWidth(160)
-        self._run_btn.setFixedHeight(34)
+        self._run_btn.setMinimumWidth(160)
+        self._run_btn.setMinimumHeight(34)
+        self._run_btn.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
         self._run_btn.clicked.connect(self._start_pipeline)
         btn_row.addWidget(self._run_btn)
         root.addLayout(btn_row)
@@ -171,7 +173,7 @@ class SetupPage(QWidget):
         root.addSpacing(8)
 
         self._status_label = QLabel("Ready.")
-        self._status_label.setStyleSheet("font-size: 11px; color: gray;")
+        self._status_label.setStyleSheet("color: gray;")
         self._status_label.setWordWrap(True)
         root.addWidget(self._status_label)
 
@@ -191,7 +193,7 @@ class SetupPage(QWidget):
             files = collect_source_files(path)
         except Exception as exc:
             self._doc_count_label.setText(f"Could not read folder: {exc}")
-            self._doc_count_label.setStyleSheet("color: red; font-size: 11px;")
+            self._doc_count_label.setStyleSheet("color: red;")
             self._run_btn.setEnabled(False)
             return
 
@@ -199,14 +201,14 @@ class SetupPage(QWidget):
             self._doc_count_label.setText(
                 "No documents found in this folder (PDF, PNG, JPG, TIFF are supported)."
             )
-            self._doc_count_label.setStyleSheet("color: red; font-size: 11px;")
+            self._doc_count_label.setStyleSheet("color: red;")
             self._run_btn.setEnabled(False)
         else:
             n = len(files)
             self._doc_count_label.setText(
                 f"{n} document{'s' if n != 1 else ''} ready to process."
             )
-            self._doc_count_label.setStyleSheet("color: green; font-size: 11px;")
+            self._doc_count_label.setStyleSheet("color: green;")
             self._run_btn.setEnabled(True)
 
     # ── Output label ─────────────────────────────────────────────────────────
@@ -215,7 +217,7 @@ class SetupPage(QWidget):
         prefix = self._prefix_edit.text().strip() or "report"
         self._output_label.setText(
             f"Saved to results/:  "
-            f"{prefix}_combined.pdf  \u00b7  {prefix}_data.xlsx"
+            f"{prefix}_combined.pdf  \u00b7  {prefix}_extracted.xlsx"
         )
 
     # ── Pipeline execution ───────────────────────────────────────────────────
@@ -223,6 +225,28 @@ class SetupPage(QWidget):
     def _start_pipeline(self) -> None:
         folder = Path(self._folder_edit.text())
         prefix = self._prefix_edit.text().strip() or "report"
+
+        # ── Overwrite check ──────────────────────────────────────────────────
+        results_dir = folder / "results"
+        candidates = [
+            results_dir / f"{prefix}_combined.pdf",
+            results_dir / f"{prefix}_extracted.xlsx",
+        ]
+        existing = [p for p in candidates if p.exists()]
+        if existing:
+            names = "\n".join(f"  • {p.name}" for p in existing)
+            reply = QMessageBox.question(
+                self,
+                "Replace existing files?",
+                f"The following file{'s' if len(existing) > 1 else ''} already "
+                f"exist{'s' if len(existing) == 1 else ''} in the results folder"
+                f" and will be replaced:\n\n{names}\n\n"
+                "Do you want to continue and overwrite?",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                QMessageBox.StandardButton.No,
+            )
+            if reply != QMessageBox.StandardButton.Yes:
+                return
 
         self._run_btn.setEnabled(False)
         self._truck_progress.setRange(0, 0)   # indeterminate until we know the count
@@ -269,5 +293,5 @@ class SetupPage(QWidget):
         self._run_btn.setEnabled(True)
 
     def _set_status(self, text: str, color: str) -> None:
-        self._status_label.setStyleSheet(f"font-size: 11px; color: {color};")
+        self._status_label.setStyleSheet(f"color: {color};")
         self._status_label.setText(text)

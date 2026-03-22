@@ -1,10 +1,24 @@
 from __future__ import annotations
 
-from PySide6.QtCore import Qt, Signal
-from PySide6.QtGui import QFont
-from PySide6.QtWidgets import QHBoxLayout, QLabel, QPushButton, QVBoxLayout, QWidget
+from pathlib import Path
 
-from src.gui._widgets import add_corner_sparkles
+from PySide6.QtCore import Qt, Signal
+from PySide6.QtGui import QFont, QPixmap
+from PySide6.QtWidgets import (
+    QHBoxLayout,
+    QLabel,
+    QPushButton,
+    QSizePolicy,
+    QVBoxLayout,
+    QWidget,
+)
+
+from src.gui._widgets import add_corner_sparkles, ui_scale
+
+_TITLE_PT = 18.0
+_LOGO_BASE_PX = 100   # logo height/width at the 640×520 base window size
+
+_LOGO_PATH = Path(__file__).parent.parent / "assets" / "logo.png"
 
 
 class WelcomePage(QWidget):
@@ -12,6 +26,7 @@ class WelcomePage(QWidget):
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
+        self._logo_pixmap = QPixmap(str(_LOGO_PATH))
         self._build_ui()
 
     def _build_ui(self) -> None:
@@ -19,20 +34,38 @@ class WelcomePage(QWidget):
         root.setContentsMargins(40, 32, 40, 24)
         root.setSpacing(0)
 
-        title = QLabel("Trucking Pay Wizard")
+        # ── Header: title/tagline left, logo right ────────────────────────────
+        header_row = QHBoxLayout()
+        header_row.setSpacing(16)
+
+        text_col = QVBoxLayout()
+        text_col.setSpacing(0)
+
+        self._title = QLabel("Trucking Pay Wizard")
         title_font = QFont()
-        title_font.setPointSize(18)
+        title_font.setPointSizeF(_TITLE_PT)
         title_font.setBold(True)
-        title.setFont(title_font)
-        root.addWidget(title)
+        self._title.setFont(title_font)
+        text_col.addWidget(self._title)
 
-        root.addSpacing(6)
+        text_col.addSpacing(6)
 
+        # Tagline inherits the dynamic app font — no explicit setFont needed.
         tagline = QLabel("Income document processing for downtime claims")
-        tagline_font = QFont()
-        tagline_font.setPointSize(10)
-        tagline.setFont(tagline_font)
-        root.addWidget(tagline)
+        text_col.addWidget(tagline)
+
+        header_row.addLayout(text_col)
+        header_row.addStretch()
+
+        self._logo_label = QLabel()
+        self._logo_label.setAlignment(
+            Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignRight
+        )
+        self._logo_label.setStyleSheet("background: transparent;")
+        self._update_logo(_LOGO_BASE_PX)
+        header_row.addWidget(self._logo_label)
+
+        root.addLayout(header_row)
 
         root.addSpacing(18)
 
@@ -84,10 +117,35 @@ class WelcomePage(QWidget):
         btn_row = QHBoxLayout()
         btn_row.addStretch()
         next_btn = QPushButton("Get Started \u2192")
-        next_btn.setFixedWidth(120)
-        next_btn.setFixedHeight(34)
+        next_btn.setMinimumWidth(120)
+        next_btn.setMinimumHeight(34)
+        next_btn.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
         next_btn.clicked.connect(self.next_requested)
         btn_row.addWidget(next_btn)
         root.addLayout(btn_row)
 
         add_corner_sparkles(self)
+
+    # ── Helpers ───────────────────────────────────────────────────────────────
+
+    def _update_logo(self, px: int) -> None:
+        if self._logo_pixmap.isNull():
+            return
+        self._logo_label.setPixmap(
+            self._logo_pixmap.scaled(
+                px,
+                px,
+                Qt.AspectRatioMode.KeepAspectRatio,
+                Qt.TransformationMode.SmoothTransformation,
+            )
+        )
+
+    def resizeEvent(self, event) -> None:  # type: ignore[override]
+        super().resizeEvent(event)
+        scale = ui_scale(self.width(), self.height())
+
+        font = self._title.font()
+        font.setPointSizeF(_TITLE_PT * scale)
+        self._title.setFont(font)
+
+        self._update_logo(int(_LOGO_BASE_PX * scale))

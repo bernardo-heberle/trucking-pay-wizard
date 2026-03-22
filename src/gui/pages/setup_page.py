@@ -8,12 +8,12 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QLineEdit,
-    QProgressBar,
     QPushButton,
     QVBoxLayout,
     QWidget,
 )
 
+from src.gui._widgets import TruckProgressWidget, add_corner_sparkles
 from src.ingest import collect_source_files
 
 
@@ -151,12 +151,9 @@ class SetupPage(QWidget):
 
         root.addStretch()
 
-        # ── Progress bar ─────────────────────────────────────────────────────
-        self._progress_bar = QProgressBar()
-        self._progress_bar.setTextVisible(False)
-        self._progress_bar.setFixedHeight(6)
-        self._progress_bar.setVisible(False)
-        root.addWidget(self._progress_bar)
+        # ── Progress bar with truck ──────────────────────────────────────────
+        self._truck_progress = TruckProgressWidget()
+        root.addWidget(self._truck_progress)
 
         root.addSpacing(4)
 
@@ -177,6 +174,8 @@ class SetupPage(QWidget):
         self._status_label.setStyleSheet("font-size: 11px; color: gray;")
         self._status_label.setWordWrap(True)
         root.addWidget(self._status_label)
+
+        add_corner_sparkles(self)
 
     # ── Folder picker ────────────────────────────────────────────────────────
 
@@ -226,8 +225,8 @@ class SetupPage(QWidget):
         prefix = self._prefix_edit.text().strip() or "report"
 
         self._run_btn.setEnabled(False)
-        self._progress_bar.setRange(0, 0)   # indeterminate until we know the count
-        self._progress_bar.setVisible(True)
+        self._truck_progress.setRange(0, 0)   # indeterminate until we know the count
+        self._truck_progress.setVisible(True)
         self._set_status("Starting…", "gray")
 
         self._worker = _PipelineWorker(folder, prefix)
@@ -253,19 +252,19 @@ class SetupPage(QWidget):
 
     @Slot(int, int)
     def _on_progress_step(self, current: int, total: int) -> None:
-        self._progress_bar.setRange(0, total)
-        self._progress_bar.setValue(current)
+        self._truck_progress.setRange(0, total)
+        self._truck_progress.setValue(current)
 
     @Slot(str, str)
     def _on_finished(self, pdf_path: str, excel_path: str) -> None:
-        self._progress_bar.setVisible(False)
+        self._truck_progress.setVisible(False)
         self._set_status("Ready.", "gray")
         self._run_btn.setEnabled(True)
         self.pipeline_finished.emit(pdf_path, excel_path)
 
     @Slot(str)
     def _on_error(self, message: str) -> None:
-        self._progress_bar.setVisible(False)
+        self._truck_progress.setVisible(False)
         self._set_status(f"Something went wrong: {message}", "red")
         self._run_btn.setEnabled(True)
 

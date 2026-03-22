@@ -13,6 +13,8 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from src.gui._widgets import add_corner_sparkles
+
 
 class ResultsPage(QWidget):
     """Displayed after a successful pipeline run with links to output files."""
@@ -32,35 +34,40 @@ class ResultsPage(QWidget):
 
         self._pdf_name_label.setText(self._pdf_path.name)
         self._excel_name_label.setText(self._excel_path.name)
-        self._folder_label.setText(
-            f"Saved to:  {self._pdf_path.parent}"
-        )
+        self._folder_label.setText(f"Saved to:  {self._pdf_path.parent}")
 
     def _build_ui(self) -> None:
         root = QVBoxLayout(self)
-        root.setContentsMargins(40, 32, 40, 24)
+        root.setContentsMargins(40, 28, 40, 24)
         root.setSpacing(0)
 
-        # ── Heading ──────────────────────────────────────────────────────────
-        heading = QLabel("Processing complete")
+        # ── Celebration header ────────────────────────────────────────────────
+        confetti = QLabel("🎉🚛✨")
+        confetti.setStyleSheet("font-size: 32px; background: transparent;")
+        confetti.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        root.addWidget(confetti)
+
+        root.addSpacing(8)
+
+        heading = QLabel("All done!")
         heading_font = QFont()
         heading_font.setPointSize(18)
         heading_font.setBold(True)
         heading.setFont(heading_font)
         root.addWidget(heading)
 
-        root.addSpacing(6)
+        root.addSpacing(4)
 
-        subtitle = QLabel("Your reports are ready.")
+        subtitle = QLabel("Your reports are ready — time to file that claim! 🏆")
         subtitle_font = QFont()
         subtitle_font.setPointSize(10)
         subtitle.setFont(subtitle_font)
-        subtitle.setStyleSheet("color: green;")
+        subtitle.setStyleSheet("color: #7c3aed;")
         root.addWidget(subtitle)
 
-        root.addSpacing(28)
+        root.addSpacing(24)
 
-        # ── PDF output ───────────────────────────────────────────────────────
+        # ── PDF output ────────────────────────────────────────────────────────
         pdf_row = QHBoxLayout()
         pdf_info = QVBoxLayout()
         pdf_info.setSpacing(2)
@@ -85,9 +92,9 @@ class ResultsPage(QWidget):
         pdf_row.addWidget(open_pdf_btn, alignment=Qt.AlignmentFlag.AlignVCenter)
         root.addLayout(pdf_row)
 
-        root.addSpacing(18)
+        root.addSpacing(16)
 
-        # ── Excel output ─────────────────────────────────────────────────────
+        # ── Excel output ──────────────────────────────────────────────────────
         excel_row = QHBoxLayout()
         excel_info = QVBoxLayout()
         excel_info.setSpacing(2)
@@ -112,7 +119,7 @@ class ResultsPage(QWidget):
         excel_row.addWidget(open_excel_btn, alignment=Qt.AlignmentFlag.AlignVCenter)
         root.addLayout(excel_row)
 
-        root.addSpacing(14)
+        root.addSpacing(12)
 
         self._folder_label = QLabel()
         self._folder_label.setWordWrap(True)
@@ -121,7 +128,7 @@ class ResultsPage(QWidget):
 
         root.addStretch()
 
-        # ── Bottom actions ───────────────────────────────────────────────────
+        # ── Bottom actions ────────────────────────────────────────────────────
         btn_row = QHBoxLayout()
         btn_row.addStretch()
 
@@ -140,6 +147,8 @@ class ResultsPage(QWidget):
         btn_row.addWidget(again_btn)
 
         root.addLayout(btn_row)
+
+        add_corner_sparkles(self, symbol="🎊")
 
     def _open_pdf(self) -> None:
         if self._pdf_path is not None:

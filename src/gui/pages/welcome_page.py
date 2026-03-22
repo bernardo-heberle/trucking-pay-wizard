@@ -4,6 +4,8 @@ from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QHBoxLayout, QLabel, QPushButton, QVBoxLayout, QWidget
 
+from src.gui._widgets import add_corner_sparkles
+
 
 class WelcomePage(QWidget):
     next_requested = Signal()
@@ -87,3 +89,5 @@ class WelcomePage(QWidget):
         next_btn.clicked.connect(self.next_requested)
         btn_row.addWidget(next_btn)
         root.addLayout(btn_row)
+
+        add_corner_sparkles(self)

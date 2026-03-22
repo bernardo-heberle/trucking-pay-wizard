@@ -39,9 +39,52 @@ class MainWindow(QMainWindow):
         self._stack.setCurrentIndex(_IDX_RESULTS)
 
 
+_STYLESHEET = """
+QWidget {
+    background-color: #f3eeff;
+    color: #2d1b69;
+}
+QLabel {
+    background: transparent;
+}
+QPushButton {
+    background-color: #8b5cf6;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 4px 12px;
+    font-weight: bold;
+}
+QPushButton:hover  { background-color: #7c3aed; }
+QPushButton:pressed { background-color: #6d28d9; }
+QPushButton:disabled {
+    background-color: #c4b5fd;
+    color: #ede9fe;
+}
+QLineEdit {
+    background-color: white;
+    border: 1.5px solid #c4b5fd;
+    border-radius: 4px;
+    padding: 3px 6px;
+    color: #2d1b69;
+}
+QLineEdit:focus { border-color: #8b5cf6; }
+QProgressBar {
+    background-color: #e9d5ff;
+    border-radius: 4px;
+    border: none;
+}
+QProgressBar::chunk {
+    background-color: #8b5cf6;
+    border-radius: 4px;
+}
+"""
+
+
 def main() -> None:
     app = QApplication.instance() or QApplication(sys.argv)
     app.setStyle("Fusion")
+    app.setStyleSheet(_STYLESHEET)
     window = MainWindow()
     window.show()
     sys.exit(app.exec())

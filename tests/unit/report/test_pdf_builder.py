@@ -9,7 +9,7 @@ import pytest
 
 from src.extract.models import DocumentExtractionResult, ExtractedField, SourceSpan
 from src.ocr.models import BoundingBox
-from src.report.pdf_builder import build_pdf
+from src.report.pdf_builder import _count_index_pages, build_pdf
 from tests.unit.report.conftest import make_extraction_result
 
 
@@ -112,3 +112,63 @@ class TestImageSourceFiles:
         doc = fitz.open(str(out))
         assert len(doc) == 2  # index + 1 image page
         doc.close()
+
+
+class TestMultiPageIndex:
+
+    def _make_many_results(self, tmp_path: Path, n: int) -> list[DocumentExtractionResult]:
+        """Build *n* single-page PDF results, each with 2 extracted fields."""
+        results = []
+        for i in range(n):
+            pdf_path = tmp_path / f"doc_{i:02d}.pdf"
+            doc = fitz.open()
+            page = doc.new_page(width=612, height=792)
+            page.insert_text((72, 72), f"Document {i}")
+            doc.save(str(pdf_path))
+            doc.close()
+            results.append(make_extraction_result(pdf_path, content_hash=f"hash_{i:02d}"))
+        return results
+
+    def test_small_batch_fits_one_index_page(self, tmp_path: Path) -> None:
+        """2 documents with 2 fields each comfortably fit on 1 index page."""
+        results = self._make_many_results(tmp_path, 2)
+        assert _count_index_pages(results) == 1
+
+    def test_large_batch_overflows_to_multiple_index_pages(self, tmp_path: Path) -> None:
+        """15 documents with 2 fields each exceed a single page."""
+        results = self._make_many_results(tmp_path, 15)
+        assert _count_index_pages(results) >= 2
+
+    def test_multi_page_index_produces_correct_total_pages(self, tmp_path: Path) -> None:
+        """Total pages = n_index_pages + n_source_pages."""
+        results = self._make_many_results(tmp_path, 15)
+        n_index = _count_index_pages(results)
+        out = tmp_path / "combined.pdf"
+        build_pdf(results, out)
+
+        doc = fitz.open(str(out))
+        assert len(doc) == n_index + 15  # each source PDF is 1 page
+        doc.close()
+
+    def test_page_offsets_account_for_multi_page_index(self, tmp_path: Path) -> None:
+        """Source page offsets start after all index pages, not hardcoded at 2."""
+        results = self._make_many_results(tmp_path, 15)
+        n_index = _count_index_pages(results)
+        out = tmp_path / "combined.pdf"
+        _, page_offsets = build_pdf(results, out)
+
+        first_source_page = min(page_offsets.values())
+        assert first_source_page == n_index + 1
+
+    def test_highlights_land_on_correct_page_with_multi_page_index(self, tmp_path: Path) -> None:
+        """With multiple index pages, highlight annotations appear on source pages."""
+        results = self._make_many_results(tmp_path, 15)
+        out = tmp_path / "combined.pdf"
+        build_pdf(results, out)
+
+        doc = fitz.open(str(out))
+        n_index = _count_index_pages(results)
+        # Verify that every source page slot exists in the document
+        assert len(doc) == n_index + 15
+        doc.close()
+

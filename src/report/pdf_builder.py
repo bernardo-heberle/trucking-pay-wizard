@@ -12,37 +12,45 @@ _INDEX_FONT_SIZE = 11
 _INDEX_HEADING_FONT_SIZE = 16
 _INDEX_LINE_HEIGHT = 16
 _INDEX_MARGIN = 54  # 0.75 inch
+_PAGE_WIDTH = 612
+_PAGE_HEIGHT = 792
+_INDEX_BOTTOM_LIMIT = _PAGE_HEIGHT - _INDEX_MARGIN
 
 
 def build_pdf(
     results: list[DocumentExtractionResult],
     output_path: Path,
 ) -> tuple[Path, dict[str, int]]:
-    """Build a combined PDF with an index page, source pages, and highlight annotations.
+    """Build a combined PDF with index pages, source pages, and highlight annotations.
+
+    The index may span multiple pages when there are many documents.  Page
+    offsets account for however many index pages are needed.
 
     Returns ``(output_path, page_offsets)`` where *page_offsets* maps each
-    ``source_path.name`` to its 1-indexed starting page in the combined PDF
-    (after the index page).  This mapping feeds into the Excel exporter so
-    users can cross-reference spreadsheet rows with PDF pages.
+    ``source_path.name`` to its 1-indexed starting page in the combined PDF.
+    This mapping feeds into the Excel exporter so users can cross-reference
+    spreadsheet rows with PDF pages.
 
     Raises:
         ReportAssemblyError: A source document cannot be opened or embedded.
     """
     page_offsets: dict[str, int] = {}
 
-    # Pre-compute page offsets (index page = page 1, source pages start at 2).
-    current_page = 2
+    # Determine how many index pages are needed before computing source offsets.
+    n_index_pages = _count_index_pages(results)
+
+    # Source pages start immediately after the last index page (1-indexed).
+    current_page = n_index_pages + 1
     for result in results:
         page_offsets[result.source_path.name] = current_page
         current_page += result.page_count
 
-    # Build the index page first so it is page 0 in the combined doc.
+    # Build index pages first, then append source pages.
     combined = fitz.open()
-    index_doc = _build_index_page(results, page_offsets)
+    index_doc = _build_index_pages(results, page_offsets)
     combined.insert_pdf(index_doc)
     index_doc.close()
 
-    # Append source pages (page 0 = index, so source pages start at index 1).
     for result in results:
         try:
             _append_source_pages(combined, result)
@@ -51,20 +59,105 @@ def build_pdf(
                 f"Failed to embed '{result.source_path.name}': {exc}"
             ) from exc
 
-    # Highlights go on source pages which now start at 0-based index 1.
     _add_highlights(combined, results, page_offsets)
 
     combined.save(str(output_path))
     combined.close()
 
     logger.info(
-        "Combined PDF saved to '{}' — {} document(s), {} page(s) total",
+        "Combined PDF saved to '{}' — {} document(s), {} page(s) total ({} index page(s))",
         output_path.name,
         len(results),
         current_page - 1,
+        n_index_pages,
     )
 
     return output_path, page_offsets
+
+
+def _count_index_pages(results: list[DocumentExtractionResult]) -> int:
+    """Return the number of index pages required for *results*.
+
+    Mirrors the layout logic in ``_build_index_pages`` without rendering,
+    so ``build_pdf`` can compute correct page offsets before building the PDF.
+    """
+    y = _INDEX_MARGIN + _INDEX_LINE_HEIGHT * 2  # space consumed by heading
+    pages = 1
+
+    for result in results:
+        # Each document entry: one doc-name line, one line per field, then a gap.
+        lines = [_INDEX_LINE_HEIGHT] * (1 + len(result.fields))
+        gap = _INDEX_LINE_HEIGHT * 0.5
+
+        for line_h in lines:
+            if y + line_h > _INDEX_BOTTOM_LIMIT:
+                pages += 1
+                y = _INDEX_MARGIN
+            y += line_h
+
+        if y + gap <= _INDEX_BOTTOM_LIMIT:
+            y += gap
+
+    return pages
+
+
+def _build_index_pages(
+    results: list[DocumentExtractionResult],
+    page_offsets: dict[str, int],
+) -> fitz.Document:
+    """Create a multi-page index document.
+
+    Automatically overflows onto additional pages when content exceeds the
+    printable area of a US Letter page.
+    """
+    doc = fitz.open()
+    page = doc.new_page(width=_PAGE_WIDTH, height=_PAGE_HEIGHT)
+    x = _INDEX_MARGIN
+    y = _INDEX_MARGIN
+
+    page.insert_text(
+        (x, y),
+        "Combined Report — Document Index",
+        fontsize=_INDEX_HEADING_FONT_SIZE,
+        fontname="helv",
+    )
+    y += _INDEX_LINE_HEIGHT * 2
+
+    def _ensure_space(needed: float) -> None:
+        """Add a new page if *needed* pts of vertical space is unavailable."""
+        nonlocal page, y
+        if y + needed > _INDEX_BOTTOM_LIMIT:
+            page = doc.new_page(width=_PAGE_WIDTH, height=_PAGE_HEIGHT)
+            y = _INDEX_MARGIN
+
+    for result in results:
+        doc_name = result.source_path.name
+        start_page = page_offsets.get(doc_name, 0)
+
+        _ensure_space(_INDEX_LINE_HEIGHT)
+        page.insert_text(
+            (x, y),
+            f"\u2022 {doc_name}  (page {start_page})",
+            fontsize=_INDEX_FONT_SIZE,
+            fontname="helv",
+        )
+        y += _INDEX_LINE_HEIGHT
+
+        for field in result.fields:
+            _ensure_space(_INDEX_LINE_HEIGHT)
+            page.insert_text(
+                (x, y),
+                f"    {field.name}: {field.value}",
+                fontsize=_INDEX_FONT_SIZE - 1,
+                fontname="helv",
+            )
+            y += _INDEX_LINE_HEIGHT
+
+        gap = _INDEX_LINE_HEIGHT * 0.5
+        if y + gap <= _INDEX_BOTTOM_LIMIT:
+            y += gap
+
+    return doc
 
 
 def _append_source_pages(combined: fitz.Document, result: DocumentExtractionResult) -> None:
@@ -85,43 +178,6 @@ def _append_source_pages(combined: fitz.Document, result: DocumentExtractionResu
         src_doc.close()
 
 
-def _build_index_page(
-    results: list[DocumentExtractionResult],
-    page_offsets: dict[str, int],
-) -> fitz.Document:
-    """Create a single-page document containing the report index."""
-    doc = fitz.open()
-    page = doc.new_page(width=612, height=792)  # US Letter
-
-    y = _INDEX_MARGIN
-    x = _INDEX_MARGIN
-
-    page.insert_text(
-        (x, y),
-        "Combined Report — Document Index",
-        fontsize=_INDEX_HEADING_FONT_SIZE,
-        fontname="helv",
-    )
-    y += _INDEX_LINE_HEIGHT * 2
-
-    for result in results:
-        doc_name = result.source_path.name
-        start_page = page_offsets.get(doc_name, 0)
-
-        line = f"• {doc_name}  (page {start_page})"
-        page.insert_text((x, y), line, fontsize=_INDEX_FONT_SIZE, fontname="helv")
-        y += _INDEX_LINE_HEIGHT
-
-        for field in result.fields:
-            summary = f"    {field.name}: {field.value}"
-            page.insert_text((x, y), summary, fontsize=_INDEX_FONT_SIZE - 1, fontname="helv")
-            y += _INDEX_LINE_HEIGHT
-
-        y += _INDEX_LINE_HEIGHT * 0.5
-
-    return doc
-
-
 def _add_highlights(
     combined: fitz.Document,
     results: list[DocumentExtractionResult],
@@ -129,13 +185,13 @@ def _add_highlights(
 ) -> None:
     """Draw semi-transparent yellow highlight annotations on extracted field locations.
 
-    page_offsets values are 1-indexed (page 1 = index, page 2+ = source pages).
+    page_offsets values are 1-indexed (page 1+ = index pages, then source pages).
     The combined doc is 0-indexed, so the 0-based index is ``offset - 1``.
     """
     for result in results:
         doc_name = result.source_path.name
         base_page_1indexed = page_offsets.get(doc_name, 2)
-        base_page_0indexed = base_page_1indexed - 1  # 0-based index into combined
+        base_page_0indexed = base_page_1indexed - 1
 
         for field in result.fields:
             _highlight_field(combined, field, base_page_0indexed)

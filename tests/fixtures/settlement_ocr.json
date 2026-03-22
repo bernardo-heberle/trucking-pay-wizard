@@ -1,0 +1,42 @@
+{
+  "source_path": "settlement.pdf",
+  "content_hash": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2",
+  "pages": [
+    {
+      "page_number": 1,
+      "width_inches": 8.5,
+      "height_inches": 11.0,
+      "line_count": 4
+    }
+  ],
+  "lines": [
+    {
+      "text": "Settlement Statement",
+      "page_number": 1,
+      "bounding_box": { "x": 2.5, "y": 0.5, "width": 3.5, "height": 0.3 },
+      "char_start": 0,
+      "char_end": 20
+    },
+    {
+      "text": "Order ID: BSAT1066",
+      "page_number": 1,
+      "bounding_box": { "x": 1.0, "y": 1.2, "width": 2.5, "height": 0.25 },
+      "char_start": 21,
+      "char_end": 39
+    },
+    {
+      "text": "Total Payment to Carrier: $750.00",
+      "page_number": 1,
+      "bounding_box": { "x": 1.0, "y": 4.5, "width": 4.0, "height": 0.25 },
+      "char_start": 40,
+      "char_end": 73
+    },
+    {
+      "text": "Delivery Exactly: 03/12/2024",
+      "page_number": 1,
+      "bounding_box": { "x": 1.0, "y": 6.0, "width": 3.5, "height": 0.25 },
+      "char_start": 74,
+      "char_end": 102
+    }
+  ]
+}

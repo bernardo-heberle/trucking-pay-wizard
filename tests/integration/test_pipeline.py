@@ -36,7 +36,7 @@ def _build_mock_ocr_result(source_path: Path, content_hash: str) -> OcrResult:
         "Settlement Statement",
         "Order ID: BSAT1066",
         "Total Payment to Carrier: $1,200.50",
-        "Delivery Exactly: 05/15/2024",
+        "Pickup Exactly: 05/15/2024",
     ]
     lines: list[OcrLine] = []
     offset = 0
@@ -70,7 +70,7 @@ class TestFullPipeline:
         _make_synthetic_pdf(source, [
             ("Settlement Statement", 72),
             ("Total Payment to Carrier: $1,200.50", 200),
-            ("Delivery Exactly: 05/15/2024", 320),
+            ("Pickup Exactly: 05/15/2024", 320),
         ])
 
         # 2. Ingest
@@ -83,14 +83,14 @@ class TestFullPipeline:
         # 4. Extract
         extraction = extract_document(ocr_result, page_count=ingested.page_count)
         field_names = {f.name for f in extraction.fields}
-        assert "gross_pay" in field_names
-        assert "delivery_date" in field_names
+        assert "pay" in field_names
+        assert "date" in field_names
 
-        gross = next(f for f in extraction.fields if f.name == "gross_pay")
-        assert gross.value == "1,200.50"
+        pay = next(f for f in extraction.fields if f.name == "pay")
+        assert pay.value == "1,200.50"
 
-        delivery = next(f for f in extraction.fields if f.name == "delivery_date")
-        assert delivery.value == "05/15/2024"
+        date = next(f for f in extraction.fields if f.name == "date")
+        assert date.value == "05/15/2024"
 
         # 5. Report assembly
         output_dir = tmp_path / "output"
@@ -113,8 +113,8 @@ class TestFullPipeline:
         wb = openpyxl.load_workbook(str(excel_path))
         ws = wb.active
         header_map = {ws.cell(row=1, column=c).value: c for c in range(1, ws.max_column + 1)}
-        assert ws.cell(row=2, column=header_map["gross_pay"]).value == "1,200.50"
-        assert ws.cell(row=2, column=header_map["delivery_date"]).value == "05/15/2024"
+        assert ws.cell(row=2, column=header_map["Pay"]).value == "1,200.50"
+        assert ws.cell(row=2, column=header_map["Date"]).value == "05/15/2024"
         assert ws.cell(row=2, column=header_map["PDF Page"]).value == 2
 
     def test_multiple_documents(self, tmp_path: Path) -> None:
@@ -127,7 +127,7 @@ class TestFullPipeline:
             _make_synthetic_pdf(src, [
                 ("Settlement", 72),
                 (f"Total Payment to Carrier: ${pay}", 200),
-                (f"Delivery Exactly: {date}", 320),
+                (f"Pickup Exactly: {date}", 320),
             ])
             sources.append(src)
 
@@ -135,7 +135,7 @@ class TestFullPipeline:
             lines_text = [
                 "Settlement",
                 f"Total Payment to Carrier: ${pay}",
-                f"Delivery Exactly: {date}",
+                f"Pickup Exactly: {date}",
             ]
             lines: list[OcrLine] = []
             offset = 0

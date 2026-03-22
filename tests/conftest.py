@@ -9,7 +9,7 @@ import pytest
 
 from src.ocr.models import BoundingBox, OcrLine, OcrPage, OcrResult
 
-_DATA_RAW = Path(__file__).parent.parent / "data" / "raw"
+_DATA_RAW = Path(__file__).parent.parent / "data" / "raw" / "khan_trans"
 _FIXTURES = Path(__file__).parent / "fixtures"
 
 

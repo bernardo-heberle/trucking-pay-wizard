@@ -47,7 +47,7 @@ def make_extraction_result(
     if fields is None:
         fields = [
             ExtractedField(
-                name="gross_pay",
+                name="pay",
                 value="750.00",
                 source_document=source_path.name,
                 source_page=1,
@@ -56,7 +56,7 @@ def make_extraction_result(
                 ],
             ),
             ExtractedField(
-                name="delivery_date",
+                name="date",
                 value="03/12/2024",
                 source_document=source_path.name,
                 source_page=1,

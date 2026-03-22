@@ -39,7 +39,7 @@
       "char_end": 65
     },
     {
-      "text": "Delivery Date",
+      "text": "Pickup Date",
       "page_number": 1,
       "bounding_box": { "x": 1.0, "y": 5.5, "width": 2.0, "height": 0.25 },
       "char_start": 66,

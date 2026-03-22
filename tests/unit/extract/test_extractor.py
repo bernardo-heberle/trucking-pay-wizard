@@ -9,15 +9,15 @@ from src.ocr.models import OcrResult
 class TestSettlementExtraction:
     """Extraction against settlement_ocr.json fixture."""
 
-    def test_gross_pay_extracted(self, settlement_ocr: OcrResult) -> None:
+    def test_pay_extracted(self, settlement_ocr: OcrResult) -> None:
         result = extract_document(settlement_ocr, page_count=1)
-        field = _field_by_name(result.fields, "gross_pay")
+        field = _field_by_name(result.fields, "pay")
         assert field is not None
         assert field.value == "750.00"
 
-    def test_delivery_date_extracted(self, settlement_ocr: OcrResult) -> None:
+    def test_date_extracted(self, settlement_ocr: OcrResult) -> None:
         result = extract_document(settlement_ocr, page_count=1)
-        field = _field_by_name(result.fields, "delivery_date")
+        field = _field_by_name(result.fields, "date")
         assert field is not None
         assert field.value == "03/12/2024"
 
@@ -38,22 +38,22 @@ class TestSettlementExtraction:
 class TestPaySummaryExtraction:
     """Extraction against pay_summary_ocr.json fixture (V2Dispatch-style)."""
 
-    def test_gross_pay_extracted(self, pay_summary_ocr: OcrResult) -> None:
+    def test_pay_extracted(self, pay_summary_ocr: OcrResult) -> None:
         result = extract_document(pay_summary_ocr, page_count=1)
-        field = _field_by_name(result.fields, "gross_pay")
+        field = _field_by_name(result.fields, "pay")
         assert field is not None
         assert field.value == "820"
 
-    def test_delivery_date_extracted(self, pay_summary_ocr: OcrResult) -> None:
+    def test_date_extracted(self, pay_summary_ocr: OcrResult) -> None:
         result = extract_document(pay_summary_ocr, page_count=1)
-        field = _field_by_name(result.fields, "delivery_date")
+        field = _field_by_name(result.fields, "date")
         assert field is not None
         assert field.value == "March 20, 2024"
 
     def test_multiline_spans_resolved(self, pay_summary_ocr: OcrResult) -> None:
-        """The gross-pay pattern spans two lines; both should be in source_spans."""
+        """The pay pattern spans two lines; both should be in source_spans."""
         result = extract_document(pay_summary_ocr, page_count=1)
-        field = _field_by_name(result.fields, "gross_pay")
+        field = _field_by_name(result.fields, "pay")
         assert field is not None
         assert len(field.source_spans) == 2
 
@@ -65,9 +65,9 @@ class TestEdgeCases:
         assert result.fields == []
 
     def test_first_match_wins(self, ambiguous_ocr: OcrResult) -> None:
-        """When multiple gross-pay patterns could match, the first one wins."""
+        """When multiple pay patterns could match, the first one wins."""
         result = extract_document(ambiguous_ocr, page_count=1)
-        field = _field_by_name(result.fields, "gross_pay")
+        field = _field_by_name(result.fields, "pay")
         assert field is not None
         assert field.value == "750.00"
 

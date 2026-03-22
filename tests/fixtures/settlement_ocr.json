@@ -32,7 +32,7 @@
       "char_end": 73
     },
     {
-      "text": "Delivery Exactly: 03/12/2024",
+      "text": "Pickup Exactly: 03/12/2024",
       "page_number": 1,
       "bounding_box": { "x": 1.0, "y": 6.0, "width": 3.5, "height": 0.25 },
       "char_start": 74,

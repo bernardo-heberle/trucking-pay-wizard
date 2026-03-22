@@ -10,9 +10,9 @@
 # The extraction logic imports these and tries patterns in order, returning the
 # first match. Add new field modules here as more document types are handled.
 
-from src.extract.rules import delivery_date, gross_pay
+from src.extract.rules import date, pay
 
 ALL_RULES = [
-    gross_pay,
-    delivery_date,
+    pay,
+    date,
 ]

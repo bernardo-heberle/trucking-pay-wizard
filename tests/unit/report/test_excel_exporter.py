@@ -24,8 +24,8 @@ class TestExcelStructure:
         headers = [ws.cell(row=1, column=c).value for c in range(1, 5)]
         assert headers[0] == "Document"
         assert headers[1] == "PDF Page"
-        assert "gross_pay" in headers
-        assert "delivery_date" in headers
+        assert "Pay" in headers
+        assert "Date" in headers
 
     def test_row_count_matches_results(
         self, synthetic_source_pdf: Path, synthetic_source_pdf_b: Path, tmp_path: Path
@@ -51,8 +51,8 @@ class TestExcelStructure:
         ws = wb.active
 
         header_map = {ws.cell(row=1, column=c).value: c for c in range(1, ws.max_column + 1)}
-        gp_col = header_map["gross_pay"]
-        dd_col = header_map["delivery_date"]
+        gp_col = header_map["Pay"]
+        dd_col = header_map["Date"]
 
         assert ws.cell(row=2, column=gp_col).value == "750.00"
         assert ws.cell(row=2, column=dd_col).value == "03/12/2024"
@@ -88,7 +88,7 @@ class TestDynamicColumns:
         wb = openpyxl.load_workbook(str(out))
         ws = wb.active
         headers = [ws.cell(row=1, column=c).value for c in range(1, ws.max_column + 1)]
-        assert "net_pay" in headers
+        assert "Net Pay" in headers
 
     def test_varying_field_names_across_documents(
         self, synthetic_source_pdf: Path, synthetic_source_pdf_b: Path, tmp_path: Path
@@ -97,7 +97,7 @@ class TestDynamicColumns:
             synthetic_source_pdf,
             content_hash="h1",
             fields=[
-                ExtractedField(name="gross_pay", value="100", source_document="a.pdf", source_page=1),
+                ExtractedField(name="pay", value="100", source_document="a.pdf", source_page=1),
             ],
         )
         r2 = make_extraction_result(
@@ -105,7 +105,7 @@ class TestDynamicColumns:
             content_hash="h2",
             page_count=2,
             fields=[
-                ExtractedField(name="delivery_date", value="01/01/2024", source_document="b.pdf", source_page=1),
+                ExtractedField(name="date", value="01/01/2024", source_document="b.pdf", source_page=1),
             ],
         )
         offsets = {synthetic_source_pdf.name: 2, synthetic_source_pdf_b.name: 3}
@@ -115,10 +115,10 @@ class TestDynamicColumns:
         wb = openpyxl.load_workbook(str(out))
         ws = wb.active
         headers = [ws.cell(row=1, column=c).value for c in range(1, ws.max_column + 1)]
-        assert "gross_pay" in headers
-        assert "delivery_date" in headers
+        assert "Pay" in headers
+        assert "Date" in headers
 
         header_map = {ws.cell(row=1, column=c).value: c for c in range(1, ws.max_column + 1)}
-        # r1 has gross_pay but not delivery_date — that cell should be empty
-        dd_col = header_map["delivery_date"]
+        # r1 has pay but not date — that cell should be empty
+        dd_col = header_map["Date"]
         assert ws.cell(row=2, column=dd_col).value in (None, "")

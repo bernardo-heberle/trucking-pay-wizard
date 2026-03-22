@@ -35,7 +35,8 @@ def build_excel(
     ws = wb.active
     ws.title = "Extracted Data"
 
-    headers = ["Document", "PDF Page"] + field_names
+    display_names = [name.replace("_", " ").title() for name in field_names]
+    headers = ["Document", "PDF Page"] + display_names
     _write_header_row(ws, headers)
 
     for row_idx, result in enumerate(results, start=2):

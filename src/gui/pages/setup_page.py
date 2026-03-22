@@ -35,6 +35,7 @@ class _PipelineWorker(QObject):
     @Slot()
     def run(self) -> None:
         try:
+            from src.cache import cache_get, cache_put
             from src.extract import extract_document
             from src.ingest import ingest_document
             from src.ocr import analyze_document, build_client
@@ -42,20 +43,32 @@ class _PipelineWorker(QObject):
 
             source_files = collect_source_files(self._folder)
             n = len(source_files)
-            self.progress.emit(f"Found {n} document(s). Connecting to Azure…")
+            self.progress.emit(f"Found {n} document(s)…")
 
-            client = build_client()
+            client = None
             results = []
 
             for i, source_path in enumerate(source_files, 1):
-                self.progress.emit(f"[{i}/{n}] Processing {source_path.name}…")
                 ingested = ingest_document(source_path)
-                ocr_result = analyze_document(ingested, client)
-                extraction = extract_document(ocr_result, page_count=ingested.page_count)
+                extraction = cache_get(self._folder, ingested.content_hash)
+
+                if extraction is not None:
+                    self.progress.emit(f"[{i}/{n}] {source_path.name} — cached, skipping OCR")
+                else:
+                    self.progress.emit(f"[{i}/{n}] Processing {source_path.name}…")
+                    if client is None:
+                        self.progress.emit(f"[{i}/{n}] Connecting to Azure…")
+                        client = build_client()
+                    ocr_result = analyze_document(ingested, client)
+                    extraction = extract_document(ocr_result, page_count=ingested.page_count)
+                    cache_put(self._folder, extraction)
+
                 results.append(extraction)
 
             self.progress.emit("Assembling report…")
-            pdf_path, excel_path = build_report(results, self._folder, prefix=self._prefix)
+            pdf_path, excel_path = build_report(
+                results, self._folder / "results", prefix=self._prefix
+            )
             self.finished.emit(str(pdf_path), str(excel_path))
 
         except Exception as exc:
@@ -171,8 +184,8 @@ class SetupPage(QWidget):
     def _refresh_output_label(self) -> None:
         prefix = self._prefix_edit.text().strip() or "report"
         self._output_label.setText(
-            f"Both files will be saved into the input folder:  "
-            f"{prefix}_combined.pdf  \u00b7  {prefix}_extracted.xlsx"
+            f"Both files will be saved into results/:  "
+            f"results/{prefix}_combined.pdf  \u00b7  results/{prefix}_extracted.xlsx"
         )
 
     # ── Pipeline execution ───────────────────────────────────────────────────

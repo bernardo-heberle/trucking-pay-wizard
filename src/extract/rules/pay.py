@@ -1,4 +1,4 @@
-# Extraction rules for gross pay (total carrier payment per load).
+# Extraction rules for pay (total carrier payment per load).
 #
 # Each entry is tried in order — first match wins.
 # The regex must contain exactly one capture group: the raw dollar amount string,
@@ -11,7 +11,7 @@
 #   V2Dispatch          — R667644
 #   Carrier TMS (Super Dispatch) — 33702085, 33702194, 33702273, R524566-T254780
 
-COLUMN = "gross_pay"
+COLUMN = "pay"
 
 PATTERNS = [
     {

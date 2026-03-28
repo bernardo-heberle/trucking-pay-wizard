@@ -38,8 +38,16 @@ tests/
   integration/
 ```
 
+## LLM Extraction Tests
+
+- **PII sanitizer** — unit-test each redaction pattern independently; verify counts are accurate and replacements are correct. Never assert on actual PII values in test fixtures.
+- **Schema parsing** — test `parse_tool_result()` with sample LLM JSON responses (hardcoded dicts); verify `ExtractedField` objects and confidence mapping.
+- **LlmExtractor** — mock the Anthropic client to avoid real API calls in unit tests. Test that the correct tool_use request is built and that the response is parsed correctly.
+- **Integration tests** requiring a real Anthropic API key should be skipped when `ANTHROPIC_API_KEY` is not set (use `pytest.mark.skipif`).
+
 ## What Not to Do
 
 - Do not write tests just to increase coverage numbers.
 - Do not test against oversimplified strings that don't reflect real OCR output variability (whitespace, line breaks, table structure).
 - Do not duplicate extraction logic inside a test to generate expected output — test against known, hand-verified values.
+- Do not make real API calls in unit tests — always mock external clients (Azure, Anthropic).

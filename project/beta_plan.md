@@ -14,7 +14,7 @@ Get the tool into staff hands for real-world feedback. The beta should be functi
 
 - **Folder-based batch processing** — each working folder is a session; staff drop documents in and run the tool
 - **OCR** — convert source documents (PDFs, images) into machine-readable text
-- **Field extraction** — extract gross pay, net pay, payment dates, and other financial fields using rule-based logic
+- **Field extraction** — extract gross pay, net pay, payment dates, and other financial fields using either rule-based logic or schema-driven LLM extraction (controlled by `EXTRACTION_MODE` config flag). LLM mode is available for developer evaluation against test datasets; staff-facing default remains rules
 - **Validation** — verify extracted values are reasonable (currency formats, date formats, numeric consistency)
 - **Report assembly** — produce a combined PDF with a summary index page and a cross-referenced CSV/Excel spreadsheet
 - **Per-document caching** — re-runs only process new or unprocessed documents; output artifacts regenerate from the full set
@@ -28,6 +28,7 @@ Get the tool into staff hands for real-world feedback. The beta should be functi
 These are known future needs that are explicitly out of scope for the beta:
 
 - **Document classification** — the beta assumes all input documents are valid income documents; classification will be added later to automatically reject irrelevant files
+- **Confidence review UI** — the LLM extractor produces per-field confidence scores, but surfacing low-confidence fields in the GUI for staff review is future work
 - **IT-LAW integration** — the beta is a standalone tool; integration with case management systems is a future path
 - **Template detection** — recognizing specific carrier formats to improve extraction accuracy
 - **Automatic upload processing** — server-side processing triggered by document uploads (relevant only if integrated)
@@ -81,5 +82,6 @@ The beta works when:
 
 - **Income documents only** — the beta has no classification safety net; irrelevant documents will be processed and may produce garbage output
 - **Azure Document Intelligence** — selected OCR provider; API key must be configured at runtime via `.env`
-- **Extraction coverage** — rule-based extraction will not handle all document formats; staff feedback will identify gaps
+- **Anthropic API** — LLM extraction provider (Claude Haiku); API key required only when `EXTRACTION_MODE=llm`. PII-sanitized OCR text is sent to the API; raw documents never leave the machine
+- **Extraction coverage** — rule-based extraction will not handle all document formats; LLM extraction may cover more but needs evaluation; staff feedback will identify gaps
 - **No automated testing with real documents** — beta validation depends on staff review, not automated accuracy benchmarks

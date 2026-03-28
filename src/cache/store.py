@@ -16,16 +16,26 @@ def _cache_dir(working_folder: Path) -> Path:
     return working_folder / ".cache"
 
 
-def cache_get(working_folder: Path, content_hash: str) -> DocumentExtractionResult | None:
-    """Return the cached extraction result for *content_hash*, or ``None`` on miss.
+def _cache_filename(content_hash: str, mode: str) -> str:
+    """Build the cache filename, incorporating the extraction mode.
+
+    Files written by earlier versions (no mode suffix) are intentionally
+    NOT matched — they are treated as cache misses and reprocessed under
+    the current mode.
+    """
+    return f"{content_hash}_{mode}.json"
+
+
+def cache_get(
+    working_folder: Path,
+    content_hash: str,
+    mode: str = "rules",
+) -> DocumentExtractionResult | None:
+    """Return the cached extraction result for *content_hash* + *mode*, or ``None`` on miss.
 
     Returns ``None`` without raising if the cache file is absent or corrupt.
-    The returned result has ``source_path`` set to the current working folder's
-    parent document — callers must supply the live ``source_path`` via
-    ``cache_get`` so that report assembly can open the file regardless of where
-    it was originally processed.
     """
-    cache_file = _cache_dir(working_folder) / f"{content_hash}.json"
+    cache_file = _cache_dir(working_folder) / _cache_filename(content_hash, mode)
     if not cache_file.exists():
         return None
 
@@ -38,8 +48,12 @@ def cache_get(working_folder: Path, content_hash: str) -> DocumentExtractionResu
         return None
 
 
-def cache_put(working_folder: Path, result: DocumentExtractionResult) -> None:
-    """Write *result* to ``.cache/<content_hash>.json``.
+def cache_put(
+    working_folder: Path,
+    result: DocumentExtractionResult,
+    mode: str = "rules",
+) -> None:
+    """Write *result* to ``.cache/<content_hash>_<mode>.json``.
 
     Uses an atomic write (tmp file + rename) to prevent corrupt partial writes
     if the process is interrupted.
@@ -47,14 +61,15 @@ def cache_put(working_folder: Path, result: DocumentExtractionResult) -> None:
     cache_directory = _cache_dir(working_folder)
     cache_directory.mkdir(parents=True, exist_ok=True)
 
-    cache_file = cache_directory / f"{result.content_hash}.json"
+    filename = _cache_filename(result.content_hash, mode)
+    cache_file = cache_directory / filename
     tmp_file = cache_directory / f"{result.content_hash}.tmp"
 
     try:
         data = _serialize(result)
         tmp_file.write_text(json.dumps(data, indent=2), encoding="utf-8")
         tmp_file.replace(cache_file)
-        logger.debug("Cached extraction result for hash {}", result.content_hash[:12])
+        logger.debug("Cached extraction result for hash {} (mode={})", result.content_hash[:12], mode)
     except Exception as exc:
         logger.warning("Failed to write cache for '{}': {}", result.source_path.name, exc)
         if tmp_file.exists():

@@ -18,7 +18,7 @@ IT-LAW Integration      ←  possible future path
 
 To keep both options open, the processing pipeline is independent of the GUI. The GUI calls into the pipeline; the pipeline knows nothing about the GUI.
 
-The entire dependency stack (Python, PySide6, PyMuPDF, OpenCV, Azure SDK) is cross-platform. All file and directory operations use `pathlib.Path` to avoid OS-specific path separators. The Windows `.exe` is produced by running PyInstaller on Windows.
+The entire dependency stack (Python, PySide6, PyMuPDF, OpenCV, Azure SDK, Anthropic SDK) is cross-platform. All file and directory operations use `pathlib.Path` to avoid OS-specific path separators. The Windows `.exe` is produced by running PyInstaller on Windows.
 
 ---
 
@@ -147,7 +147,7 @@ Examples of future classifications:
 
 ## Field Extraction
 
-Extracts financial values from the document text.
+Extracts financial values from the OCR text produced by the previous stage. Both strategies receive an `OcrResult` and return a `DocumentExtractionResult` — the rest of the pipeline is unaware of which strategy ran.
 
 Fields include:
 
@@ -155,7 +155,22 @@ Fields include:
 - net pay
 - payment dates
 
-Extraction is primarily rule-based.
+### Extraction Strategies
+
+The extraction stage uses a **strategy pattern** controlled by the `EXTRACTION_MODE` config flag:
+
+- **Rules** (`EXTRACTION_MODE=rules`) — regex patterns tried in priority order; first match wins. Deterministic and fast. This is the default.
+- **LLM** (`EXTRACTION_MODE=llm`) — schema-driven structured extraction via the Anthropic API (Claude Haiku). OCR text is PII-sanitized before it leaves the machine, then sent with a tool-use schema that forces structured JSON output. Each field includes a confidence score.
+
+Both strategies produce the same `DocumentExtractionResult` with provenance metadata, so caching, validation, and report assembly work identically regardless of which strategy ran.
+
+### PII Sanitization (LLM path only)
+
+Before OCR text is sent to the Anthropic API, a regex-based sanitizer scrubs sensitive identifiers (SSNs, EINs). The sanitizer is extensible — new patterns are added as simple regex entries. Redaction counts are logged; actual values are never logged.
+
+### Extraction Schemas
+
+The LLM extractor is schema-driven. Each schema defines the fields to extract, the prompt context, and the tool-use JSON definition. New document types are supported by adding a schema — the extractor itself does not change.
 
 ---
 
@@ -196,8 +211,9 @@ In a future integration scenario, report assembly output could also feed directl
 
 The architecture prioritizes:
 
-- **modularity** — pipeline and GUI are independent layers
-- **traceability** — extracted values link back to source documents
-- **reliability** — deterministic rules over opaque models
-- **provider independence** — the OCR layer wraps Azure Document Intelligence through an adapter; the adapter pattern keeps the provider swappable without touching the rest of the pipeline
+- **modularity** — pipeline and GUI are independent layers; extraction strategies are swappable via config
+- **traceability** — extracted values link back to source documents regardless of extraction strategy
+- **reliability** — deterministic rules provide the baseline; LLM extraction adds coverage with confidence scoring and human review as safety nets
+- **privacy** — PII sanitization scrubs sensitive identifiers before any text reaches external APIs
+- **provider independence** — the OCR layer wraps Azure Document Intelligence through an adapter; extraction wraps both rules and LLM behind a common protocol; either provider can be swapped without touching the rest of the pipeline
 - **deliverability** — the tool ships as a self-contained executable

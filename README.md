@@ -30,7 +30,7 @@ A standalone desktop application that:
 1. Manages folder-based processing sessions (one folder per claim or batch)
 2. Accepts documents via drag-and-drop into the working folder
 3. Converts documents into machine-readable text using OCR
-4. Extracts and validates financial fields
+4. Extracts and validates financial fields (via rule-based patterns or schema-driven LLM extraction)
 5. Generates a combined PDF with a summary index page and all source documents
 6. Generates a CSV/Excel spreadsheet cross-referenced to PDF page numbers
 7. Caches per-document results so re-runs only process new files
@@ -64,10 +64,24 @@ Current focus areas:
 - folder-based batch processing workflow
 - desktop GUI for folder management, document input, and result review
 - OCR integration
-- financial field extraction and validation
+- financial field extraction and validation (rules-based and LLM-based strategies behind a config flag)
 - report assembly (combined PDF + CSV/Excel generation)
 - packaging as a distributable executable
 - evaluation with DTC staff for feedback
+
+---
+
+# Configuration
+
+The tool reads settings from a `.env` file in the project root (see `.env.example`).
+
+| Variable | Required | Description |
+|---|---|---|
+| `AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT` | Always | Azure OCR endpoint |
+| `AZURE_DOCUMENT_INTELLIGENCE_KEY` | Always | Azure OCR API key |
+| `EXTRACTION_MODE` | No (default: `rules`) | `rules` for regex extraction, `llm` for LLM extraction |
+| `ANTHROPIC_API_KEY` | When `EXTRACTION_MODE=llm` | Anthropic API key for Claude |
+| `LLM_MODEL` | No | Override the default Claude model (`claude-haiku-4-5`) |
 
 ---
 
@@ -81,6 +95,15 @@ Guidelines:
 - Store credentials in `.env`
 - Restrict access to API keys
 - The executable should not persist sensitive data beyond the active session
+
+## Privacy and LLM Extraction
+
+When LLM extraction is active, OCR text is sent to the Anthropic API (Claude) for field extraction. Two independent safeguards protect sensitive data:
+
+1. **PII sanitization** — before any text leaves the machine, a regex-based sanitizer scrubs Social Security numbers, EINs, and other sensitive identifiers. Redaction counts are logged; actual values are never logged or transmitted.
+2. **Anthropic data policy** — API inputs are not used for model training under Anthropic's standard terms.
+
+The LLM never sees the raw document file (PDF, image). It receives only PII-sanitized plain text extracted by the OCR stage.
 
 ---
 

@@ -32,9 +32,23 @@ Keep contracts narrow (ISP). A caller that only needs extracted text should not 
 
 New stages slot in without editing existing ones. Write stages that consume a well-defined input and produce a well-defined output so new stages can be inserted around them.
 
+## Extraction Strategy
+
+The extraction stage uses a strategy pattern (`Extractor` protocol in `src/extract/base.py`). Both `RulesExtractor` and `LlmExtractor` implement the same interface and return `DocumentExtractionResult`. The active strategy is determined by `EXTRACTION_MODE` in the config.
+
+When adding a new extraction strategy, implement the `Extractor` protocol and register it in `create_extractor()`. Never hardcode an extraction strategy in the pipeline — always go through the factory.
+
+## Schema-Driven Extraction (LLM)
+
+LLM extraction is schema-driven. Each schema subclasses `ExtractionSchema` and defines the fields to extract, the tool_use JSON definition, and a parser. To support a new document type, add a schema in `src/extract/llm/schemas/` — the `LlmExtractor` does not change.
+
+## PII Sanitization
+
+**Never send unsanitized OCR text to an external API.** The PII sanitizer (`src/extract/llm/sanitizer.py`) must run before any text reaches the Anthropic API. This is a hard requirement — it applies regardless of provider, model, or data-handling policies.
+
 ## Traceability
 
-Every extracted value must carry provenance. This is a hard requirement.
+Every extracted value must carry provenance. This is a hard requirement — it applies to both rules and LLM extraction.
 
 ```python
 @dataclass

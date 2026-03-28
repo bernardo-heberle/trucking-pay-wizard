@@ -10,19 +10,21 @@ A standalone desktop tool that processes trucking income documents for legal sta
 ## Pipeline (Beta)
 
 ```
-Ingestion → OCR → Extraction → Validation → Report Assembly
+Ingestion → OCR → Extraction (rules OR llm) → Validation → Report Assembly
 ```
 
 - Per-document stages (Ingestion through Validation) are cacheable — only new/unprocessed documents re-run.
 - Report Assembly always rebuilds from the full set of cached results.
 - OCR provider: **Azure Document Intelligence** (credentials via `.env`).
+- Extraction strategy controlled by `EXTRACTION_MODE` in `.env` (`rules` or `llm`).
+- LLM extraction provider: **Anthropic API** (Claude Haiku). OCR text is PII-sanitized before it leaves the machine.
 
 ## Session Model
 
 ```
 working-folder/
   ├── <source documents>     # staff-provided, never modified
-  ├── .cache/                # per-document JSON results (keyed by content hash)
+  ├── .cache/                # per-document JSON results (keyed by content hash + mode)
   ├── combined_report.pdf    # generated output
   └── extracted_data.csv     # generated output
 ```

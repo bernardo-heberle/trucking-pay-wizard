@@ -41,26 +41,31 @@ class _PipelineWorker(QObject):
     def run(self) -> None:
         try:
             from src.cache import cache_get, cache_put
-            from src.extract import extract_document
+            from src.config import load_settings
+            from src.extract import create_extractor
             from src.ingest import ingest_document
             from src.ocr import analyze_document, build_client
             from src.report import build_report
 
+            settings = load_settings()
+            mode = settings.extraction_mode
+            extractor = create_extractor(mode)
+
             source_files = collect_source_files(self._folder)
             n = len(source_files)
-            # total steps = one per document + one for report assembly
             total = n + 1
             self.progress.emit(
-                f"Found {n} document{'s' if n != 1 else ''} — starting…"
+                f"Found {n} document{'s' if n != 1 else ''} — starting… "
+                f"(extraction: {mode})"
             )
             self.progress_step.emit(0, total)
 
-            client = None
+            ocr_client = None
             results = []
 
             for i, source_path in enumerate(source_files, 1):
                 ingested = ingest_document(source_path)
-                extraction = cache_get(self._folder, ingested.content_hash)
+                extraction = cache_get(self._folder, ingested.content_hash, mode=mode)
 
                 if extraction is not None:
                     self.progress.emit(
@@ -70,11 +75,11 @@ class _PipelineWorker(QObject):
                     self.progress.emit(
                         f"Document {i} of {n}: reading {source_path.name}…"
                     )
-                    if client is None:
-                        client = build_client()
-                    ocr_result = analyze_document(ingested, client)
-                    extraction = extract_document(ocr_result, page_count=ingested.page_count)
-                    cache_put(self._folder, extraction)
+                    if ocr_client is None:
+                        ocr_client = build_client()
+                    ocr_result = analyze_document(ingested, ocr_client)
+                    extraction = extractor.extract(ocr_result, page_count=ingested.page_count)
+                    cache_put(self._folder, extraction, mode=mode)
 
                 results.append(extraction)
                 self.progress_step.emit(i, total)

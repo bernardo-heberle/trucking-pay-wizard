@@ -27,6 +27,9 @@ loguru>=0.7
 azure-ai-documentintelligence>=1.0
 azure-identity>=1.16
 
+# LLM extraction provider SDK
+anthropic>=0.39
+
 # --- Dev / build dependencies ---
 pytest>=8.1
 pyinstaller>=6.5

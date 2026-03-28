@@ -45,9 +45,9 @@ The system should:
 
 ## Design Philosophy
 
-### Deterministic First
+### Deterministic + Verifiable
 
-Extraction should prioritize deterministic logic and validation rather than opaque machine learning models.
+Rule-based extraction remains the baseline — deterministic, auditable, and fast. LLM extraction is a complementary strategy that broadens document coverage. Every LLM-extracted value carries a confidence score; values below the threshold are flagged for human review. The transition path is: rules-only baseline, dual-mode evaluation, eventual LLM-primary with confidence-based review.
 
 ### Human-in-the-loop
 
@@ -71,8 +71,12 @@ The tool must be easy to distribute and run. No server infrastructure, no browse
 
 Future improvements may include:
 
+- confidence review UI — surface low-confidence LLM extractions for staff approval
+- comparison mode — run both extractors on the same documents to evaluate accuracy
+- schema registry — load extraction schemas from config files for non-developer customisation
 - document classification to automatically reject irrelevant documents
 - document template detection
 - integration with IT-LAW or case management systems
 - automatic document processing on upload (if integrated)
 - improved review interface based on beta feedback
+- local model option for zero-data-egress environments

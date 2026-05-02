@@ -1,7 +1,7 @@
 """Fixtures for ingest unit tests.
 
 All fixtures here produce synthetic files via PyMuPDF or Pillow so the tests
-run without needing documents from data/raw/.
+run without needing any external documents on disk.
 """
 
 from pathlib import Path

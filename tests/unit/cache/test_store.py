@@ -101,6 +101,12 @@ class TestCachePut:
         cache_file = tmp_path / ".cache" / f"{_HASH_A}_llm.json"
         assert cache_file.exists()
 
+        # A mutant that truncates on the second write would drop fields —
+        # verify the full payload is still readable after two writes.
+        loaded = cache_get(tmp_path, _HASH_A)
+        assert loaded is not None
+        assert len(loaded.fields) == 2
+
     def test_no_tmp_file_left_behind(self, tmp_path: Path) -> None:
         result = _make_result(tmp_path / "doc.pdf", content_hash=_HASH_A)
         cache_put(tmp_path, result)
@@ -155,6 +161,24 @@ class TestCacheVersioning:
 
     def test_filename_with_version(self) -> None:
         assert _cache_filename("abc123", "v1fp") == "abc123_llm_v1fp.json"
+
+    def test_filename_exact_separator_is_underscore_not_hyphen(self) -> None:
+        """A swap of '_' to '-' in the format string must be detectable.
+
+        The format is ``<hash>_llm[_<version>].json`` — underscores throughout.
+        A hyphen mutant would produce ``abc123-llm-v1fp.json``, which is a
+        different cache key and would silently cause cache misses.
+        """
+        result = _cache_filename("abc123", "v1fp")
+        # Exact format: hash, underscore, mode, underscore, version, dot, json
+        assert result == "abc123_llm_v1fp.json"
+        assert "-" not in result
+
+    def test_filename_without_version_exact_format(self) -> None:
+        """Pin the exact unversioned format to catch any separator mutation."""
+        result = _cache_filename("deadbeef1234")
+        assert result == "deadbeef1234_llm.json"
+        assert "-" not in result
 
     def test_version_mismatch_is_cache_miss(self, tmp_path: Path) -> None:
         result = _make_result(tmp_path / "doc.pdf")

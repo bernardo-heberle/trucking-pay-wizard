@@ -122,7 +122,8 @@ class TestDynamicColumns:
 
         header_map = {ws.cell(row=1, column=c).value: c for c in range(1, ws.max_column + 1)}
         dd_col = header_map["Date"]
-        assert ws.cell(row=2, column=dd_col).value in (None, "")
+        # r1 has no date field — its Date cell must be empty (None in openpyxl).
+        assert ws.cell(row=2, column=dd_col).value is None
 
 
 class TestDateNormalization:
@@ -299,9 +300,13 @@ class TestTotalsRow:
         ws = wb.active
         header_map = {ws.cell(row=1, column=c).value: c for c in range(1, ws.max_column + 1)}
         totals_row = ws.max_row
+        pay_col_letter = get_column_letter(header_map["Pay"])
         pay_cell_value = ws.cell(row=totals_row, column=header_map["Pay"]).value
         assert isinstance(pay_cell_value, str)
         assert pay_cell_value.upper().startswith("=SUM(")
+        # Pin the exact range — must span exactly the data rows.
+        expected_range = f"{pay_col_letter}2:{pay_col_letter}{totals_row - 1}"
+        assert expected_range in pay_cell_value
 
     def test_date_column_has_counta_formula(self, synthetic_source_pdf: Path, tmp_path: Path) -> None:
         result = make_extraction_result(synthetic_source_pdf)

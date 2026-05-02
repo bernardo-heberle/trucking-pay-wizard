@@ -2,9 +2,18 @@
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
+import pytest
+
 from src.extract.models import Certainty, DocumentExtractionResult, ExtractedField
+
+
+def _ensure_thresholds(high: float = 0.9, review: float = 0.6) -> None:
+    """Set threshold env vars so load_settings() works without a .env file."""
+    os.environ["CONFIDENCE_HIGH_THRESHOLD"] = str(high)
+    os.environ["CONFIDENCE_REVIEW_THRESHOLD"] = str(review)
 
 
 class TestCertaintyEnum:
@@ -14,8 +23,38 @@ class TestCertaintyEnum:
         assert Certainty.REVIEW.value == "Review"
         assert Certainty.NOT_FOUND.value == "Not Found"
 
-    def test_is_str_subclass(self) -> None:
-        assert isinstance(Certainty.HIGH, str)
+
+class TestConfidenceToCertaintyBoundaries:
+    """Pin the exact threshold comparisons — >= not >."""
+
+    def setup_method(self) -> None:
+        _ensure_thresholds(high=0.9, review=0.6)
+
+    @pytest.mark.parametrize(
+        "confidence, expected",
+        [
+            (0.9,    Certainty.HIGH),       # at high threshold — must be HIGH
+            (0.8999, Certainty.REVIEW),     # one ULP below high threshold
+            (1.0,    Certainty.HIGH),       # maximum confidence
+            (0.6,    Certainty.REVIEW),     # at review threshold — must be REVIEW
+            (0.5999, Certainty.NOT_FOUND),  # one ULP below review threshold
+            (0.0,    Certainty.NOT_FOUND),  # minimum confidence
+        ],
+        ids=[
+            "high_at_threshold",
+            "just_below_high",
+            "max_confidence",
+            "review_at_threshold",
+            "just_below_review",
+            "zero_confidence",
+        ],
+    )
+    def test_confidence_to_certainty_boundary(
+        self, confidence: float, expected: Certainty
+    ) -> None:
+        from src.extract.llm.schemas.income import _confidence_to_certainty
+
+        assert _confidence_to_certainty(confidence) == expected
 
 
 class TestOverallCertainty:

@@ -3,6 +3,9 @@
 from __future__ import annotations
 
 import os
+from decimal import Decimal
+
+from hypothesis import given, settings as h_settings, strategies as st
 
 from src.extract.llm.schemas.income import IncomeDocumentSchema, _normalize_pay_value
 from src.extract.models import Certainty
@@ -206,3 +209,43 @@ class TestNormalizePayValue:
 
     def test_alphabetic_with_digits_returns_none(self) -> None:
         assert _normalize_pay_value("abc123") is None
+
+
+class TestNormalizePayValueProperties:
+    """Property-based tests for _normalize_pay_value.
+
+    One good property test replaces dozens of example tests for the
+    numeric round-trip and the rejection of negatives.
+    """
+
+    @given(
+        st.decimals(
+            min_value=Decimal("0"),
+            max_value=Decimal("1000000"),
+            places=2,
+            allow_nan=False,
+            allow_infinity=False,
+        )
+    )
+    @h_settings(max_examples=500)
+    def test_round_trip_for_positive_values(self, d: Decimal) -> None:
+        """Any non-negative decimal with 2 d.p. normalizes and round-trips exactly."""
+        normalized = _normalize_pay_value(str(d))
+        assert normalized is not None, f"Expected non-None for {d}"
+        assert Decimal(normalized) == d, (
+            f"Round-trip failed: input={d}, normalized={normalized}"
+        )
+
+    @given(
+        st.decimals(
+            max_value=Decimal("-0.01"),
+            allow_nan=False,
+            allow_infinity=False,
+        )
+    )
+    @h_settings(max_examples=200)
+    def test_any_negative_returns_none(self, d: Decimal) -> None:
+        """Any negative value must return None — never a negative pay string."""
+        assert _normalize_pay_value(str(d)) is None, (
+            f"Expected None for negative input {d}"
+        )

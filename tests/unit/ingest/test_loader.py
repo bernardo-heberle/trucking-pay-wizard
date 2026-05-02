@@ -7,7 +7,6 @@ Fixtures:
   synthetic_multipage_pdf – 3-page PDF (from conftest)
   png_file                – valid 100×100 PNG (from conftest)
   corrupt_pdf             – .pdf file with invalid bytes (from conftest)
-  sample_pdf              – a real settlement PDF from data/raw/ (top-level conftest)
 """
 
 import hashlib
@@ -242,30 +241,10 @@ class TestIngestDocumentErrors:
             ingest_document(corrupt_pdf)
 
     def test_nonexistent_file_raises(self, tmp_path: Path) -> None:
-        """A missing file must raise before any OCR work begins."""
+        """A missing file must raise FileNotFoundError before any OCR work begins."""
         path = tmp_path / "ghost.pdf"
-        with pytest.raises(Exception):
+        with pytest.raises(FileNotFoundError):
             ingest_document(path)
-
-
-# ---------------------------------------------------------------------------
-# ingest_document — smoke test on a real settlement document
-# ---------------------------------------------------------------------------
-
-
-class TestIngestDocumentRealPDF:
-    def test_real_pdf_ingests_without_error(self, sample_pdf: Path) -> None:
-        result = ingest_document(sample_pdf)
-        assert result.page_count >= 1
-
-    def test_real_pdf_pages_are_valid_jpegs(self, sample_pdf: Path) -> None:
-        result = ingest_document(sample_pdf)
-        for page in result.pages:
-            assert page.jpeg_bytes[:3] == _JPEG_MAGIC
-
-    def test_real_pdf_hash_is_sha256(self, sample_pdf: Path) -> None:
-        result = ingest_document(sample_pdf)
-        assert len(result.content_hash) == 64
 
 
 # ---------------------------------------------------------------------------

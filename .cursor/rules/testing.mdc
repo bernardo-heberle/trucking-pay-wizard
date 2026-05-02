@@ -1,53 +1,167 @@
 ---
-description: Testing standards for Trucking Pay Wizard — priorities, levels, and fixtures
+description: Core testing quality rules for every test written in this codebase — oracle strength, independence, mutation killing, determinism, and coverage. Apply whenever writing or reviewing tests.
 globs: tests/**/*.py
-alwaysApply: false
+alwaysApply: true
 ---
 
-# Testing
+# Testing Quality Rules
 
-## Priorities
+These rules apply to every test written in this codebase. They are adapted from the LLM-test-hardening framework. Skipping any one of them collapses the value of the other two.
 
-Prioritize tests for **extraction** and **validation logic** — bugs here produce incorrect financial values that staff rely on. Do not chase coverage metrics.
+## Core Principles
 
-## Test Levels
+### 1. Tests must kill mutants, not just execute lines
 
-**Unit tests** (`tests/unit/`)
-- Extraction — schema parsing, PII sanitizer, LlmExtractor with mocked client
-- Validators — currency formats, date formats, numeric consistency checks
-- Formatting/output helpers
+A test that runs a line without verifying its behavior is theater. Small, semantically meaningful source changes — a `>` flipped to `>=`, a `+` flipped to `-`, a constant zeroed, a return value negated — must cause at least one test to fail. Surviving mutants indicate gaps even when line coverage is 100%.
 
-**Integration tests** (`tests/integration/`)
-- Pipeline stage boundaries: OCR output → extraction input, extraction output → validation input
-- Verify that stage contracts hold across the handoff, not just within a stage
+- Target ≥ 90% mutation score on `src/extract/**` and `src/cache/**` — these control financial values staff rely on.
+- Target ≥ 80% mutation score on all other core logic.
+- When a mutant survives, add or strengthen an assertion. Never suppress the operator.
+- Do not wire `mutmut` into pre-commit. Run it on a schedule or pre-merge for protected branches.
 
-**Sample document tests**
-- End-to-end verification using known documents with expected extracted values
-- Use when a real document surfaced a bug or gap in extraction coverage
+### 2. Tests must be independent in their failure modes
 
-## Fixtures
+If two tests always pass together and always fail together, one is redundant. Each test should fail for a distinct reason.
 
-Keep sanitized sample OCR outputs in `tests/fixtures/`. Test extraction against realistic text that resembles actual Azure Document Intelligence output — not toy strings like `"gross pay: 1000"`.
+Watch for and eliminate:
+- **Subsumption**: test B fails every time test A fails. Keep the more specific one.
+- **Shared-fixture coupling**: tests that all break when one helper changes, even when the behavior under test is unrelated.
+- **Order dependence**: tests that pass in one order and fail in another. Run with `pytest-randomly` and fix any failures — this is a correctness bug.
 
+The diagnostic question for any new test: *"What specific bug would this test catch that no other test in the suite would?"* If you cannot answer in one sentence, the test is probably redundant.
+
+### 3. Assertions must be strong enough to constrain behavior
+
+A test that only checks "function returned without raising" or "result is not None" lets nearly any implementation pass. Strong oracles assert on:
+
+- The actual return value (exact value or tight property), not just its type or truthiness.
+- Observable side effects (what was written, sent, logged, persisted).
+- What was **not** done (no extra calls, no unintended writes, no swallowed exceptions).
+- Error paths with the specific exception type **and** a match on the message or attached data.
+
+Weak oracles are the single biggest reason mutation scores stay low despite high line coverage.
+
+## Coverage Guidance
+
+- Aim for **branch coverage** at or near 100% on business logic — not just line coverage.
+- 100% line coverage with weak oracles is worse than 80% with strong ones.
+- Exclude from coverage targets only: generated code, third-party vendored code, `if TYPE_CHECKING:` blocks. Do not exclude error handlers.
+- `src/gui/*` is omitted from automated coverage — it is exercised via manual smoke testing.
+
+## Additional Rules
+
+- **One behavior per test.** Test names read as sentences: `test_withdraw_rejects_amount_exceeding_balance`. If the name needs "and", split the test.
+- **Arrange-Act-Assert, visibly separated.** A blank line between sections.
+- **No conditional logic in tests.** No `if`, no `try/except` (except when the exception itself is the assertion), no loops that change what gets asserted. Parametrize instead.
+- **Determinism is mandatory.** No real network, no real clock, no real filesystem outside `tmp_path`, no randomness without a fixed seed. Flaky tests get fixed or deleted, never retried.
+- **Mocks assert on calls, not just return values.** If you mock something, assert it was called with the right arguments. Otherwise the mock is hiding behavior.
+- **Property-based tests for anything with a clear invariant** (round-trips, idempotence, ordering, bounds). Use Hypothesis. One good property test replaces dozens of example tests.
+- **Test the boundary, not the middle.** Empty inputs, single-element inputs, max sizes, off-by-one around limits, None where allowed, the exact threshold value of any comparison.
+- **Failure messages must locate the bug.** Prefer `assert actual == expected` (pytest rewrites it) over `assert check(actual)`.
+
+## Strong vs. Weak Oracles — Examples
+
+```python
+# WEAK — passes for almost any implementation
+def test_calculate_discount_weak():
+    result = calculate_discount(price=100, code="SAVE10")
+    assert result is not None
+    assert isinstance(result, float)
+
+# STRONG — pins the contract
+def test_calculate_discount_applies_ten_percent_for_save10():
+    assert calculate_discount(price=100, code="SAVE10") == 90.0
+
+def test_calculate_discount_rejects_unknown_code():
+    with pytest.raises(InvalidCouponError, match="unknown code: BOGUS"):
+        calculate_discount(price=100, code="BOGUS")
+
+def test_calculate_discount_does_not_go_negative_on_huge_discount():
+    assert calculate_discount(price=5, code="SAVE100PCT") == 0.0
 ```
-tests/
-  fixtures/
-    settlement_statement_ocr.json   # realistic OCR output, PII removed
-    pay_summary_ocr.json
-  unit/
-  integration/
+
+## Parametrization
+
+```python
+@pytest.mark.parametrize(
+    "balance, withdrawal, expected",
+    [
+        (100, 50, 50),
+        (100, 100, 0),   # exact boundary
+        (100, 0, 100),   # zero withdrawal
+    ],
+    ids=["partial", "exact_balance", "zero"],
+)
+def test_withdraw_updates_balance(balance, withdrawal, expected):
+    account = Account(balance=balance)
+    account.withdraw(withdrawal)
+    assert account.balance == expected
+
+def test_withdraw_rejects_overdraft():
+    account = Account(balance=100)
+    with pytest.raises(InsufficientFundsError, match="balance: 100, requested: 150"):
+        account.withdraw(150)
+    assert account.balance == 100  # state unchanged on rejection
 ```
 
-## LLM Extraction Tests
+## Property-Based Tests
 
-- **PII sanitizer** — unit-test each redaction pattern independently; verify counts are accurate and replacements are correct. Never assert on actual PII values in test fixtures.
-- **Schema parsing** — test `parse_tool_result()` with sample LLM JSON responses (hardcoded dicts); verify `ExtractedField` objects and confidence mapping.
-- **LlmExtractor** — mock the Anthropic client to avoid real API calls in unit tests. Test that the correct tool_use request is built and that the response is parsed correctly.
-- **Integration tests** requiring a real Anthropic API key should be skipped when `ANTHROPIC_API_KEY` is not set (use `pytest.mark.skipif`).
+```python
+from hypothesis import given, strategies as st
 
-## What Not to Do
+@given(st.lists(st.integers()))
+def test_sort_preserves_length(xs):
+    assert len(sorted(xs)) == len(xs)
+```
 
-- Do not write tests just to increase coverage numbers.
-- Do not test against oversimplified strings that don't reflect real OCR output variability (whitespace, line breaks, table structure).
-- Do not duplicate extraction logic inside a test to generate expected output — test against known, hand-verified values.
-- Do not make real API calls in unit tests — always mock external clients (Azure, Anthropic).
+## Mock Assertions
+
+```python
+def test_send_receipt_emails_customer(mocker):
+    email_client = mocker.Mock(spec=EmailClient)
+    service = OrderService(email_client=email_client)
+    service.complete_order(order_id="ord_123", customer_email="a@b.com", total=42.50)
+
+    # STRONG: pin the call contract
+    email_client.send.assert_called_once_with(
+        to="a@b.com",
+        subject="Receipt for order ord_123",
+        body=mocker.ANY,
+    )
+    email_client.send_marketing.assert_not_called()
+```
+
+## Determinism
+
+```python
+from freezegun import freeze_time
+
+@freeze_time("2026-01-15 12:00:00")
+def test_token_expiry_is_one_hour_from_now():
+    token = issue_token(user_id=1)
+    assert token.expires_at == datetime(2026, 1, 15, 13, 0, 0)
+```
+
+## Running Mutation Tests
+
+```powershell
+# Initial run (slow — every mutant runs the suite)
+mutmut run
+
+# See survivors
+mutmut results
+mutmut show <id>   # inspect a specific surviving mutant
+```
+
+When a mutant survives: read what changed, write the test that would have caught it. Do not silence the operator.
+
+## What to Tell the Agent
+
+Before submitting, verify:
+1. Every new test has a strong oracle that pins specific values or call arguments — not just types or non-None checks.
+2. Every new test has a one-sentence answer to "what bug would this catch that no other test catches?"
+3. `pytest -p randomly` passes.
+4. Branch coverage on changed files is ≥ 95%.
+5. For `src/extract/**` and `src/cache/**`: mutation score must not regress. If `mutmut` is not run, explicitly note why and when it will be.
+
+Strong oracles are **non-negotiable** on `src/extract/**` and `src/cache/**`. These modules control financial values that legal staff rely on.

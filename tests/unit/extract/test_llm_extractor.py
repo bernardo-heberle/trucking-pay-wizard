@@ -166,11 +166,15 @@ class TestLlmExtractorFromConfig:
     @patch("src.extract.llm.extractor.build_anthropic_client")
     def test_from_config_creates_instance(self, mock_build, mock_settings) -> None:
         mock_settings.return_value = _make_settings()
-        mock_build.return_value = MagicMock()
+        mock_client = MagicMock()
+        mock_build.return_value = mock_client
 
         extractor = LlmExtractor.from_config()
+
         assert isinstance(extractor, LlmExtractor)
         mock_build.assert_called_once()
+        # The client injected must be the one build_anthropic_client returned.
+        assert extractor._client is mock_client
 
 
 def _make_rate_limit_error() -> anthropic.RateLimitError:
@@ -370,6 +374,9 @@ class TestRetryBehavior:
         # With jitter = 0: delay = BASE * 2^(attempt-1) → 2.0, 4.0
         assert delays[0] == pytest.approx(2.0)
         assert delays[1] == pytest.approx(4.0)
+        # All delays must be capped at the maximum.
+        from src.extract.llm.extractor import _MAX_DELAY_SECONDS
+        assert all(d <= _MAX_DELAY_SECONDS for d in delays)
 
     def test_failed_result_preserves_metadata(self, mock_sleep) -> None:
         """Even when extraction fails, source_path, content_hash, and page_count are set."""
@@ -405,6 +412,7 @@ class TestPayOcrVerification:
 
         pay_field = next(f for f in result.fields if f.name == "pay")
         assert pay_field.certainty == Certainty.HIGH
+        assert pay_field.value == "750.00"
 
     def test_high_certainty_downgraded_when_value_not_in_ocr(self) -> None:
         """Transposed/wrong LLM value is downgraded from HIGH to REVIEW."""
@@ -421,6 +429,8 @@ class TestPayOcrVerification:
 
         pay_field = next(f for f in result.fields if f.name == "pay")
         assert pay_field.certainty == Certainty.REVIEW
+        # Downgrade must not alter the extracted value itself.
+        assert pay_field.value == "1234.56"
 
     def test_review_certainty_not_upgraded_when_value_found_in_ocr(self) -> None:
         """Verification never upgrades certainty — a REVIEW field stays REVIEW."""
@@ -437,6 +447,31 @@ class TestPayOcrVerification:
 
         pay_field = next(f for f in result.fields if f.name == "pay")
         assert pay_field.certainty == Certainty.REVIEW
+        assert pay_field.value == "750.00"
+
+    def test_not_found_certainty_pay_left_unchanged_when_value_absent(self) -> None:
+        """NOT_FOUND pay fields are never touched by _verify_pay_fields.
+
+        An off-by-one mutant changing `!= HIGH` to `== REVIEW` in the
+        verification guard would leave NOT_FOUND fields unguarded — this
+        test catches that.
+        """
+        settings = _make_settings()
+        client = MagicMock()
+        # Very low confidence → NOT_FOUND certainty.
+        client.messages.create.return_value = _mock_tool_response(
+            "extract_income_fields",
+            {"pay": {"value": "750.00", "confidence": 0.3}, "date": None},
+        )
+        # OCR text does NOT contain 750.00 — verifier would downgrade if it ran.
+        ocr = _make_ocr_result("Total Payment to Carrier: $9,999.00")
+        extractor = LlmExtractor(client=client, settings=settings)
+        result = extractor.extract(ocr, page_count=1)
+
+        pay_field = next(f for f in result.fields if f.name == "pay")
+        # Certainty must remain NOT_FOUND — verification must not touch it.
+        assert pay_field.certainty == Certainty.NOT_FOUND
+        assert pay_field.value == "750.00"
 
     def test_date_field_not_affected_by_ocr_verification(self) -> None:
         """Verification only targets pay fields; date certainty is never changed."""
@@ -455,3 +490,4 @@ class TestPayOcrVerification:
 
         date_field = next(f for f in result.fields if f.name == "date")
         assert date_field.certainty == Certainty.HIGH
+        assert date_field.value == "03/12/2024"

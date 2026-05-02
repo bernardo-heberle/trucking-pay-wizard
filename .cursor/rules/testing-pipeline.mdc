@@ -1,0 +1,96 @@
+---
+description: Pipeline-specific testing guidance — priorities, test levels, fixtures, and LLM extraction test rules. Supplements the always-applied testing.mdc.
+globs: tests/**/*.py
+alwaysApply: false
+---
+
+# Pipeline Testing Guidance
+
+## Priorities
+
+Prioritize tests for **extraction** and **validation logic** — bugs here produce incorrect financial values that staff rely on. Do not chase coverage metrics. Strong oracles (see `testing.mdc`) are non-negotiable for these modules.
+
+## Test Levels
+
+**Unit tests** (`tests/unit/`)
+- Extraction — schema parsing, PII sanitizer, LlmExtractor with mocked client
+- Validators — currency formats, date formats, numeric consistency checks
+- Formatting/output helpers
+
+**Integration tests** (`tests/integration/`)
+- Pipeline stage boundaries: OCR output → extraction input, extraction output → validation input
+- Verify that stage contracts hold across the handoff, not just within a stage
+- Use a **real** `LlmExtractor` with a mocked Anthropic client — do not mock the extractor wholesale, or schema parsing, pay verification, and certainty downgrade are not exercised end-to-end
+
+**Sample document tests**
+- End-to-end verification using known documents with expected extracted values
+- Use when a real document surfaced a bug or gap in extraction coverage
+
+## Fixtures
+
+Keep sanitized sample OCR outputs in `tests/fixtures/`. Test extraction against realistic text that resembles actual Azure Document Intelligence output — not toy strings like `"gross pay: 1000"`.
+
+```
+tests/
+  fixtures/
+    settlement_statement_ocr.json   # realistic OCR output, PII removed
+    pay_summary_ocr.json
+  unit/
+  integration/
+```
+
+## LLM Extraction Tests
+
+- **PII sanitizer** — unit-test each redaction pattern independently; verify counts are accurate and replacements are correct. Never assert on actual PII values in test fixtures.
+- **Schema parsing** — test `parse_tool_result()` with sample LLM JSON responses (hardcoded dicts); verify `ExtractedField` objects and confidence mapping. Pin exact threshold values — the `>=` vs `>` distinction matters for financial certainty assignment.
+- **LlmExtractor** — mock the Anthropic client to avoid real API calls in unit tests. Assert that the correct tool_use request is built (model, tool name, message content) and that the response is parsed correctly. Assert mocks were called with correct arguments.
+- **Integration tests** requiring a real Anthropic API key should be skipped when `ANTHROPIC_API_KEY` is not set (use `pytest.mark.skipif`).
+
+## Confidence Threshold Tests
+
+The `_confidence_to_certainty` mapping is a financial-critical branch. Always test the exact threshold values:
+
+```python
+@pytest.mark.parametrize(
+    "confidence, expected",
+    [
+        (0.9,    Certainty.HIGH),      # at threshold — must be HIGH
+        (0.8999, Certainty.REVIEW),    # just below threshold
+        (0.6,    Certainty.REVIEW),    # at lower threshold
+        (0.5999, Certainty.NOT_FOUND), # just below lower threshold
+    ],
+    ids=["high_at_threshold", "just_below_high", "review_at_threshold", "just_below_review"],
+)
+def test_confidence_to_certainty_boundaries(confidence, expected):
+    ...
+```
+
+## Pay Verifier Tests
+
+The verifier cross-references LLM-extracted values against OCR text. Test that:
+- The matched reason string is not just checked for substring presence — pin the format.
+- Transposed digits, dropped digits, and misplaced decimals all return `False`.
+- The zero amount (`"0.00"`) is handled correctly.
+- Values that differ only in the cents place do not match.
+
+The known limitation (presence-only, not semantic role) is documented in `TestWrongFieldPresenceLimit` — maintain those tests.
+
+## Mutation Targets
+
+Run `mutmut` scoped to the paths below. Do not run it on every commit:
+
+```
+src/extract/
+src/cache/
+src/report/excel_exporter.py
+```
+
+Target ≥ 90% mutation score on these paths.
+
+## What Not to Do
+
+- Do not write tests just to increase coverage numbers.
+- Do not test against oversimplified strings that don't reflect real OCR output variability (whitespace, line breaks, table structure).
+- Do not duplicate extraction logic inside a test to generate expected output — test against known, hand-verified values.
+- Do not make real API calls in unit tests — always mock external clients (Azure, Anthropic).
+- Do not use `assert result is not None` or `assert isinstance(result, SomeType)` as the only assertion — these pass for almost any implementation.

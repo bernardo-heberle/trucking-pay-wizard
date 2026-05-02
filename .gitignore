@@ -104,6 +104,13 @@ poetry.lock
 Pipfile.lock
 
 # =========================
+# Test / coverage artefacts
+# =========================
+.coverage
+htmlcov/
+.mutmut-cache/
+
+# =========================
 # Misc
 # =========================
 .DS_Store

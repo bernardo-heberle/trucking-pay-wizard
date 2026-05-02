@@ -106,6 +106,57 @@ The LLM never sees the raw document file (PDF, image). It receives only PII-sani
 
 ---
 
+# Testing
+
+## Running the test suite
+
+```powershell
+# All tests with branch coverage (threshold: 85%)
+.venv\Scripts\pytest
+
+# Fast run — no coverage (useful during development)
+.venv\Scripts\pytest --no-cov
+
+# Run with randomised test order to surface order-dependent failures
+.venv\Scripts\pytest -p randomly --no-cov
+```
+
+## Coverage
+
+Coverage is measured with branch coverage enabled (`--cov-branch`). The suite must pass `--cov-fail-under=85` to pass CI. GUI code (`src/gui/`) is excluded — it is exercised via manual smoke testing.
+
+To view a line-by-line coverage report:
+
+```powershell
+.venv\Scripts\pytest --cov-report=html
+# Opens htmlcov/index.html in a browser
+```
+
+## Mutation testing
+
+Mutation testing is configured in `pyproject.toml` and targets `src/extract/`, `src/cache/`, and `src/report/excel_exporter.py` — the financial-critical paths where a surviving mutant is a real defect risk.
+
+**Note:** `mutmut` requires WSL on Windows (native Windows support is not available in mutmut 3.x; tracked in [mutmut#397](https://github.com/boxed/mutmut/issues/397)). Run mutation tests from WSL or a Linux CI environment:
+
+```bash
+# WSL / Linux — initial run (slow: every mutant runs the full suite)
+mutmut run
+
+# Inspect results
+mutmut results
+
+# Inspect a specific surviving mutant
+mutmut show <id>
+```
+
+**Target scores:** ≥ 90% on `src/extract/**` and `src/cache/**`; ≥ 80% on all other targeted paths.
+
+When a mutant survives: read what changed, then write the test that would have caught it. Do not silence the operator. If a surviving mutant is genuinely equivalent (e.g. a change to a log-string only), mark the source line with `# pragma: no mutate` and add a comment explaining why.
+
+Mutation testing is **not** a pre-commit gate — it is too slow for that. Run it on a schedule or before merging to a protected branch.
+
+---
+
 # License
 
 Private internal project.

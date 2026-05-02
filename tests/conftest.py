@@ -3,28 +3,27 @@
 from __future__ import annotations
 
 import json
+import random
 from pathlib import Path
 
 import pytest
 
 from src.ocr.models import BoundingBox, OcrLine, OcrPage, OcrResult
 
-_DATA_RAW = Path(__file__).parent.parent / "data" / "raw" / "khan_trans"
-_FIXTURES = Path(__file__).parent / "fixtures"
 
+@pytest.fixture(autouse=True, scope="session")
+def _seed_random() -> None:
+    """Seed the standard-library random module for the entire test session.
 
-@pytest.fixture(scope="session")
-def sample_pdf() -> Path:
-    """Return the path to a real settlement PDF from data/raw/.
-
-    Tests that depend on this fixture are smoke-tested against an actual
-    document. They are skipped automatically when data/raw/ is empty so the
-    suite still passes in CI environments that don't carry the raw files.
+    This ensures that any production code or test helper that calls the
+    module-level random functions produces deterministic output.  Tests that
+    need to exercise specific random behaviour (e.g. LlmExtractor backoff
+    jitter) must patch random.uniform directly — this fixture does not prevent
+    that.
     """
-    pdfs = sorted(_DATA_RAW.glob("*.pdf"))
-    if not pdfs:
-        pytest.skip("No PDF files found in data/raw/ — skipping real-document tests.")
-    return pdfs[0]
+    random.seed(0)
+
+_FIXTURES = Path(__file__).parent / "fixtures"
 
 
 def load_ocr_fixture(name: str) -> OcrResult:

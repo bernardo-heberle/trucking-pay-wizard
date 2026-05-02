@@ -85,10 +85,11 @@ class TestHighlightAnnotations:
         build_pdf([result], out)
 
         doc = fitz.open(str(out))
-        # Source page is page index 1 (after index page at 0)
+        # Source page is page index 1 (after index page at 0).
+        # The default fixture has exactly 2 fields with spans.
         source_page = doc[1]
         annots = list(source_page.annots() or [])
-        assert len(annots) >= 1
+        assert len(annots) == 2
         doc.close()
 
     def test_no_highlights_on_index_page(self, synthetic_source_pdf: Path, tmp_path: Path) -> None:
@@ -117,6 +118,11 @@ class TestImageSourceFiles:
 
         doc = fitz.open(str(out))
         assert len(doc) == 2  # index + 1 image page
+        # The source page must actually contain an embedded image XObject —
+        # a mutant omitting the image would still produce a 2-page PDF.
+        source_page = doc[1]
+        images = source_page.get_images(full=True)
+        assert len(images) >= 1, "Source page contains no embedded image XObject"
         doc.close()
 
 
@@ -372,6 +378,20 @@ class TestPageTruncation:
         result = make_extraction_result(synthetic_source_pdf, page_count=3)
         assert _compute_page_limit(result) == 3
 
+    def test_four_page_doc_is_above_threshold(self, synthetic_source_pdf_long: Path) -> None:
+        """4-page doc (just above the 3-page threshold) is truncated when highlight is early.
+
+        This is the exact threshold boundary: total == 4, highlight on page 1
+        → last+2 = 3, capped at 4, so result is 3.
+        """
+        result = self._make_long_result(synthetic_source_pdf_long, page_count=4, highlight_page=1)
+        assert _compute_page_limit(result) == 3
+
+    def test_three_page_doc_at_threshold_not_truncated(self, synthetic_source_pdf: Path) -> None:
+        """3-page doc at the truncation threshold must never be truncated."""
+        result = make_extraction_result(synthetic_source_pdf, page_count=3)
+        assert _compute_page_limit(result) == 3
+
     def test_long_doc_with_highlight_truncated_to_last_plus_two(
         self, synthetic_source_pdf_long: Path
     ) -> None:
@@ -437,14 +457,16 @@ class TestPageTruncation:
         self, synthetic_source_pdf: Path, tmp_path: Path
     ) -> None:
         """Index page must NOT show a truncation notice for documents under the threshold."""
-        result = make_extraction_result(synthetic_source_pdf)
+        result = make_extraction_result(synthetic_source_pdf)  # 1-page doc, no truncation
         out = tmp_path / "combined.pdf"
         build_pdf([result], out)
 
         doc = fitz.open(str(out))
         index_text = doc[0].get_text()
-        assert "of" not in index_text or "page" not in index_text.lower().split("of")[-1]
         doc.close()
+        # The truncation notice format is "N of M" (see test_index_shows_truncation_notice).
+        # For a 1-page doc there is no truncation, so this pattern must be absent.
+        assert "1 of 1" not in index_text
 
     def test_highlights_land_on_correct_page_after_truncation(
         self, synthetic_source_pdf_long: Path, tmp_path: Path

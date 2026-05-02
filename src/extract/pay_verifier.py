@@ -17,9 +17,15 @@ import re
 from decimal import Decimal, InvalidOperation
 
 # Matches dollar amounts in several common OCR formats, e.g.:
-#   $1,234.56   1,234.56   1234.56   $1234   1,234
+#   $1,234.56   1,234.56   1234.56   $1234   1,234   10000.00
+#
+# The first alternative starts with \d+ (not \d{1,3}) so that numbers with
+# 4+ digits and no thousand separator (e.g. 1000.00, 10000.00) are captured
+# in full rather than stopping at 3 digits and leaving the remainder as a
+# separate token.  The comma-grouping sub-pattern (?:,\d{3})* handles
+# formatted amounts like $1,500.00 correctly when commas are present.
 _AMOUNT_PATTERN = re.compile(
-    r"\$?\s*(\d{1,3}(?:,\d{3})*(?:\.\d+)?|\d+(?:\.\d+)?)"
+    r"\$?\s*(\d+(?:,\d{3})*(?:\.\d+)?)"
 )
 
 

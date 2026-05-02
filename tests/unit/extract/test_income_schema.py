@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import os
 
-from src.extract.llm.schemas.income import IncomeDocumentSchema
+from src.extract.llm.schemas.income import IncomeDocumentSchema, _normalize_pay_value
 from src.extract.models import Certainty
 
 
@@ -104,13 +104,13 @@ class TestParseToolResult:
         fields = self.schema.parse_tool_result(tool_input, source_document="test.pdf")
         assert fields[0].source_page is None
 
-    def test_dollar_sign_stripped_from_pay(self) -> None:
+    def test_dollar_sign_and_commas_stripped_from_pay(self) -> None:
         tool_input = {
             "pay": {"value": "$1,500.00", "confidence": 0.95},
             "date": None,
         }
         fields = self.schema.parse_tool_result(tool_input, source_document="test.pdf")
-        assert fields[0].value == "1,500.00"
+        assert fields[0].value == "1500.00"
 
     def test_dollar_sign_not_stripped_from_date(self) -> None:
         """Stripping is pay-specific — dates must never be modified."""
@@ -121,15 +121,88 @@ class TestParseToolResult:
         fields = self.schema.parse_tool_result(tool_input, source_document="test.pdf")
         assert fields[0].value == "$invalid"
 
-    def test_pay_without_dollar_sign_unchanged(self) -> None:
+    def test_pay_without_dollar_sign_normalized_to_two_decimals(self) -> None:
         tool_input = {
             "pay": {"value": "820", "confidence": 0.95},
             "date": None,
         }
         fields = self.schema.parse_tool_result(tool_input, source_document="test.pdf")
-        assert fields[0].value == "820"
+        assert fields[0].value == "820.00"
 
     def test_pay_value_description_excludes_currency_symbol(self) -> None:
         defn = self.schema.tool_definition()
         pay_value_desc = defn["input_schema"]["properties"]["pay"]["properties"]["value"]["description"]
         assert "$" not in pay_value_desc
+
+    def test_unparseable_pay_value_caps_certainty_at_review(self) -> None:
+        """When the LLM returns a non-numeric pay string, certainty is capped at REVIEW."""
+        tool_input = {
+            "pay": {"value": "N/A", "confidence": 0.95},
+            "date": None,
+        }
+        fields = self.schema.parse_tool_result(tool_input, source_document="test.pdf")
+        assert len(fields) == 1
+        assert fields[0].certainty == Certainty.REVIEW
+        assert fields[0].value == "N/A"
+
+    def test_unparseable_pay_already_at_review_stays_review(self) -> None:
+        """Downgrade is idempotent — REVIEW stays REVIEW for unparseable values."""
+        tool_input = {
+            "pay": {"value": "unknown", "confidence": 0.7},
+            "date": None,
+        }
+        fields = self.schema.parse_tool_result(tool_input, source_document="test.pdf")
+        assert fields[0].certainty == Certainty.REVIEW
+
+    def test_pay_commas_stripped_without_dollar_sign(self) -> None:
+        tool_input = {
+            "pay": {"value": "1,200.50", "confidence": 0.95},
+            "date": None,
+        }
+        fields = self.schema.parse_tool_result(tool_input, source_document="test.pdf")
+        assert fields[0].value == "1200.50"
+
+    def test_pay_prompt_rule_requires_plain_decimal(self) -> None:
+        prompt = self.schema.system_prompt()
+        assert "no commas" in prompt
+        assert "two decimal" in prompt
+
+
+class TestNormalizePayValue:
+    """Unit tests for the _normalize_pay_value helper."""
+
+    def test_plain_decimal_unchanged(self) -> None:
+        assert _normalize_pay_value("1234.56") == "1234.56"
+
+    def test_dollar_sign_stripped(self) -> None:
+        assert _normalize_pay_value("$1500.00") == "1500.00"
+
+    def test_commas_stripped(self) -> None:
+        assert _normalize_pay_value("1,500.00") == "1500.00"
+
+    def test_dollar_and_commas_stripped(self) -> None:
+        assert _normalize_pay_value("$1,500.00") == "1500.00"
+
+    def test_integer_gains_two_decimal_places(self) -> None:
+        assert _normalize_pay_value("820") == "820.00"
+
+    def test_one_decimal_place_padded(self) -> None:
+        assert _normalize_pay_value("0.5") == "0.50"
+
+    def test_zero_is_valid(self) -> None:
+        assert _normalize_pay_value("0.00") == "0.00"
+
+    def test_non_numeric_returns_none(self) -> None:
+        assert _normalize_pay_value("N/A") is None
+
+    def test_empty_string_returns_none(self) -> None:
+        assert _normalize_pay_value("") is None
+
+    def test_negative_value_returns_none(self) -> None:
+        assert _normalize_pay_value("-100.00") is None
+
+    def test_whitespace_around_value_stripped(self) -> None:
+        assert _normalize_pay_value("  750.00  ") == "750.00"
+
+    def test_alphabetic_with_digits_returns_none(self) -> None:
+        assert _normalize_pay_value("abc123") is None

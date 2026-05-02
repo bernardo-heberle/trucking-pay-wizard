@@ -386,3 +386,72 @@ class TestRetryBehavior:
         assert result.content_hash == "abc123"
         assert result.page_count == 3
         assert result.extraction_error is not None
+
+
+class TestPayOcrVerification:
+    """Verify the post-extraction OCR cross-reference step in LlmExtractor."""
+
+    def test_high_certainty_preserved_when_value_found_in_ocr(self) -> None:
+        """When the LLM's pay value matches an amount in OCR text, HIGH is kept."""
+        settings = _make_settings()
+        client = MagicMock()
+        client.messages.create.return_value = _mock_tool_response(
+            "extract_income_fields",
+            {"pay": {"value": "750.00", "confidence": 0.95}, "date": None},
+        )
+        ocr = _make_ocr_result("Total Payment to Carrier: $750.00")
+        extractor = LlmExtractor(client=client, settings=settings)
+        result = extractor.extract(ocr, page_count=1)
+
+        pay_field = next(f for f in result.fields if f.name == "pay")
+        assert pay_field.certainty == Certainty.HIGH
+
+    def test_high_certainty_downgraded_when_value_not_in_ocr(self) -> None:
+        """Transposed/wrong LLM value is downgraded from HIGH to REVIEW."""
+        settings = _make_settings()
+        client = MagicMock()
+        # LLM returns 1234.56 but OCR has $12,345.60 (transposed digits).
+        client.messages.create.return_value = _mock_tool_response(
+            "extract_income_fields",
+            {"pay": {"value": "1234.56", "confidence": 0.95}, "date": None},
+        )
+        ocr = _make_ocr_result("Total Payment to Carrier: $12,345.60")
+        extractor = LlmExtractor(client=client, settings=settings)
+        result = extractor.extract(ocr, page_count=1)
+
+        pay_field = next(f for f in result.fields if f.name == "pay")
+        assert pay_field.certainty == Certainty.REVIEW
+
+    def test_review_certainty_not_upgraded_when_value_found_in_ocr(self) -> None:
+        """Verification never upgrades certainty — a REVIEW field stays REVIEW."""
+        settings = _make_settings()
+        client = MagicMock()
+        # Low confidence → REVIEW from thresholds.
+        client.messages.create.return_value = _mock_tool_response(
+            "extract_income_fields",
+            {"pay": {"value": "750.00", "confidence": 0.7}, "date": None},
+        )
+        ocr = _make_ocr_result("Total Payment to Carrier: $750.00")
+        extractor = LlmExtractor(client=client, settings=settings)
+        result = extractor.extract(ocr, page_count=1)
+
+        pay_field = next(f for f in result.fields if f.name == "pay")
+        assert pay_field.certainty == Certainty.REVIEW
+
+    def test_date_field_not_affected_by_ocr_verification(self) -> None:
+        """Verification only targets pay fields; date certainty is never changed."""
+        settings = _make_settings()
+        client = MagicMock()
+        client.messages.create.return_value = _mock_tool_response(
+            "extract_income_fields",
+            {
+                "pay": {"value": "750.00", "confidence": 0.95},
+                "date": {"value": "03/12/2024", "confidence": 0.95},
+            },
+        )
+        ocr = _make_ocr_result("Carrier: $750.00  Date: 03/12/2024")
+        extractor = LlmExtractor(client=client, settings=settings)
+        result = extractor.extract(ocr, page_count=1)
+
+        date_field = next(f for f in result.fields if f.name == "date")
+        assert date_field.certainty == Certainty.HIGH

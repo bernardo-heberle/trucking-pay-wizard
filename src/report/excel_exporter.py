@@ -77,6 +77,8 @@ def build_excel(
             raw_value = extracted.value if extracted else ""
             if field_name == "date" and raw_value:
                 raw_value = _normalize_date(raw_value)
+            if "pay" in field_name.lower() and raw_value:
+                raw_value = _parse_pay_float(raw_value)
             cell = ws.cell(row=row_idx, column=4 + col_offset, value=raw_value)
             if "pay" in field_name.lower():
                 cell.number_format = _CURRENCY_FORMAT
@@ -95,6 +97,9 @@ def build_excel(
         if result.extraction_error:
             notes_cell.fill = _FILL_RED
 
+    totals_row = len(results) + 2  # header row + data rows + 1
+    _write_totals_row(ws, field_names, data_start_row=2, data_end_row=len(results) + 1, totals_row=totals_row)
+
     _auto_width(ws, len(headers))
 
     try:
@@ -105,12 +110,50 @@ def build_excel(
         ) from exc
 
     logger.info(
-        "Excel report saved to '{}' — {} document row(s), {} field column(s)",
+        "Excel report saved to '{}' — {} document row(s), {} field column(s), totals row added",
         output_path.name,
         len(results),
         len(field_names),
     )
     return output_path
+
+
+def _write_totals_row(
+    ws,
+    field_names: list[str],
+    data_start_row: int,
+    data_end_row: int,
+    totals_row: int,
+) -> None:
+    """Write a summary Totals row using Excel formulas.
+
+    Pay columns get a SUM formula; the date column gets a COUNTA formula so
+    staff can see how many date entries are present.  All cells are bold.
+    Formulas rather than Python-computed values are used so the totals
+    auto-update if staff correct any cell in Adobe or Excel.
+    """
+    bold = Font(bold=True)
+
+    label_cell = ws.cell(row=totals_row, column=1, value="TOTALS")
+    label_cell.font = bold
+
+    # Columns 2 (PDF Page) and 3 (Certainty) are intentionally left blank.
+    for col_offset, field_name in enumerate(field_names):
+        col = 4 + col_offset
+        col_letter = get_column_letter(col)
+        data_range = f"{col_letter}{data_start_row}:{col_letter}{data_end_row}"
+
+        if "pay" in field_name.lower():
+            formula = f"=SUM({data_range})"
+        elif field_name == "date":
+            formula = f"=COUNTA({data_range})"
+        else:
+            continue
+
+        cell = ws.cell(row=totals_row, column=col, value=formula)
+        cell.font = bold
+        if "pay" in field_name.lower():
+            cell.number_format = _CURRENCY_FORMAT
 
 
 def _collect_field_names(results: list[DocumentExtractionResult]) -> list[str]:
@@ -120,6 +163,19 @@ def _collect_field_names(results: list[DocumentExtractionResult]) -> list[str]:
         for field in result.fields:
             seen.setdefault(field.name, None)
     return list(seen)
+
+
+def _parse_pay_float(value: str) -> float | str:
+    """Convert a pay string to float for proper Excel numeric handling.
+
+    Returns the float on success so Excel treats the cell as a number and
+    SUM() formulas work correctly.  Returns the original string unchanged
+    when parsing fails so the cell still shows something reviewable.
+    """
+    try:
+        return float(value.replace(",", ""))
+    except (ValueError, AttributeError):
+        return value
 
 
 def _normalize_date(value: str) -> str:

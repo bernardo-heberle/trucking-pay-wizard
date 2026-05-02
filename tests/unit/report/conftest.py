@@ -36,6 +36,19 @@ def synthetic_source_pdf_b(tmp_path: Path) -> Path:
     return path
 
 
+@pytest.fixture()
+def synthetic_source_pdf_long(tmp_path: Path) -> Path:
+    """A 10-page PDF for page-truncation tests."""
+    doc = fitz.open()
+    for i in range(10):
+        page = doc.new_page(width=612, height=792)
+        page.insert_text((72, 72), f"Long doc — page {i + 1}")
+    path = tmp_path / "source_long.pdf"
+    doc.save(str(path))
+    doc.close()
+    return path
+
+
 def make_extraction_result(
     source_path: Path,
     *,

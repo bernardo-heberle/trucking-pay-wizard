@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import re
+from decimal import Decimal, InvalidOperation
 from typing import Any
 
 from src.extract.models import Certainty, ExtractedField
@@ -27,8 +29,8 @@ _TOOL_SCHEMA: dict[str, Any] = {
                     "value": {
                         "type": "string",
                         "description": (
-                            "Numeric amount only, no currency symbol or units "
-                            "(e.g. '1,500.00', '820', '1200.50')."
+                            "Plain decimal number — no currency symbol, no commas, "
+                            "always two decimal places (e.g. '1500.00', '820.00', '1200.50')."
                         ),
                     },
                     "confidence": {
@@ -73,13 +75,29 @@ receives for the load).
 - Extract the **pickup date** (or the earliest date associated with the load).
 
 Rules:
-- For pay: return the numeric value only — no currency symbols, no units \
-(e.g. '1,500.00' not '$1,500.00').
+- For pay: return a plain decimal number — no currency symbols, no commas, \
+always two decimal places (e.g. '1500.00', '820.00', '1200.50').
 - For date: return the date string exactly as it appears in the document text.
 - If a field is clearly present, return it with high confidence (>= 0.9).
 - If you are uncertain or the value is ambiguous, lower your confidence score.
 - If a field is not present in the document, return null for that field.
 - Do NOT fabricate values. Only extract what is explicitly stated."""
+
+
+def _normalize_pay_value(raw: str) -> str | None:
+    """Normalize a pay string to a plain decimal with two decimal places.
+
+    Strips currency symbols, commas, spaces, and surrounding whitespace.
+    Returns None if the string cannot be parsed as a valid positive number.
+    """
+    cleaned = re.sub(r"[$, ]", "", raw.strip())
+    try:
+        amount = Decimal(cleaned)
+    except InvalidOperation:
+        return None
+    if amount < 0:
+        return None
+    return str(amount.quantize(Decimal("0.01")))
 
 
 class IncomeDocumentSchema(ExtractionSchema):
@@ -113,8 +131,16 @@ class IncomeDocumentSchema(ExtractionSchema):
             if not raw_value:
                 continue
 
+            certainty = _confidence_to_certainty(confidence)
+
             if field_name == "pay":
-                raw_value = raw_value.lstrip("$").strip()
+                normalized = _normalize_pay_value(raw_value)
+                if normalized is None:
+                    # Unparseable — keep raw string but cap certainty at REVIEW
+                    if certainty == Certainty.HIGH:
+                        certainty = Certainty.REVIEW
+                else:
+                    raw_value = normalized
 
             fields.append(
                 ExtractedField(
@@ -123,7 +149,7 @@ class IncomeDocumentSchema(ExtractionSchema):
                     source_document=source_document,
                     source_page=None,
                     confidence=confidence,
-                    certainty=_confidence_to_certainty(confidence),
+                    certainty=certainty,
                 )
             )
 

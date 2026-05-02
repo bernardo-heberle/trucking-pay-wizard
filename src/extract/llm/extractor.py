@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import dataclasses
 import random
 import time
 
@@ -12,7 +13,8 @@ from src.extract.llm.client import build_anthropic_client
 from src.extract.llm.sanitizer import sanitize_text
 from src.extract.llm.schemas.base import ExtractionSchema
 from src.extract.llm.schemas.income import IncomeDocumentSchema
-from src.extract.models import DocumentExtractionResult, ExtractedField
+from src.extract.models import Certainty, DocumentExtractionResult, ExtractedField
+from src.extract.pay_verifier import verify_pay_against_ocr
 from src.ocr.models import OcrResult
 
 _MAX_ATTEMPTS = 3
@@ -126,6 +128,7 @@ class LlmExtractor:
                 )
 
             else:
+                fields = self._verify_pay_fields(fields, sanitized_text, source_name)
                 logger.info(
                     "LLM extraction complete for '{}' — {} field(s) found",
                     source_name,
@@ -165,6 +168,45 @@ class LlmExtractor:
             page_count=page_count,
             extraction_error=last_error,
         )
+
+    def _verify_pay_fields(
+        self,
+        fields: list[ExtractedField],
+        sanitized_text: str,
+        source_name: str,
+    ) -> list[ExtractedField]:
+        """Cross-reference HIGH-certainty pay fields against OCR text.
+
+        For each pay field the LLM reported with HIGH certainty, confirm
+        that the numeric value appears somewhere in the sanitized OCR text.
+        When no match is found the field is downgraded to REVIEW so staff
+        know to check it manually.  Fields already at REVIEW or NOT_FOUND
+        are left unchanged.
+        """
+        verified: list[ExtractedField] = []
+        for field in fields:
+            if field.name != "pay" or field.certainty != Certainty.HIGH:
+                verified.append(field)
+                continue
+
+            matched, reason = verify_pay_against_ocr(field.value, sanitized_text)
+            if matched:
+                logger.debug(
+                    "Pay verification passed for '{}': {}",
+                    source_name,
+                    reason,
+                )
+                verified.append(field)
+            else:
+                logger.warning(
+                    "Pay verification failed for '{}': {} — downgrading to REVIEW",
+                    source_name,
+                    reason,
+                )
+                verified.append(
+                    dataclasses.replace(field, certainty=Certainty.REVIEW)
+                )
+        return verified
 
     def _call_llm(self, text: str, source_document: str) -> list[ExtractedField]:
         """Send *text* to Claude and parse the structured tool response.

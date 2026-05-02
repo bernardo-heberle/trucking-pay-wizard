@@ -130,4 +130,5 @@ def _deserialize(data: dict, source_path: Path) -> DocumentExtractionResult:
         content_hash=data["content_hash"],
         fields=fields,
         page_count=data.get("page_count", 0),
+        extraction_error=data.get("extraction_error"),
     )

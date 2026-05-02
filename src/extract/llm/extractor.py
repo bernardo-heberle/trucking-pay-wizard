@@ -1,15 +1,44 @@
 from __future__ import annotations
 
-from anthropic import Anthropic
+import random
+import time
+
+import anthropic
 from loguru import logger
 
 from src.config import Settings, load_settings
+from src.extract.exceptions import ExtractionError
 from src.extract.llm.client import build_anthropic_client
 from src.extract.llm.sanitizer import sanitize_text
 from src.extract.llm.schemas.base import ExtractionSchema
 from src.extract.llm.schemas.income import IncomeDocumentSchema
 from src.extract.models import DocumentExtractionResult, ExtractedField
 from src.ocr.models import OcrResult
+
+_MAX_ATTEMPTS = 3
+_BASE_DELAY_SECONDS = 2.0
+_MAX_DELAY_SECONDS = 30.0
+
+# HTTP status codes that indicate a configuration or code problem.
+# Retrying the same request will not help.
+_NON_RETRYABLE_STATUSES = {400, 401, 403}
+
+
+class _NoToolUseBlock(Exception):
+    """Raised internally when Claude returns a response with no tool_use block."""
+
+
+def _is_retryable(exc: Exception) -> bool:
+    """Return True if *exc* is a transient API failure worth retrying."""
+    if isinstance(exc, anthropic.APIConnectionError):
+        return True
+    if isinstance(exc, anthropic.APITimeoutError):
+        return True
+    if isinstance(exc, anthropic.RateLimitError):
+        return True
+    if isinstance(exc, anthropic.APIStatusError):
+        return exc.status_code not in _NON_RETRYABLE_STATUSES
+    return False
 
 
 class LlmExtractor:
@@ -18,11 +47,28 @@ class LlmExtractor:
     The extractor sanitises OCR text (PII scrubbing), sends it to the
     configured model with a ``tool_use`` call matching the active schema,
     and parses the structured response into ``ExtractedField`` objects.
+
+    Failure handling
+    ----------------
+    Transient API failures (rate limits, network errors, server overload) are
+    retried up to ``_MAX_ATTEMPTS`` times with exponential backoff.  A missing
+    ``tool_use`` block in the response is treated as a soft transient failure
+    and is also retried.
+
+    If all attempts are exhausted, ``extract()`` returns a
+    ``DocumentExtractionResult`` with an empty ``fields`` list and
+    ``extraction_error`` set to a description of the last failure.  The failed
+    result is intentionally not cached so the document is retried on the next
+    pipeline run.
+
+    Non-retryable errors (bad API key, malformed request) raise
+    ``ExtractionError`` immediately so the caller can abort and report a
+    configuration problem rather than silently skipping documents.
     """
 
     def __init__(
         self,
-        client: Anthropic,
+        client: anthropic.Anthropic,
         settings: Settings,
         schema: ExtractionSchema | None = None,
     ) -> None:
@@ -41,25 +87,92 @@ class LlmExtractor:
         source_name = ocr_result.source_path.name
         logger.info("LLM extraction starting for '{}'", source_name)
 
-        sanitized_text, report = sanitize_text(ocr_result.full_text)
+        sanitized_text, _report = sanitize_text(ocr_result.full_text)
 
-        fields = self._call_llm(sanitized_text, source_name)
+        last_error: str | None = None
 
-        logger.info(
-            "LLM extraction complete for '{}' — {} field(s) found",
+        for attempt in range(1, _MAX_ATTEMPTS + 1):
+            try:
+                fields = self._call_llm(sanitized_text, source_name)
+
+            except ExtractionError:
+                # Non-retryable configuration error — propagate immediately.
+                raise
+
+            except _NoToolUseBlock:
+                last_error = "LLM response contained no tool_use block"
+                logger.warning(
+                    "Attempt {}/{}: no tool_use block for '{}' — {}",
+                    attempt,
+                    _MAX_ATTEMPTS,
+                    source_name,
+                    "retrying" if attempt < _MAX_ATTEMPTS else "giving up",
+                )
+
+            except Exception as exc:
+                if not _is_retryable(exc):
+                    raise ExtractionError(
+                        f"Non-retryable API error for '{source_name}': {exc}"
+                    ) from exc
+
+                last_error = str(exc)
+                logger.warning(
+                    "Attempt {}/{}: API error for '{}': {} — {}",
+                    attempt,
+                    _MAX_ATTEMPTS,
+                    source_name,
+                    exc,
+                    "retrying" if attempt < _MAX_ATTEMPTS else "giving up",
+                )
+
+            else:
+                logger.info(
+                    "LLM extraction complete for '{}' — {} field(s) found",
+                    source_name,
+                    len(fields),
+                )
+                return DocumentExtractionResult(
+                    source_path=ocr_result.source_path,
+                    content_hash=ocr_result.content_hash,
+                    fields=fields,
+                    page_count=page_count,
+                )
+
+            if attempt < _MAX_ATTEMPTS:
+                delay = min(
+                    _BASE_DELAY_SECONDS * (2 ** (attempt - 1)) + random.uniform(0, 1),
+                    _MAX_DELAY_SECONDS,
+                )
+                logger.info(
+                    "Waiting {:.1f}s before attempt {}/{} for '{}'",
+                    delay,
+                    attempt + 1,
+                    _MAX_ATTEMPTS,
+                    source_name,
+                )
+                time.sleep(delay)
+
+        logger.error(
+            "LLM extraction failed for '{}' after {} attempt(s): {}",
             source_name,
-            len(fields),
+            _MAX_ATTEMPTS,
+            last_error,
         )
-
         return DocumentExtractionResult(
             source_path=ocr_result.source_path,
             content_hash=ocr_result.content_hash,
-            fields=fields,
+            fields=[],
             page_count=page_count,
+            extraction_error=last_error,
         )
 
     def _call_llm(self, text: str, source_document: str) -> list[ExtractedField]:
-        """Send *text* to Claude and parse the structured tool response."""
+        """Send *text* to Claude and parse the structured tool response.
+
+        Raises ``_NoToolUseBlock`` if the response contains no ``tool_use``
+        block.  All other exceptions propagate to the retry loop in
+        ``extract()``.
+        """
         tool_def = self._schema.tool_definition()
         tool_name = tool_def["name"]
 
@@ -90,7 +203,4 @@ class LlmExtractor:
                     source_document=source_document,
                 )
 
-        logger.warning(
-            "LLM response for '{}' contained no tool_use block", source_document
-        )
-        return []
+        raise _NoToolUseBlock()

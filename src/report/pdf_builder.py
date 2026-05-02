@@ -104,7 +104,11 @@ def _count_index_pages(results: list[DocumentExtractionResult]) -> int:
     pages = 1
 
     for result in results:
-        entry_height = _INDEX_LINE_HEIGHT * (1 + len(result.fields))
+        # Failed extractions show one error notice line; successful ones show one line per field.
+        if result.extraction_error:
+            entry_height = _INDEX_LINE_HEIGHT * 2
+        else:
+            entry_height = _INDEX_LINE_HEIGHT * (1 + len(result.fields))
         gap = _INDEX_LINE_HEIGHT * 0.5
 
         # Move to a new page only when we are not already at the top of one
@@ -148,10 +152,16 @@ def _build_index_pages(
     for result in results:
         doc_name = result.source_path.name
         start_page = page_offsets.get(doc_name, 0)
-        doc_certainty = result.overall_certainty(EXPECTED_FIELDS)
-        doc_color = _color_for_certainty(doc_certainty)
 
-        entry_height = _INDEX_LINE_HEIGHT * (1 + len(result.fields))
+        if result.extraction_error:
+            doc_color = _COLOR_RED
+            # One line for the document name, one for the error notice.
+            entry_height = _INDEX_LINE_HEIGHT * 2
+        else:
+            doc_certainty = result.overall_certainty(EXPECTED_FIELDS)
+            doc_color = _color_for_certainty(doc_certainty)
+            entry_height = _INDEX_LINE_HEIGHT * (1 + len(result.fields))
+
         if y > _INDEX_MARGIN and y + entry_height > _INDEX_BOTTOM_LIMIT:
             page = doc.new_page(width=_PAGE_WIDTH, height=_PAGE_HEIGHT)
             y = _INDEX_MARGIN
@@ -165,16 +175,26 @@ def _build_index_pages(
         )
         y += _INDEX_LINE_HEIGHT
 
-        for field in result.fields:
-            field_color = _color_for_certainty(field.certainty)
+        if result.extraction_error:
             page.insert_text(
                 (x, y),
-                f"    {field.name}: {field.value}",
+                f"    \u26a0 Extraction failed — review manually",
                 fontsize=_INDEX_FONT_SIZE - 1,
                 fontname="helv",
-                color=field_color,
+                color=_COLOR_RED,
             )
             y += _INDEX_LINE_HEIGHT
+        else:
+            for field in result.fields:
+                field_color = _color_for_certainty(field.certainty)
+                page.insert_text(
+                    (x, y),
+                    f"    {field.name}: {field.value}",
+                    fontsize=_INDEX_FONT_SIZE - 1,
+                    fontname="helv",
+                    color=field_color,
+                )
+                y += _INDEX_LINE_HEIGHT
 
         gap = _INDEX_LINE_HEIGHT * 0.5
         if y + gap <= _INDEX_BOTTOM_LIMIT:

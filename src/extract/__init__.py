@@ -1,4 +1,5 @@
 from src.extract.base import Extractor
+from src.extract.exceptions import ExtractionError
 from src.extract.extractor import extract_document
 from src.extract.models import Certainty, DocumentExtractionResult, ExtractedField, SourceSpan
 
@@ -7,6 +8,7 @@ __all__ = [
     "create_extractor",
     "extract_document",
     "DocumentExtractionResult",
+    "ExtractionError",
     "ExtractedField",
     "Extractor",
     "SourceSpan",

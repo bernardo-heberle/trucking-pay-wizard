@@ -1,4 +1,3 @@
-- Add Anthropic key.
 
 - Add a lot more test data.
 

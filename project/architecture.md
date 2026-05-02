@@ -164,6 +164,23 @@ The extraction stage uses a **strategy pattern** controlled by the `EXTRACTION_M
 
 Both strategies produce the same `DocumentExtractionResult` with provenance metadata, so caching, validation, and report assembly work identically regardless of which strategy ran.
 
+### LLM Failure Handling
+
+The LLM extractor retries up to three times with exponential backoff before giving up on a document. The Anthropic Python SDK also retries transient errors twice per attempt internally, so the total number of HTTP attempts before the application gives up can be as high as nine.
+
+**Retryable failures** (retried with backoff):
+- Rate limit (429) and server overload (529)
+- Network / connection errors
+- Server-side errors (5xx)
+- Response missing the expected `tool_use` block
+
+**Non-retryable failures** (surface immediately as a pipeline error):
+- Authentication failure (401) — API key is wrong
+- Permission denied (403) — API key lacks access
+- Bad request (400) — a code defect; retrying the same request will not help
+
+When all retries are exhausted, the extractor returns a `DocumentExtractionResult` with an empty `fields` list and `extraction_error` set to a description of the failure. The pipeline worker recognises this flag and skips caching so the document is retried on the next run. The document still appears in both output artifacts — in the PDF index with a "review manually" notice, and in the CSV/Excel with a red-filled Notes column — so staff can identify and manually process any document that could not be extracted automatically.
+
 ### PII Sanitization (LLM path only)
 
 Before OCR text is sent to the Anthropic API, a regex-based sanitizer scrubs sensitive identifiers (SSNs, EINs). The sanitizer is extensible — new patterns are added as simple regex entries. Redaction counts are logged; actual values are never logged.

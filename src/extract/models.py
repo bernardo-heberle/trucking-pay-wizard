@@ -47,12 +47,19 @@ class ExtractedField:
 
 @dataclass
 class DocumentExtractionResult:
-    """Extraction output for a single document — consumed by the report stage."""
+    """Extraction output for a single document — consumed by the report stage.
+
+    When extraction fails after all retries are exhausted, ``fields`` is empty
+    and ``extraction_error`` carries a human-readable description of the
+    failure.  Callers must check ``extraction_error`` before caching — failed
+    results are not cached so the document is retried on the next pipeline run.
+    """
 
     source_path: Path
     content_hash: str
     fields: list[ExtractedField] = field(default_factory=list)
     page_count: int = 0
+    extraction_error: str | None = None
 
     def overall_certainty(self, expected_fields: list[str]) -> Certainty:
         """Return the worst certainty across *expected_fields*.

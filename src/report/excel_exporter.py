@@ -57,7 +57,7 @@ def build_excel(
     ws.title = "Extracted Data"
 
     display_names = [name.replace("_", " ").title() for name in field_names]
-    headers = ["Document", "PDF Page", "Certainty"] + display_names
+    headers = ["Document", "PDF Page", "Certainty"] + display_names + ["Notes"]
     _write_header_row(ws, headers)
 
     for row_idx, result in enumerate(results, start=2):
@@ -86,6 +86,15 @@ def build_excel(
                 cell.fill = _fill_for_certainty(extracted.certainty)
             else:
                 cell.fill = _fill_for_certainty(Certainty.NOT_FOUND)
+
+        notes_col = 4 + len(field_names)
+        notes_cell = ws.cell(
+            row=row_idx,
+            column=notes_col,
+            value=result.extraction_error or "",
+        )
+        if result.extraction_error:
+            notes_cell.fill = _FILL_RED
 
     _auto_width(ws, len(headers))
 

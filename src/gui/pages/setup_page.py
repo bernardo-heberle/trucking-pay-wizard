@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from loguru import logger
 from PySide6.QtCore import QObject, QThread, Signal, Slot
 from PySide6.QtWidgets import (
     QFileDialog,
@@ -101,7 +102,14 @@ class _PipelineWorker(QObject):
                         ocr_client = build_client()
                     ocr_result = analyze_document(ingested, ocr_client)
                     extraction = extractor.extract(ocr_result, page_count=ingested.page_count)
-                    cache_put(self._folder, extraction, mode=mode, version=version)
+                    if extraction.extraction_error:
+                        logger.warning(
+                            "Extraction failed for '{}' — result will not be cached: {}",
+                            source_path.name,
+                            extraction.extraction_error,
+                        )
+                    else:
+                        cache_put(self._folder, extraction, mode=mode, version=version)
 
                 results.append(extraction)
                 self.progress_step.emit(i, total)

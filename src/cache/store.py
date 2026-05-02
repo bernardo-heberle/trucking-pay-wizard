@@ -16,13 +16,19 @@ def _cache_dir(working_folder: Path) -> Path:
     return working_folder / ".cache"
 
 
-def _cache_filename(content_hash: str, mode: str) -> str:
-    """Build the cache filename, incorporating the extraction mode.
+def _cache_filename(content_hash: str, mode: str, version: str | None = None) -> str:
+    """Build the cache filename, incorporating the extraction mode and version.
 
-    Files written by earlier versions (no mode suffix) are intentionally
-    NOT matched — they are treated as cache misses and reprocessed under
-    the current mode.
+    The optional *version* is a fingerprint of the extraction configuration
+    (sanitizer patterns, schema definition) so that changes to those
+    components automatically invalidate stale cached results.
+
+    Files written by earlier versions (no mode/version suffix) are
+    intentionally NOT matched — they are treated as cache misses and
+    reprocessed under the current configuration.
     """
+    if version:
+        return f"{content_hash}_{mode}_{version}.json"
     return f"{content_hash}_{mode}.json"
 
 
@@ -30,12 +36,13 @@ def cache_get(
     working_folder: Path,
     content_hash: str,
     mode: str = "rules",
+    version: str | None = None,
 ) -> DocumentExtractionResult | None:
-    """Return the cached extraction result for *content_hash* + *mode*, or ``None`` on miss.
+    """Return the cached extraction result for *content_hash* + *mode* + *version*, or ``None`` on miss.
 
     Returns ``None`` without raising if the cache file is absent or corrupt.
     """
-    cache_file = _cache_dir(working_folder) / _cache_filename(content_hash, mode)
+    cache_file = _cache_dir(working_folder) / _cache_filename(content_hash, mode, version)
     if not cache_file.exists():
         return None
 
@@ -52,8 +59,9 @@ def cache_put(
     working_folder: Path,
     result: DocumentExtractionResult,
     mode: str = "rules",
+    version: str | None = None,
 ) -> None:
-    """Write *result* to ``.cache/<content_hash>_<mode>.json``.
+    """Write *result* to ``.cache/<content_hash>_<mode>[_<version>].json``.
 
     Uses an atomic write (tmp file + rename) to prevent corrupt partial writes
     if the process is interrupted.
@@ -61,7 +69,7 @@ def cache_put(
     cache_directory = _cache_dir(working_folder)
     cache_directory.mkdir(parents=True, exist_ok=True)
 
-    filename = _cache_filename(result.content_hash, mode)
+    filename = _cache_filename(result.content_hash, mode, version)
     cache_file = cache_directory / filename
     tmp_file = cache_directory / f"{result.content_hash}.tmp"
 

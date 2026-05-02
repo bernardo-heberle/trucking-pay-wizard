@@ -19,6 +19,23 @@ from src.gui._widgets import TruckProgressWidget, add_corner_sparkles
 from src.ingest import collect_source_files
 
 
+def _extraction_version(mode: str) -> str | None:
+    """Compute a cache-version fingerprint for the current extraction config.
+
+    For LLM mode the fingerprint captures the sanitizer patterns and
+    schema definition so that changes to either automatically invalidate
+    stale cached results.  Rules mode returns ``None`` for now.
+    """
+    if mode != "llm":
+        return None
+
+    from src.extract.llm.sanitizer import sanitizer_fingerprint
+    from src.extract.llm.schemas.income import IncomeDocumentSchema
+
+    schema = IncomeDocumentSchema()
+    return sanitizer_fingerprint() + schema.fingerprint()
+
+
 class _PipelineWorker(QObject):
     """Runs all pipeline stages on a background thread.
 
@@ -51,6 +68,8 @@ class _PipelineWorker(QObject):
             mode = settings.extraction_mode
             extractor = create_extractor(mode)
 
+            version = _extraction_version(mode)
+
             source_files = collect_source_files(self._folder)
             n = len(source_files)
             total = n + 1
@@ -65,7 +84,10 @@ class _PipelineWorker(QObject):
 
             for i, source_path in enumerate(source_files, 1):
                 ingested = ingest_document(source_path)
-                extraction = cache_get(self._folder, ingested.content_hash, mode=mode)
+                extraction = cache_get(
+                    self._folder, ingested.content_hash,
+                    mode=mode, version=version,
+                )
 
                 if extraction is not None:
                     self.progress.emit(
@@ -79,7 +101,7 @@ class _PipelineWorker(QObject):
                         ocr_client = build_client()
                     ocr_result = analyze_document(ingested, ocr_client)
                     extraction = extractor.extract(ocr_result, page_count=ingested.page_count)
-                    cache_put(self._folder, extraction, mode=mode)
+                    cache_put(self._folder, extraction, mode=mode, version=version)
 
                 results.append(extraction)
                 self.progress_step.emit(i, total)

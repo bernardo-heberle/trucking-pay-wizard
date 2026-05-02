@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import re
 from dataclasses import dataclass, field
 
@@ -48,6 +49,24 @@ _EIN = RedactionPattern(
 )
 
 DEFAULT_PATTERNS: list[RedactionPattern] = [_SSN_DASHED, _SSN_NODASH, _EIN]
+
+
+def sanitizer_fingerprint(
+    patterns: list[RedactionPattern] | None = None,
+) -> str:
+    """Stable fingerprint of the active sanitization rules.
+
+    The fingerprint changes whenever a pattern is added, removed, or
+    modified — causing cache entries produced under the old rules to
+    become misses so documents are reprocessed with the updated patterns.
+    """
+    if patterns is None:
+        patterns = DEFAULT_PATTERNS
+
+    parts = sorted(
+        f"{p.name}:{p.regex.pattern}:{p.placeholder}" for p in patterns
+    )
+    return hashlib.sha256("|".join(parts).encode()).hexdigest()[:12]
 
 
 def sanitize_text(

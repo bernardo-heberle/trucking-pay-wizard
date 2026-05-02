@@ -1,0 +1,5 @@
+- Add Anthropic key.
+
+- Add a lot more test data.
+
+- Test things through the LLM mode pipeline, add the toggle to the beta tester.

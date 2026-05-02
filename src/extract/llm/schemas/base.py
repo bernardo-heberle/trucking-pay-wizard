@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import hashlib
+import json
 from abc import ABC, abstractmethod
 from typing import Any
 
@@ -24,6 +26,18 @@ class ExtractionSchema(ABC):
     def name(self) -> str:
         """Human-readable schema identifier (used in logging and cache keys)."""
         ...
+
+    def fingerprint(self) -> str:
+        """Stable fingerprint of this schema's tool definition and system prompt.
+
+        Changes whenever the tool schema or prompt is modified — causing
+        cache entries produced under the old schema to become misses.
+        """
+        content = (
+            json.dumps(self.tool_definition(), sort_keys=True)
+            + self.system_prompt()
+        )
+        return hashlib.sha256(content.encode()).hexdigest()[:12]
 
     @abstractmethod
     def tool_definition(self) -> dict[str, Any]:

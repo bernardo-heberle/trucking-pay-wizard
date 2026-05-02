@@ -12,8 +12,7 @@ _TOOL_SCHEMA: dict[str, Any] = {
     "name": _TOOL_NAME,
     "description": (
         "Extract financial fields from a trucking income document.  "
-        "Return each field with the raw value exactly as it appears in "
-        "the text and a confidence score between 0.0 and 1.0."
+        "Return each field with a confidence score between 0.0 and 1.0."
     ),
     "input_schema": {
         "type": "object",
@@ -28,8 +27,8 @@ _TOOL_SCHEMA: dict[str, Any] = {
                     "value": {
                         "type": "string",
                         "description": (
-                            "Raw dollar amount as it appears in the document "
-                            "(e.g. '1,500.00', '820')."
+                            "Numeric amount only, no currency symbol or units "
+                            "(e.g. '1,500.00', '820', '1200.50')."
                         ),
                     },
                     "confidence": {
@@ -74,7 +73,9 @@ receives for the load).
 - Extract the **pickup date** (or the earliest date associated with the load).
 
 Rules:
-- Return the raw value exactly as it appears in the document text.
+- For pay: return the numeric value only — no currency symbols, no units \
+(e.g. '1,500.00' not '$1,500.00').
+- For date: return the date string exactly as it appears in the document text.
 - If a field is clearly present, return it with high confidence (>= 0.9).
 - If you are uncertain or the value is ambiguous, lower your confidence score.
 - If a field is not present in the document, return null for that field.
@@ -115,6 +116,9 @@ class IncomeDocumentSchema(ExtractionSchema):
 
             if not raw_value:
                 continue
+
+            if field_name == "pay":
+                raw_value = raw_value.lstrip("$").strip()
 
             fields.append(
                 ExtractedField(

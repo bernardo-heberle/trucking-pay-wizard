@@ -104,3 +104,33 @@ class TestParseToolResult:
         }
         fields = self.schema.parse_tool_result(tool_input, source_document="test.pdf")
         assert fields[0].source_page is None
+
+    def test_dollar_sign_stripped_from_pay(self) -> None:
+        tool_input = {
+            "pay": {"value": "$1,500.00", "confidence": 0.95},
+            "date": None,
+        }
+        fields = self.schema.parse_tool_result(tool_input, source_document="test.pdf")
+        assert fields[0].value == "1,500.00"
+
+    def test_dollar_sign_not_stripped_from_date(self) -> None:
+        """Stripping is pay-specific — dates must never be modified."""
+        tool_input = {
+            "pay": None,
+            "date": {"value": "$invalid", "confidence": 0.5},
+        }
+        fields = self.schema.parse_tool_result(tool_input, source_document="test.pdf")
+        assert fields[0].value == "$invalid"
+
+    def test_pay_without_dollar_sign_unchanged(self) -> None:
+        tool_input = {
+            "pay": {"value": "820", "confidence": 0.95},
+            "date": None,
+        }
+        fields = self.schema.parse_tool_result(tool_input, source_document="test.pdf")
+        assert fields[0].value == "820"
+
+    def test_pay_value_description_excludes_currency_symbol(self) -> None:
+        defn = self.schema.tool_definition()
+        pay_value_desc = defn["input_schema"]["properties"]["pay"]["properties"]["value"]["description"]
+        assert "$" not in pay_value_desc

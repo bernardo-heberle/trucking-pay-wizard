@@ -48,12 +48,27 @@ Weak oracles are the single biggest reason mutation scores stay low despite high
 - Exclude from coverage targets only: generated code, third-party vendored code, `if TYPE_CHECKING:` blocks. Do not exclude error handlers.
 - `src/gui/*` is omitted from automated coverage — it is exercised via manual smoke testing.
 
+## Test Layout
+
+```
+tests/
+  unit/          # default run — all mocked, no network
+  integration/   # default run — real extractors, mocked API clients
+  live/          # opt-in — real Azure and/or Anthropic API calls
+  fixtures/      # shared OCR fixture JSON files
+```
+
+- `pytest` runs `tests/unit/` and `tests/integration/` only (`testpaths` in `pyproject.toml`).
+- `pytest tests/live/ --no-cov -v` runs live API tests. They auto-skip when credentials are missing.
+- Live tests pin expected values against known fixture text. Run them after changing prompts, schemas, or OCR integration.
+- **Do not add real API calls to `tests/unit/` or `tests/integration/`** — those tiers must stay deterministic and free of network dependencies.
+
 ## Additional Rules
 
 - **One behavior per test.** Test names read as sentences: `test_withdraw_rejects_amount_exceeding_balance`. If the name needs "and", split the test.
 - **Arrange-Act-Assert, visibly separated.** A blank line between sections.
 - **No conditional logic in tests.** No `if`, no `try/except` (except when the exception itself is the assertion), no loops that change what gets asserted. Parametrize instead.
-- **Determinism is mandatory.** No real network, no real clock, no real filesystem outside `tmp_path`, no randomness without a fixed seed. Flaky tests get fixed or deleted, never retried.
+- **Determinism is mandatory in unit and integration tests.** No real network, no real clock, no real filesystem outside `tmp_path`, no randomness without a fixed seed. Flaky tests get fixed or deleted, never retried. (Live API tests are the exception — they intentionally hit real services.)
 - **Mocks assert on calls, not just return values.** If you mock something, assert it was called with the right arguments. Otherwise the mock is hiding behavior.
 - **Property-based tests for anything with a clear invariant** (round-trips, idempotence, ordering, bounds). Use Hypothesis. One good property test replaces dozens of example tests.
 - **Test the boundary, not the middle.** Empty inputs, single-element inputs, max sizes, off-by-one around limits, None where allowed, the exact threshold value of any comparison.

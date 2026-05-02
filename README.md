@@ -108,10 +108,18 @@ The LLM never sees the raw document file (PDF, image). It receives only PII-sani
 
 # Testing
 
+## Test levels
+
+| Level | Directory | Runs by default | What it covers |
+|---|---|---|---|
+| Unit | `tests/unit/` | Yes | Extraction, validation, caching, report formatting — all mocked |
+| Integration | `tests/integration/` | Yes | Stage boundaries with a real `LlmExtractor` and mocked API client |
+| Live API | `tests/live/` | **No** | Real Azure OCR and/or real Anthropic calls against known documents |
+
 ## Running the test suite
 
 ```powershell
-# All tests with branch coverage (threshold: 85%)
+# All unit + integration tests with branch coverage (threshold: 85%)
 .venv\Scripts\pytest
 
 # Fast run — no coverage (useful during development)
@@ -120,6 +128,28 @@ The LLM never sees the raw document file (PDF, image). It receives only PII-sani
 # Run with randomised test order to surface order-dependent failures
 .venv\Scripts\pytest -p randomly --no-cov
 ```
+
+## Live API tests
+
+Live tests make real network calls and are **not** included in the default run. They require API credentials in `.env` and auto-skip any test whose credentials are missing.
+
+```powershell
+# All live tests (Azure + Anthropic)
+.venv\Scripts\pytest tests/live/ --no-cov -v
+
+# Extraction only (Anthropic) — faster, cheaper
+.venv\Scripts\pytest tests/live/test_extraction_live.py --no-cov -v
+
+# OCR only (Azure)
+.venv\Scripts\pytest tests/live/test_ocr_live.py --no-cov -v
+
+# Full end-to-end pipeline (both APIs)
+.venv\Scripts\pytest tests/live/test_pipeline_live.py --no-cov -v
+```
+
+`--no-cov` is recommended because the 85% coverage threshold is calibrated for the unit/integration suite.
+
+**When to run live tests:** after changing prompts, extraction schemas, OCR integration, or before a release. They pin expected values (e.g. `pay == "750.00"`) against known fixture text, so a prompt regression will fail the test.
 
 ## Coverage
 

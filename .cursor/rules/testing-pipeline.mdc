@@ -22,9 +22,13 @@ Prioritize tests for **extraction** and **validation logic** — bugs here produ
 - Verify that stage contracts hold across the handoff, not just within a stage
 - Use a **real** `LlmExtractor` with a mocked Anthropic client — do not mock the extractor wholesale, or schema parsing, pay verification, and certainty downgrade are not exercised end-to-end
 
-**Sample document tests**
-- End-to-end verification using known documents with expected extracted values
-- Use when a real document surfaced a bug or gap in extraction coverage
+**Live API tests** (`tests/live/`)
+- Real Azure OCR and/or real Anthropic extraction against known documents
+- Excluded from the default `pytest` run — invoke with `pytest tests/live/ --no-cov -v`
+- Auto-skip when the required credentials (`ANTHROPIC_API_KEY`, `AZURE_DOCUMENT_INTELLIGENCE_*`) are missing from `.env`
+- Pin expected extracted values (e.g. `pay == "750.00"`) so prompt or schema regressions cause a failure
+- Run after changing prompts, extraction schemas, or OCR integration code
+- **Do not move these into `tests/unit/` or `tests/integration/`** — those tiers must stay deterministic
 
 ## Fixtures
 
@@ -33,10 +37,11 @@ Keep sanitized sample OCR outputs in `tests/fixtures/`. Test extraction against 
 ```
 tests/
   fixtures/
-    settlement_statement_ocr.json   # realistic OCR output, PII removed
+    settlement_ocr.json         # realistic OCR output, PII removed
     pay_summary_ocr.json
   unit/
   integration/
+  live/                         # opt-in real API tests (not in default run)
 ```
 
 ## LLM Extraction Tests
@@ -44,7 +49,7 @@ tests/
 - **PII sanitizer** — unit-test each redaction pattern independently; verify counts are accurate and replacements are correct. Never assert on actual PII values in test fixtures.
 - **Schema parsing** — test `parse_tool_result()` with sample LLM JSON responses (hardcoded dicts); verify `ExtractedField` objects and confidence mapping. Pin exact threshold values — the `>=` vs `>` distinction matters for financial certainty assignment.
 - **LlmExtractor** — mock the Anthropic client to avoid real API calls in unit tests. Assert that the correct tool_use request is built (model, tool name, message content) and that the response is parsed correctly. Assert mocks were called with correct arguments.
-- **Integration tests** requiring a real Anthropic API key should be skipped when `ANTHROPIC_API_KEY` is not set (use `pytest.mark.skipif`).
+- **Live API tests** (`tests/live/`) exercise the real Anthropic and Azure APIs against known fixture text with pinned expected values. They are excluded from the default run and auto-skip when credentials are missing.
 
 ## Confidence Threshold Tests
 

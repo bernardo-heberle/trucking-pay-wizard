@@ -1,0 +1,872 @@
+{
+  "source_path": "super_dispatch_sheet.pdf",
+  "content_hash": "d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5",
+  "pages": [
+    {
+      "page_number": 1,
+      "width_inches": 8.5,
+      "height_inches": 11.0,
+      "line_count": 55
+    },
+    {
+      "page_number": 2,
+      "width_inches": 8.5,
+      "height_inches": 11.0,
+      "line_count": 16
+    }
+  ],
+  "lines": [
+    {
+      "text": "Order ID: B456789",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 0.5,
+        "width": 2.5,
+        "height": 0.25
+      },
+      "char_start": 0,
+      "char_end": 17
+    },
+    {
+      "text": "Dispatch Sheet",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 3.5,
+        "y": 0.5,
+        "width": 2.5,
+        "height": 0.3
+      },
+      "char_start": 18,
+      "char_end": 32
+    },
+    {
+      "text": "OPENLANE dba",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.0,
+        "width": 2.0,
+        "height": 0.25
+      },
+      "char_start": 33,
+      "char_end": 45
+    },
+    {
+      "text": "BacklotCars Inc",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.3,
+        "width": 2.5,
+        "height": 0.25
+      },
+      "char_start": 46,
+      "char_end": 61
+    },
+    {
+      "text": "Shipper",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.6,
+        "width": 1.5,
+        "height": 0.25
+      },
+      "char_start": 62,
+      "char_end": 69
+    },
+    {
+      "text": "1100 Main St #1500",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.9,
+        "width": 2.5,
+        "height": 0.25
+      },
+      "char_start": 70,
+      "char_end": 88
+    },
+    {
+      "text": "Kansas City, MO 64105",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.2,
+        "width": 2.5,
+        "height": 0.25
+      },
+      "char_start": 89,
+      "char_end": 110
+    },
+    {
+      "text": "Co. Phone: 816-555-0100",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.5,
+        "width": 3.0,
+        "height": 0.25
+      },
+      "char_start": 111,
+      "char_end": 134
+    },
+    {
+      "text": "Email: transport@example.com",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.8,
+        "width": 3.5,
+        "height": 0.25
+      },
+      "char_start": 135,
+      "char_end": 163
+    },
+    {
+      "text": "Carrier Information",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 5.0,
+        "y": 1.0,
+        "width": 3.0,
+        "height": 0.3
+      },
+      "char_start": 164,
+      "char_end": 183
+    },
+    {
+      "text": "Carrier: ACME TRUCKING LLC",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 5.0,
+        "y": 1.3,
+        "width": 3.5,
+        "height": 0.25
+      },
+      "char_start": 184,
+      "char_end": 210
+    },
+    {
+      "text": "1234 Main Street Ste 100",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 5.0,
+        "y": 1.6,
+        "width": 3.0,
+        "height": 0.25
+      },
+      "char_start": 211,
+      "char_end": 235
+    },
+    {
+      "text": "SPRINGFIELD, Illinois 62701",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 5.0,
+        "y": 1.9,
+        "width": 3.5,
+        "height": 0.25
+      },
+      "char_start": 236,
+      "char_end": 263
+    },
+    {
+      "text": "Order Information",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.3,
+        "width": 3.0,
+        "height": 0.3
+      },
+      "char_start": 264,
+      "char_end": 281
+    },
+    {
+      "text": "Dispatch Date: 06/15/2024",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.6,
+        "width": 3.0,
+        "height": 0.25
+      },
+      "char_start": 282,
+      "char_end": 307
+    },
+    {
+      "text": "Carrier Pickup Estimated:",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.9,
+        "width": 3.0,
+        "height": 0.25
+      },
+      "char_start": 308,
+      "char_end": 333
+    },
+    {
+      "text": "06/20/2024",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.2,
+        "width": 1.5,
+        "height": 0.25
+      },
+      "char_start": 334,
+      "char_end": 344
+    },
+    {
+      "text": "Carrier Delivery Estimated:",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.5,
+        "width": 3.0,
+        "height": 0.25
+      },
+      "char_start": 345,
+      "char_end": 372
+    },
+    {
+      "text": "06/23/2024",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.8,
+        "width": 1.5,
+        "height": 0.25
+      },
+      "char_start": 373,
+      "char_end": 383
+    },
+    {
+      "text": "Ship Via: OPEN",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.1,
+        "width": 2.0,
+        "height": 0.25
+      },
+      "char_start": 384,
+      "char_end": 398
+    },
+    {
+      "text": "Condition: Operable",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.4,
+        "width": 2.0,
+        "height": 0.25
+      },
+      "char_start": 399,
+      "char_end": 418
+    },
+    {
+      "text": "OPENLANE",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 5.0,
+        "y": 3.3,
+        "width": 2.0,
+        "height": 0.25
+      },
+      "char_start": 419,
+      "char_end": 427
+    },
+    {
+      "text": "Contact: Mike",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 5.0,
+        "y": 3.6,
+        "width": 2.0,
+        "height": 0.25
+      },
+      "char_start": 428,
+      "char_end": 441
+    },
+    {
+      "text": "Phone: 5551234567",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 5.0,
+        "y": 3.9,
+        "width": 2.0,
+        "height": 0.25
+      },
+      "char_start": 442,
+      "char_end": 459
+    },
+    {
+      "text": "Email: dispatch@acmetrucking.com",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 5.0,
+        "y": 4.2,
+        "width": 3.5,
+        "height": 0.25
+      },
+      "char_start": 460,
+      "char_end": 492
+    },
+    {
+      "text": "Total Payment to Carrier: $1,375.00",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.9,
+        "width": 4.0,
+        "height": 0.25
+      },
+      "char_start": 493,
+      "char_end": 528
+    },
+    {
+      "text": "Payment method:",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.2,
+        "width": 2.5,
+        "height": 0.25
+      },
+      "char_start": 529,
+      "char_end": 544
+    },
+    {
+      "text": "Payment terms: ACH",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.5,
+        "width": 2.5,
+        "height": 0.25
+      },
+      "char_start": 545,
+      "char_end": 563
+    },
+    {
+      "text": "Shipper owes Carrier: $1,375.00",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.8,
+        "width": 3.5,
+        "height": 0.25
+      },
+      "char_start": 564,
+      "char_end": 595
+    },
+    {
+      "text": "Vehicle Information",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.3,
+        "width": 3.0,
+        "height": 0.3
+      },
+      "char_start": 596,
+      "char_end": 615
+    },
+    {
+      "text": "Total Vehicles: 1",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.6,
+        "width": 2.0,
+        "height": 0.25
+      },
+      "char_start": 616,
+      "char_end": 633
+    },
+    {
+      "text": "#",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.9,
+        "width": 0.3,
+        "height": 0.25
+      },
+      "char_start": 634,
+      "char_end": 635
+    },
+    {
+      "text": "Vehicle",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.3,
+        "y": 7.9,
+        "width": 1.5,
+        "height": 0.25
+      },
+      "char_start": 636,
+      "char_end": 643
+    },
+    {
+      "text": "Type",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 3.0,
+        "y": 7.9,
+        "width": 0.8,
+        "height": 0.25
+      },
+      "char_start": 644,
+      "char_end": 648
+    },
+    {
+      "text": "Color",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 4.0,
+        "y": 7.9,
+        "width": 0.8,
+        "height": 0.25
+      },
+      "char_start": 649,
+      "char_end": 654
+    },
+    {
+      "text": "VIN",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 5.0,
+        "y": 7.9,
+        "width": 0.8,
+        "height": 0.25
+      },
+      "char_start": 655,
+      "char_end": 658
+    },
+    {
+      "text": "Lot #",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 6.5,
+        "y": 7.9,
+        "width": 0.8,
+        "height": 0.25
+      },
+      "char_start": 659,
+      "char_end": 664
+    },
+    {
+      "text": "1 2022 Ford F-150",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.2,
+        "width": 2.5,
+        "height": 0.25
+      },
+      "char_start": 665,
+      "char_end": 682
+    },
+    {
+      "text": "Pickup",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 3.0,
+        "y": 8.2,
+        "width": 1.0,
+        "height": 0.25
+      },
+      "char_start": 683,
+      "char_end": 689
+    },
+    {
+      "text": "White",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 4.0,
+        "y": 8.2,
+        "width": 0.8,
+        "height": 0.25
+      },
+      "char_start": 690,
+      "char_end": 695
+    },
+    {
+      "text": "1FTEW1EP2NFA54321",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 5.0,
+        "y": 8.2,
+        "width": 2.5,
+        "height": 0.25
+      },
+      "char_start": 696,
+      "char_end": 713
+    },
+    {
+      "text": "Pickup Information",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.7,
+        "width": 3.0,
+        "height": 0.3
+      },
+      "char_start": 714,
+      "char_end": 732
+    },
+    {
+      "text": "Name: Tom Wilson",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.0,
+        "width": 2.5,
+        "height": 0.25
+      },
+      "char_start": 733,
+      "char_end": 749
+    },
+    {
+      "text": "Summit Auto Group",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.3,
+        "width": 2.5,
+        "height": 0.25
+      },
+      "char_start": 750,
+      "char_end": 767
+    },
+    {
+      "text": "500 Commerce Drive",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.6,
+        "width": 2.5,
+        "height": 0.25
+      },
+      "char_start": 768,
+      "char_end": 786
+    },
+    {
+      "text": "Columbus, OH 43215",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.9,
+        "width": 2.5,
+        "height": 0.25
+      },
+      "char_start": 787,
+      "char_end": 805
+    },
+    {
+      "text": "Phone: 6145550200",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 10.2,
+        "width": 2.5,
+        "height": 0.25
+      },
+      "char_start": 806,
+      "char_end": 823
+    },
+    {
+      "text": "Mobile:",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 10.5,
+        "width": 1.0,
+        "height": 0.25
+      },
+      "char_start": 824,
+      "char_end": 831
+    },
+    {
+      "text": "Delivery Information",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 5.0,
+        "y": 8.7,
+        "width": 3.0,
+        "height": 0.3
+      },
+      "char_start": 832,
+      "char_end": 852
+    },
+    {
+      "text": "Name: Sarah Johnson",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 5.0,
+        "y": 9.0,
+        "width": 2.5,
+        "height": 0.25
+      },
+      "char_start": 853,
+      "char_end": 872
+    },
+    {
+      "text": "Lakeside Motors",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 5.0,
+        "y": 9.3,
+        "width": 2.5,
+        "height": 0.25
+      },
+      "char_start": 873,
+      "char_end": 888
+    },
+    {
+      "text": "800 Waterfront Way",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 5.0,
+        "y": 9.6,
+        "width": 2.5,
+        "height": 0.25
+      },
+      "char_start": 889,
+      "char_end": 907
+    },
+    {
+      "text": "Milwaukee, WI 53202",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 5.0,
+        "y": 9.9,
+        "width": 2.5,
+        "height": 0.25
+      },
+      "char_start": 908,
+      "char_end": 927
+    },
+    {
+      "text": "Phone: 4145550300",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 5.0,
+        "y": 10.2,
+        "width": 2.5,
+        "height": 0.25
+      },
+      "char_start": 928,
+      "char_end": 945
+    },
+    {
+      "text": "Mobile:",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 5.0,
+        "y": 10.5,
+        "width": 1.0,
+        "height": 0.25
+      },
+      "char_start": 946,
+      "char_end": 953
+    },
+    {
+      "text": "DISPATCH INSTRUCTIONS",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 0.5,
+        "width": 3.5,
+        "height": 0.3
+      },
+      "char_start": 955,
+      "char_end": 976
+    },
+    {
+      "text": "Dry run fees (DRF) will only be paid if the vehicle availability has been confirmed by the carrier along with the",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 0.9,
+        "width": 7.5,
+        "height": 0.25
+      },
+      "char_start": 977,
+      "char_end": 1090
+    },
+    {
+      "text": "customer's name who provided confirmation.",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.2,
+        "width": 5.0,
+        "height": 0.25
+      },
+      "char_start": 1091,
+      "char_end": 1133
+    },
+    {
+      "text": "UNATTENDED DROPS It is MANDATORY that we receive pictures for ALL unattended deliveries including pictures of",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.6,
+        "width": 7.5,
+        "height": 0.25
+      },
+      "char_start": 1134,
+      "char_end": 1243
+    },
+    {
+      "text": "the vehicle location, pictures of all 4 angles of car (front, back, and both sides) and pictures of key location.",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.9,
+        "width": 7.5,
+        "height": 0.25
+      },
+      "char_start": 1244,
+      "char_end": 1357
+    },
+    {
+      "text": "CONTRACT TERMS *** PLEASE READ CAREFULLY ***",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.4,
+        "width": 5.5,
+        "height": 0.3
+      },
+      "char_start": 1358,
+      "char_end": 1402
+    },
+    {
+      "text": "Please provide at least 24-hour notice to the customer before Pickup and Delivery. Please complete a careful",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.8,
+        "width": 7.5,
+        "height": 0.25
+      },
+      "char_start": 1403,
+      "char_end": 1511
+    },
+    {
+      "text": "inspection of the vehicle on Pickup.",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.1,
+        "width": 4.0,
+        "height": 0.25
+      },
+      "char_start": 1512,
+      "char_end": 1548
+    },
+    {
+      "text": "Carrier Terms & Agreement",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.6,
+        "width": 3.5,
+        "height": 0.3
+      },
+      "char_start": 1549,
+      "char_end": 1574
+    },
+    {
+      "text": "Every shipment tendered to a Carrier by BacklotCars will be subject to the terms of the BacklotCars Broker-Carrier Agreement;",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.0,
+        "width": 7.5,
+        "height": 0.25
+      },
+      "char_start": 1575,
+      "char_end": 1700
+    },
+    {
+      "text": "BacklotCars' Terms and Conditions, to the extent applicable which are posted online at (www.backlotcars.com); and applicable",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.3,
+        "width": 7.5,
+        "height": 0.25
+      },
+      "char_start": 1701,
+      "char_end": 1825
+    },
+    {
+      "text": "law.",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.6,
+        "width": 0.5,
+        "height": 0.25
+      },
+      "char_start": 1826,
+      "char_end": 1830
+    },
+    {
+      "text": "1. Carrier should contact customers at least two (2) hours prior to pick up or delivery of a vehicle.",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.0,
+        "width": 7.5,
+        "height": 0.25
+      },
+      "char_start": 1831,
+      "char_end": 1932
+    },
+    {
+      "text": "2. Carrier shall not disclose or discuss the terms of the BacklotCars Broker-Carrier Agreement including the rates.",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.3,
+        "width": 7.5,
+        "height": 0.25
+      },
+      "char_start": 1933,
+      "char_end": 2048
+    },
+    {
+      "text": "3. Carrier will be responsible for loading and unloading all shipments.",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.6,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 2049,
+      "char_end": 2120
+    },
+    {
+      "text": "Powered by Super Dispatch",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.5,
+        "width": 3.0,
+        "height": 0.25
+      },
+      "char_start": 2121,
+      "char_end": 2146
+    }
+  ]
+}

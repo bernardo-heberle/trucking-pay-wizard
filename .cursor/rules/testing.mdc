@@ -159,8 +159,10 @@ def test_token_expiry_is_one_hour_from_now():
 
 ## Running Mutation Tests
 
-```powershell
-# Initial run (slow — every mutant runs the suite)
+**mutmut must be run from WSL (bash), not native Windows PowerShell.** See `scripts/wsl-setup.sh` for one-time WSL environment setup.
+
+```bash
+# WSL / Linux — initial run (slow: every mutant runs the full suite)
 mutmut run
 
 # See survivors

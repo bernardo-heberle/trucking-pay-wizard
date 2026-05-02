@@ -41,18 +41,19 @@ Pipeline stages should be extendable without editing existing ones. The classifi
 ```
 src/
   gui/             # Desktop GUI (presentation only)
-  ingestion/       # Document loading, format conversion
+  ingest/          # Document loading, format conversion
   ocr/             # Azure Document Intelligence adapter
   classification/  # Document type detection (placeholder — not active in beta)
-  extraction/      # Field extraction logic
+  extract/         # Field extraction logic
     llm/           # Schema-driven LLM extraction (Anthropic API)
       schemas/     # Pluggable extraction schemas (one per document type)
-  validation/      # Value and consistency checks
-  report/          # Report assembly: PDF stitching, index generation, CSV export
+  report/          # Report assembly: PDF stitching, index generation, Excel export
   config.py        # Application settings loaded from .env
 tests/
-  unit/
-  integration/
+  unit/            # All mocked — no network
+  integration/     # Real extractors, mocked API clients
+  live/            # Real Azure + Anthropic calls (opt-in, not in default run)
+  fixtures/        # Sanitized sample OCR outputs (JSON)
 ```
 
 Each package maps to a pipeline stage or application layer. The `gui` package depends on the pipeline; the pipeline never imports from `gui`.
@@ -122,9 +123,9 @@ Prioritize tests for extraction rules and validation logic — these are where b
 
 ### Test at the right level
 
-- **Unit tests** for extraction functions, validators, and formatting logic.
-- **Integration tests** for pipeline stage boundaries (OCR output → extraction input).
-- **Sample document tests** for end-to-end verification with known documents.
+- **Unit tests** (`tests/unit/`) — extraction functions, validators, formatting logic. All mocked, no network.
+- **Integration tests** (`tests/integration/`) — pipeline stage boundaries (OCR output → extraction input) with a real `LlmExtractor` and mocked API client.
+- **Live API tests** (`tests/live/`) — real Azure OCR and/or Anthropic calls against known documents. Excluded from the default `pytest` run. Run with `pytest tests/live/ --no-cov -v`. Auto-skip when credentials are missing.
 
 ### Use real-ish data
 

@@ -44,6 +44,19 @@ Ships as a standalone **Windows** executable. All end users (downtime claims sta
 
 ## Developer Environment
 
-- **OS:** Windows 10 (PowerShell)
-- **Shell:** PowerShell — use PowerShell syntax for all terminal commands (e.g. `$env:VAR`, `.venv\Scripts\activate`, `New-Item`, `Copy-Item`)
-- Code uses `pathlib.Path` throughout so it stays platform-neutral, but builds and deployment target Windows only
+This is a hybrid Windows + WSL2 setup. The correct shell depends on the task:
+
+| Context | Shell | Notes |
+|---|---|---|
+| General development, pytest, GUI, packaging | **PowerShell** (Windows) | Default for all day-to-day work |
+| Mutation testing (`mutmut`) | **bash** (WSL2 / Ubuntu) | mutmut does not run on native Windows |
+
+**When generating terminal commands**, check which environment Cursor is connected to:
+- Native Windows terminal → use PowerShell syntax (`$env:VAR`, `.venv\Scripts\activate`, `New-Item`, `Copy-Item`)
+- WSL terminal → use bash syntax (`source .venv/bin/activate`, `export VAR=value`, `mkdir -p`)
+
+**Never emit PowerShell commands in a WSL terminal, or bash commands in a PowerShell terminal.**
+
+Code uses `pathlib.Path` throughout so it stays platform-neutral, but builds and end-user deployment target Windows only.
+
+The WSL clone lives in `~/trucking-pay-wizard` (Linux home, not `/mnt/c/...`) for fast subprocess I/O during mutmut runs. The Windows clone is the primary development copy. Both stay in sync via git.

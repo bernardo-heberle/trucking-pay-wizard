@@ -1,0 +1,638 @@
+{
+  "source_path": "central_dispatch_settlement.pdf",
+  "content_hash": "b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3",
+  "pages": [
+    {
+      "page_number": 1,
+      "width_inches": 8.5,
+      "height_inches": 11.0,
+      "line_count": 52
+    }
+  ],
+  "lines": [
+    {
+      "text": "Carrier Information",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 0.5,
+        "width": 3.0,
+        "height": 0.3
+      },
+      "char_start": 0,
+      "char_end": 19
+    },
+    {
+      "text": "Carrier: Acme Trucking LLC",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 0.9,
+        "width": 3.5,
+        "height": 0.25
+      },
+      "char_start": 20,
+      "char_end": 46
+    },
+    {
+      "text": "1234 Main Street Ste 100",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.2,
+        "width": 3.0,
+        "height": 0.25
+      },
+      "char_start": 47,
+      "char_end": 71
+    },
+    {
+      "text": "Springfield, IL 62701",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.5,
+        "width": 2.5,
+        "height": 0.25
+      },
+      "char_start": 72,
+      "char_end": 93
+    },
+    {
+      "text": "MC Number: 1234567",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.8,
+        "width": 2.5,
+        "height": 0.25
+      },
+      "char_start": 94,
+      "char_end": 112
+    },
+    {
+      "text": "Driver: John Doe, dispatcher",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.1,
+        "width": 3.5,
+        "height": 0.25
+      },
+      "char_start": 113,
+      "char_end": 141
+    },
+    {
+      "text": "Driver Phone: (555) 123-4567",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.4,
+        "width": 3.5,
+        "height": 0.25
+      },
+      "char_start": 142,
+      "char_end": 170
+    },
+    {
+      "text": "Order ID: XYZ7890",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.7,
+        "width": 2.5,
+        "height": 0.25
+      },
+      "char_start": 171,
+      "char_end": 188
+    },
+    {
+      "text": "Contact: Mike, Sarah, Tom",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.0,
+        "width": 3.0,
+        "height": 0.25
+      },
+      "char_start": 189,
+      "char_end": 214
+    },
+    {
+      "text": "Phone: (555) 123-4567",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.3,
+        "width": 2.5,
+        "height": 0.25
+      },
+      "char_start": 215,
+      "char_end": 236
+    },
+    {
+      "text": "Phone 2: (555) 234-5678 (555) 345-6789 Tom",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.6,
+        "width": 5.0,
+        "height": 0.25
+      },
+      "char_start": 237,
+      "char_end": 279
+    },
+    {
+      "text": "Fax: (555) 456-7890",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.9,
+        "width": 2.5,
+        "height": 0.25
+      },
+      "char_start": 280,
+      "char_end": 299
+    },
+    {
+      "text": "Dispatch Sheet",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 3.0,
+        "y": 0.5,
+        "width": 2.5,
+        "height": 0.3
+      },
+      "char_start": 300,
+      "char_end": 314
+    },
+    {
+      "text": "CentralDispatch",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 5.5,
+        "y": 0.5,
+        "width": 2.5,
+        "height": 0.25
+      },
+      "char_start": 315,
+      "char_end": 330
+    },
+    {
+      "text": "by Cox Automotive",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 5.5,
+        "y": 0.8,
+        "width": 2.5,
+        "height": 0.25
+      },
+      "char_start": 331,
+      "char_end": 348
+    },
+    {
+      "text": "National Auto Brokers",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 5.5,
+        "y": 1.2,
+        "width": 3.0,
+        "height": 0.25
+      },
+      "char_start": 349,
+      "char_end": 370
+    },
+    {
+      "text": "500 Commerce Drive Ste 200",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 5.5,
+        "y": 1.5,
+        "width": 3.5,
+        "height": 0.25
+      },
+      "char_start": 371,
+      "char_end": 397
+    },
+    {
+      "text": "Kansas City, MO 64105",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 5.5,
+        "y": 1.8,
+        "width": 2.5,
+        "height": 0.25
+      },
+      "char_start": 398,
+      "char_end": 419
+    },
+    {
+      "text": "Co. Phone: (816) 555-0100 Main",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 5.5,
+        "y": 2.1,
+        "width": 3.5,
+        "height": 0.25
+      },
+      "char_start": 420,
+      "char_end": 450
+    },
+    {
+      "text": "Dispatch Info",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 5.5,
+        "y": 2.4,
+        "width": 2.0,
+        "height": 0.25
+      },
+      "char_start": 451,
+      "char_end": 464
+    },
+    {
+      "text": "Contact: Robert Brown",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 5.5,
+        "y": 2.7,
+        "width": 3.0,
+        "height": 0.25
+      },
+      "char_start": 465,
+      "char_end": 486
+    },
+    {
+      "text": "Phone: (816) 555-0101",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 5.5,
+        "y": 3.0,
+        "width": 2.5,
+        "height": 0.25
+      },
+      "char_start": 487,
+      "char_end": 508
+    },
+    {
+      "text": "Fax: (816) 555-0102",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 5.5,
+        "y": 3.3,
+        "width": 2.5,
+        "height": 0.25
+      },
+      "char_start": 509,
+      "char_end": 528
+    },
+    {
+      "text": "MC #: 567890",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 5.5,
+        "y": 3.6,
+        "width": 2.0,
+        "height": 0.25
+      },
+      "char_start": 529,
+      "char_end": 541
+    },
+    {
+      "text": "Vehicle Information",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.2,
+        "width": 3.0,
+        "height": 0.3
+      },
+      "char_start": 542,
+      "char_end": 561
+    },
+    {
+      "text": "Total Vehicles: 1",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.5,
+        "width": 2.0,
+        "height": 0.25
+      },
+      "char_start": 562,
+      "char_end": 579
+    },
+    {
+      "text": "1 2019 Toyota Camry Type: Car Color: Silver Plate: VIN: 4T1B11HK5KU123456 Lot #: Additional Info:",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.8,
+        "width": 7.0,
+        "height": 0.25
+      },
+      "char_start": 580,
+      "char_end": 677
+    },
+    {
+      "text": "Pickup Information",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.2,
+        "width": 3.0,
+        "height": 0.3
+      },
+      "char_start": 678,
+      "char_end": 696
+    },
+    {
+      "text": "Name: Jane Smith",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.5,
+        "width": 2.5,
+        "height": 0.25
+      },
+      "char_start": 697,
+      "char_end": 713
+    },
+    {
+      "text": "456 Oak Avenue",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.8,
+        "width": 2.0,
+        "height": 0.25
+      },
+      "char_start": 714,
+      "char_end": 728
+    },
+    {
+      "text": "Los Angeles, CA 90001",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.1,
+        "width": 2.5,
+        "height": 0.25
+      },
+      "char_start": 729,
+      "char_end": 750
+    },
+    {
+      "text": "Phone: (555) 234-5678",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.4,
+        "width": 2.5,
+        "height": 0.25
+      },
+      "char_start": 751,
+      "char_end": 772
+    },
+    {
+      "text": "Delivery Information",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 5.5,
+        "y": 5.2,
+        "width": 3.0,
+        "height": 0.3
+      },
+      "char_start": 773,
+      "char_end": 793
+    },
+    {
+      "text": "Name: Jane Smith",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 5.5,
+        "y": 5.5,
+        "width": 2.5,
+        "height": 0.25
+      },
+      "char_start": 794,
+      "char_end": 810
+    },
+    {
+      "text": "789 Pine Road Apt 3B",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 5.5,
+        "y": 5.8,
+        "width": 2.5,
+        "height": 0.25
+      },
+      "char_start": 811,
+      "char_end": 831
+    },
+    {
+      "text": "Denver, CO 80201",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 5.5,
+        "y": 6.1,
+        "width": 2.0,
+        "height": 0.25
+      },
+      "char_start": 832,
+      "char_end": 848
+    },
+    {
+      "text": "Phone: (555) 234-5678",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 5.5,
+        "y": 6.4,
+        "width": 2.5,
+        "height": 0.25
+      },
+      "char_start": 849,
+      "char_end": 870
+    },
+    {
+      "text": "This must be picked up exactly on 04/15/2024. This should be delivered within 2 days of 04/18/2024.",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.0,
+        "width": 7.0,
+        "height": 0.25
+      },
+      "char_start": 871,
+      "char_end": 970
+    },
+    {
+      "text": "CONTRACT TERMS",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.4,
+        "width": 2.5,
+        "height": 0.3
+      },
+      "char_start": 971,
+      "char_end": 985
+    },
+    {
+      "text": "*** PLEASE READ CAREFULLY ***",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.7,
+        "width": 3.5,
+        "height": 0.25
+      },
+      "char_start": 986,
+      "char_end": 1015
+    },
+    {
+      "text": "Do not discuss rates with customer!",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.0,
+        "width": 4.0,
+        "height": 0.25
+      },
+      "char_start": 1016,
+      "char_end": 1051
+    },
+    {
+      "text": "CD reference # 50123456",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.5,
+        "width": 3.0,
+        "height": 0.25
+      },
+      "char_start": 1052,
+      "char_end": 1075
+    },
+    {
+      "text": "Order Information",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.9,
+        "width": 3.0,
+        "height": 0.3
+      },
+      "char_start": 1076,
+      "char_end": 1093
+    },
+    {
+      "text": "Dispatch Date: 04/08/2024",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.2,
+        "width": 3.0,
+        "height": 0.25
+      },
+      "char_start": 1094,
+      "char_end": 1119
+    },
+    {
+      "text": "Pickup Exactly: 04/15/2024",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.5,
+        "width": 3.0,
+        "height": 0.25
+      },
+      "char_start": 1120,
+      "char_end": 1146
+    },
+    {
+      "text": "Delivery Estimated: 04/18/2024",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.8,
+        "width": 3.5,
+        "height": 0.25
+      },
+      "char_start": 1147,
+      "char_end": 1177
+    },
+    {
+      "text": "Ship Via: Open",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 5.5,
+        "y": 9.2,
+        "width": 2.0,
+        "height": 0.25
+      },
+      "char_start": 1178,
+      "char_end": 1192
+    },
+    {
+      "text": "Condition: Operable",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 5.5,
+        "y": 9.5,
+        "width": 2.0,
+        "height": 0.25
+      },
+      "char_start": 1193,
+      "char_end": 1212
+    },
+    {
+      "text": "Price Listed: N/A",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 5.5,
+        "y": 9.8,
+        "width": 2.0,
+        "height": 0.25
+      },
+      "char_start": 1213,
+      "char_end": 1230
+    },
+    {
+      "text": "Total Payment to Carrier: $850.00",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 10.2,
+        "width": 4.0,
+        "height": 0.25
+      },
+      "char_start": 1231,
+      "char_end": 1264
+    },
+    {
+      "text": "On Delivery to Carrier: None",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 10.5,
+        "width": 3.5,
+        "height": 0.25
+      },
+      "char_start": 1265,
+      "char_end": 1293
+    },
+    {
+      "text": "Company* owes Carrier: $850.00",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 10.8,
+        "width": 3.5,
+        "height": 0.25
+      },
+      "char_start": 1294,
+      "char_end": 1324
+    }
+  ]
+}

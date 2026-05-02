@@ -4,12 +4,15 @@ from __future__ import annotations
 
 from pathlib import Path
 from types import SimpleNamespace
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, call, patch
 
+import anthropic
+import httpx
 import pytest
 
 from src.config import Settings
-from src.extract.llm.extractor import LlmExtractor
+from src.extract.exceptions import ExtractionError
+from src.extract.llm.extractor import LlmExtractor, _MAX_ATTEMPTS
 from src.extract.llm.schemas.income import IncomeDocumentSchema
 from src.extract.models import Certainty
 from src.ocr.models import BoundingBox, OcrLine, OcrPage, OcrResult
@@ -97,7 +100,8 @@ class TestLlmExtractorExtract:
         result = extractor.extract(_make_ocr_result(), page_count=1)
         assert result.fields == []
 
-    def test_no_tool_use_block_returns_no_fields(self) -> None:
+    @patch("src.extract.llm.extractor.time.sleep")
+    def test_no_tool_use_block_returns_error_after_retries(self, mock_sleep) -> None:
         settings = _make_settings()
         client = MagicMock()
         text_block = SimpleNamespace(type="text", text="I cannot extract fields.")
@@ -108,6 +112,9 @@ class TestLlmExtractorExtract:
         extractor = LlmExtractor(client=client, settings=settings)
         result = extractor.extract(_make_ocr_result(), page_count=1)
         assert result.fields == []
+        assert result.extraction_error is not None
+        assert "tool_use" in result.extraction_error
+        assert client.messages.create.call_count == _MAX_ATTEMPTS
 
     def test_pii_is_sanitized_before_api_call(self) -> None:
         settings = _make_settings()
@@ -165,3 +172,218 @@ class TestLlmExtractorFromConfig:
         extractor = LlmExtractor.from_config()
         assert isinstance(extractor, LlmExtractor)
         mock_build.assert_called_once()
+
+
+def _make_rate_limit_error() -> anthropic.RateLimitError:
+    """Build a realistic RateLimitError with a mock httpx response."""
+    mock_response = httpx.Response(
+        status_code=429,
+        request=httpx.Request("POST", "https://api.anthropic.com/v1/messages"),
+    )
+    return anthropic.RateLimitError(
+        message="Rate limit exceeded",
+        response=mock_response,
+        body={"error": {"type": "rate_limit_error", "message": "Rate limit exceeded"}},
+    )
+
+
+def _make_auth_error() -> anthropic.AuthenticationError:
+    mock_response = httpx.Response(
+        status_code=401,
+        request=httpx.Request("POST", "https://api.anthropic.com/v1/messages"),
+    )
+    return anthropic.AuthenticationError(
+        message="Invalid API key",
+        response=mock_response,
+        body={"error": {"type": "authentication_error", "message": "Invalid API key"}},
+    )
+
+
+def _make_overloaded_error() -> anthropic.InternalServerError:
+    mock_response = httpx.Response(
+        status_code=529,
+        request=httpx.Request("POST", "https://api.anthropic.com/v1/messages"),
+    )
+    return anthropic.InternalServerError(
+        message="API is temporarily overloaded",
+        response=mock_response,
+        body={"error": {"type": "overloaded_error", "message": "Overloaded"}},
+    )
+
+
+def _make_bad_request_error() -> anthropic.BadRequestError:
+    mock_response = httpx.Response(
+        status_code=400,
+        request=httpx.Request("POST", "https://api.anthropic.com/v1/messages"),
+    )
+    return anthropic.BadRequestError(
+        message="Invalid request",
+        response=mock_response,
+        body={"error": {"type": "invalid_request_error", "message": "Invalid request"}},
+    )
+
+
+@patch("src.extract.llm.extractor.time.sleep")
+class TestRetryBehavior:
+    """Verify the retry logic in LlmExtractor.extract().
+
+    All tests patch time.sleep so retries complete instantly.
+    """
+
+    def test_retryable_error_then_success(self, mock_sleep) -> None:
+        """A transient failure followed by success returns a normal result."""
+        settings = _make_settings()
+        client = MagicMock()
+        client.messages.create.side_effect = [
+            _make_rate_limit_error(),
+            _mock_tool_response(
+                "extract_income_fields",
+                {"pay": {"value": "750.00", "confidence": 0.95}, "date": None},
+            ),
+        ]
+
+        extractor = LlmExtractor(client=client, settings=settings)
+        result = extractor.extract(_make_ocr_result(), page_count=1)
+
+        assert result.extraction_error is None
+        assert len(result.fields) == 1
+        assert result.fields[0].value == "750.00"
+        assert client.messages.create.call_count == 2
+        assert mock_sleep.call_count == 1
+
+    def test_retryable_error_exhausts_all_attempts(self, mock_sleep) -> None:
+        """Repeated transient failures exhaust retries and return extraction_error."""
+        settings = _make_settings()
+        client = MagicMock()
+        client.messages.create.side_effect = [
+            _make_rate_limit_error() for _ in range(_MAX_ATTEMPTS)
+        ]
+
+        extractor = LlmExtractor(client=client, settings=settings)
+        result = extractor.extract(_make_ocr_result(), page_count=1)
+
+        assert result.extraction_error is not None
+        assert "Rate limit" in result.extraction_error
+        assert result.fields == []
+        assert client.messages.create.call_count == _MAX_ATTEMPTS
+        # Backoff sleeps happen between attempts (not after the last).
+        assert mock_sleep.call_count == _MAX_ATTEMPTS - 1
+
+    def test_overloaded_error_is_retryable(self, mock_sleep) -> None:
+        """529 overloaded errors are retried, not raised immediately."""
+        settings = _make_settings()
+        client = MagicMock()
+        client.messages.create.side_effect = [
+            _make_overloaded_error(),
+            _mock_tool_response(
+                "extract_income_fields",
+                {"pay": {"value": "500.00", "confidence": 0.90}, "date": None},
+            ),
+        ]
+
+        extractor = LlmExtractor(client=client, settings=settings)
+        result = extractor.extract(_make_ocr_result(), page_count=1)
+
+        assert result.extraction_error is None
+        assert len(result.fields) == 1
+
+    def test_connection_error_is_retryable(self, mock_sleep) -> None:
+        """Network failures are retried."""
+        settings = _make_settings()
+        client = MagicMock()
+        client.messages.create.side_effect = [
+            anthropic.APIConnectionError(request=httpx.Request("POST", "https://api.anthropic.com/v1/messages")),
+            _mock_tool_response(
+                "extract_income_fields",
+                {"pay": {"value": "500.00", "confidence": 0.90}, "date": None},
+            ),
+        ]
+
+        extractor = LlmExtractor(client=client, settings=settings)
+        result = extractor.extract(_make_ocr_result(), page_count=1)
+
+        assert result.extraction_error is None
+        assert client.messages.create.call_count == 2
+
+    def test_auth_error_raises_immediately(self, mock_sleep) -> None:
+        """Authentication errors are not retried — they raise ExtractionError."""
+        settings = _make_settings()
+        client = MagicMock()
+        client.messages.create.side_effect = _make_auth_error()
+
+        extractor = LlmExtractor(client=client, settings=settings)
+        with pytest.raises(ExtractionError, match="Non-retryable"):
+            extractor.extract(_make_ocr_result(), page_count=1)
+
+        assert client.messages.create.call_count == 1
+        mock_sleep.assert_not_called()
+
+    def test_bad_request_raises_immediately(self, mock_sleep) -> None:
+        """400 errors are not retried — they raise ExtractionError."""
+        settings = _make_settings()
+        client = MagicMock()
+        client.messages.create.side_effect = _make_bad_request_error()
+
+        extractor = LlmExtractor(client=client, settings=settings)
+        with pytest.raises(ExtractionError, match="Non-retryable"):
+            extractor.extract(_make_ocr_result(), page_count=1)
+
+        assert client.messages.create.call_count == 1
+        mock_sleep.assert_not_called()
+
+    def test_no_tool_use_retried_then_succeeds(self, mock_sleep) -> None:
+        """A missing tool_use block on the first attempt is retried."""
+        settings = _make_settings()
+        client = MagicMock()
+        text_only = MagicMock()
+        text_only.content = [SimpleNamespace(type="text", text="Sorry.")]
+
+        client.messages.create.side_effect = [
+            text_only,
+            _mock_tool_response(
+                "extract_income_fields",
+                {"pay": {"value": "750.00", "confidence": 0.95}, "date": None},
+            ),
+        ]
+
+        extractor = LlmExtractor(client=client, settings=settings)
+        result = extractor.extract(_make_ocr_result(), page_count=1)
+
+        assert result.extraction_error is None
+        assert len(result.fields) == 1
+        assert client.messages.create.call_count == 2
+
+    def test_backoff_delays_increase(self, mock_sleep) -> None:
+        """Verify that sleep durations follow exponential backoff."""
+        settings = _make_settings()
+        client = MagicMock()
+        client.messages.create.side_effect = [
+            _make_rate_limit_error() for _ in range(_MAX_ATTEMPTS)
+        ]
+
+        extractor = LlmExtractor(client=client, settings=settings)
+
+        with patch("src.extract.llm.extractor.random.uniform", return_value=0.0):
+            extractor.extract(_make_ocr_result(), page_count=1)
+
+        delays = [c.args[0] for c in mock_sleep.call_args_list]
+        assert len(delays) == _MAX_ATTEMPTS - 1
+        # With jitter = 0: delay = BASE * 2^(attempt-1) → 2.0, 4.0
+        assert delays[0] == pytest.approx(2.0)
+        assert delays[1] == pytest.approx(4.0)
+
+    def test_failed_result_preserves_metadata(self, mock_sleep) -> None:
+        """Even when extraction fails, source_path, content_hash, and page_count are set."""
+        settings = _make_settings()
+        client = MagicMock()
+        client.messages.create.side_effect = [
+            _make_rate_limit_error() for _ in range(_MAX_ATTEMPTS)
+        ]
+
+        extractor = LlmExtractor(client=client, settings=settings)
+        result = extractor.extract(_make_ocr_result(), page_count=3)
+
+        assert result.source_path == Path("test_doc.pdf")
+        assert result.content_hash == "abc123"
+        assert result.page_count == 3
+        assert result.extraction_error is not None

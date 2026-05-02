@@ -12,7 +12,10 @@ addopts = [
     "--cov-report=term-missing",
     "--cov-fail-under=85",
 ]
-testpaths = ["tests"]
+testpaths = ["tests/unit", "tests/integration"]
+markers = [
+    "live_api: tests that make real API calls (Azure, Anthropic) — run with: pytest tests/live/ --no-cov -v",
+]
 
 [tool.coverage.run]
 branch = true

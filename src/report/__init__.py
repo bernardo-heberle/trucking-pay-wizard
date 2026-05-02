@@ -77,7 +77,7 @@ def _date_sort_key(result: DocumentExtractionResult) -> datetime.date:
 
 
 def _parse_date(value: str) -> datetime.date | None:
-    """Parse the raw date string produced by the extraction rules.
+    """Parse the raw date string produced by extraction.
 
     Handles:
       - ``M/D/YYYY`` and ``MM/DD/YYYY`` (numeric, slash-separated)

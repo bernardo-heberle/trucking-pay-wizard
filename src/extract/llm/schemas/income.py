@@ -83,11 +83,7 @@ Rules:
 
 
 class IncomeDocumentSchema(ExtractionSchema):
-    """Schema for extracting pay and date from trucking income documents.
-
-    Mirrors the fields produced by the rules-based extractor so results
-    are directly comparable.
-    """
+    """Schema for extracting pay and date from trucking income documents."""
 
     @property
     def name(self) -> str:

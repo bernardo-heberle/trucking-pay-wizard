@@ -5,8 +5,7 @@ from pathlib import Path
 import fitz
 from loguru import logger
 
-from src.extract.models import Certainty, DocumentExtractionResult, ExtractedField
-from src.extract.rules import EXPECTED_FIELDS
+from src.extract.models import Certainty, DocumentExtractionResult, EXPECTED_FIELDS, ExtractedField
 from src.report.exceptions import ReportAssemblyError
 
 _INDEX_FONT_SIZE = 11

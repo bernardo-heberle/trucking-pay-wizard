@@ -26,8 +26,6 @@ Ship working increments. A rule-based extractor that handles 80% of documents to
 
 Avoid decisions that are hard to undo. Use interfaces and configuration to keep OCR providers, output formats, and extraction strategies swappable. Lean on dependency injection and configuration files, not hard-coded choices.
 
-The extraction strategy pattern is an example: rules and LLM extraction sit behind the same `Extractor` protocol, switched by a config flag. Adding a third strategy (or removing one) requires no changes to the pipeline, cache, or report assembly.
-
 The delivery model itself is a reversibility question — the standalone desktop app may remain the final product or the pipeline may integrate into IT-LAW. Keeping the GUI as a thin layer over the pipeline ensures either path stays open.
 
 ### Open/Closed
@@ -47,7 +45,6 @@ src/
   ocr/             # Azure Document Intelligence adapter
   classification/  # Document type detection (placeholder — not active in beta)
   extraction/      # Field extraction logic
-    rules/         # Regex-based extraction patterns
     llm/           # Schema-driven LLM extraction (Anthropic API)
       schemas/     # Pluggable extraction schemas (one per document type)
   validation/      # Value and consistency checks
@@ -161,26 +158,16 @@ Use `.env` files for secrets (API keys, credentials) and YAML/TOML for applicati
 
 Key configuration variables:
 
-- `EXTRACTION_MODE` — `rules` (default) or `llm`
-- `ANTHROPIC_API_KEY` — required when mode is `llm`
+- `ANTHROPIC_API_KEY` — required
 - `LLM_MODEL` — which Claude model to use (defaults to `claude-haiku-4-5`)
 
 ---
 
-## Extraction Strategies
+## Extraction
 
-The extraction stage uses a **strategy pattern** (`Extractor` protocol). Both implementations receive an `OcrResult` and return a `DocumentExtractionResult`:
+The `LlmExtractor` receives an `OcrResult` and returns a `DocumentExtractionResult`. It sends PII-sanitized OCR text to Claude via tool_use and returns structured fields with confidence scores.
 
-- **RulesExtractor** — regex patterns tried in priority order; deterministic, fast, no external calls.
-- **LlmExtractor** — sends PII-sanitized OCR text to Claude via tool_use; returns structured fields with confidence scores.
-
-To add a new extraction strategy:
-
-1. Create a class that satisfies the `Extractor` protocol (implement `extract(ocr_result, page_count)`).
-2. Register it in `src/extract/__init__.py:create_extractor()`.
-3. Add a mode string to `src/config.py:_VALID_MODES`.
-
-### Extraction Schemas (LLM)
+### Extraction Schemas
 
 Each LLM schema subclasses `ExtractionSchema` and defines what fields to extract, the tool_use JSON definition, and a parser for the LLM response. To support a new document type, add a new schema in `src/extract/llm/schemas/` — the `LlmExtractor` does not change.
 
@@ -212,7 +199,7 @@ working-folder/
 
 Conventions:
 
-- Cache files are keyed by a hash of the source document content plus the extraction mode (e.g. `<hash>_rules.json`, `<hash>_llm.json`) so switching modes reprocesses documents rather than returning stale results.
+- Cache files are named `<hash>_llm[_<version>].json`, keyed by content hash and an optional version fingerprint. Changing the sanitizer patterns or extraction schema automatically invalidates stale entries.
 - Output artifacts are always regenerated from the full set of cached results, never incrementally patched.
 - The `.cache/` directory is an implementation detail — users should not need to interact with it.
 - Source documents are never modified or moved by the tool.

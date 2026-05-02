@@ -8,8 +8,7 @@ from openpyxl import Workbook
 from openpyxl.styles import Alignment, Font, PatternFill, numbers
 from openpyxl.utils import get_column_letter
 
-from src.extract.models import Certainty, DocumentExtractionResult
-from src.extract.rules import EXPECTED_FIELDS
+from src.extract.models import Certainty, DocumentExtractionResult, EXPECTED_FIELDS
 from src.report.exceptions import ReportAssemblyError
 
 _CURRENCY_FORMAT = '$#,##0.00'
@@ -40,7 +39,7 @@ def build_excel(
     """Build an Excel spreadsheet with one row per document.
 
     Columns: ``Document``, ``PDF Page``, ``Certainty``, then one column per
-    unique extracted field name (derived dynamically so new extraction rules
+    unique extracted field name (derived dynamically so new extraction fields
     automatically get columns).  Data cells are color-filled by their
     individual field certainty; the ``Certainty`` column shows the worst
     certainty across all expected fields for the document.
@@ -126,7 +125,7 @@ def _collect_field_names(results: list[DocumentExtractionResult]) -> list[str]:
 def _normalize_date(value: str) -> str:
     """Return *value* formatted as ``MM/DD/YYYY``.
 
-    Handles the raw date formats produced by the extraction rules:
+    Handles the raw date formats produced by extraction:
     ``MM/DD/YYYY``, ``Month D, YYYY``, and abbreviated ``Mon D, YYYY``.
     Returns the original string unchanged if none of the formats match.
     """

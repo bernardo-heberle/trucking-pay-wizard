@@ -5,7 +5,7 @@
 - Python 3.11+
 - Git
 - Azure Document Intelligence resource (endpoint + API key)
-- Anthropic API key (only if using `EXTRACTION_MODE=llm`)
+- Anthropic API key
 
 Use a virtual environment (`venv`) rather than installing into your system Python. This keeps dependencies isolated and avoids version conflicts across projects.
 
@@ -36,16 +36,15 @@ AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT=https://<your-resource>.cognitiveservices.a
 AZURE_DOCUMENT_INTELLIGENCE_KEY=<your-key>
 ```
 
-### LLM Extraction (optional)
+### Anthropic API key
 
-To use LLM-based extraction instead of rules, set these in `.env`:
+Set your Anthropic API key in `.env`:
 
 ```
-EXTRACTION_MODE=llm
 ANTHROPIC_API_KEY=sk-ant-...
 ```
 
-Get your Anthropic API key from https://console.anthropic.com/. The default model is `claude-haiku-4-5`; override with `LLM_MODEL` if needed. When `EXTRACTION_MODE=rules` (the default), no Anthropic key is required.
+Get your key from https://console.anthropic.com/. The default model is `claude-haiku-4-5`; override with `LLM_MODEL` if needed.
 
 ### Notes
 

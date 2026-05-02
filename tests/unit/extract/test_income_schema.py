@@ -10,7 +10,6 @@ from src.extract.models import Certainty
 
 def _ensure_defaults() -> None:
     """Set env defaults so load_settings() works without a .env file."""
-    os.environ.setdefault("EXTRACTION_MODE", "rules")
     os.environ.setdefault("CONFIDENCE_HIGH_THRESHOLD", "0.9")
     os.environ.setdefault("CONFIDENCE_REVIEW_THRESHOLD", "0.6")
 

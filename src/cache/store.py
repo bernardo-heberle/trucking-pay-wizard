@@ -11,13 +11,15 @@ from src.ocr.models import BoundingBox
 
 _CERTAINTY_LOOKUP: dict[str, Certainty] = {c.value: c for c in Certainty}
 
+_MODE = "llm"
+
 
 def _cache_dir(working_folder: Path) -> Path:
     return working_folder / ".cache"
 
 
-def _cache_filename(content_hash: str, mode: str, version: str | None = None) -> str:
-    """Build the cache filename, incorporating the extraction mode and version.
+def _cache_filename(content_hash: str, version: str | None = None) -> str:
+    """Build the cache filename, incorporating the version fingerprint.
 
     The optional *version* is a fingerprint of the extraction configuration
     (sanitizer patterns, schema definition) so that changes to those
@@ -28,21 +30,20 @@ def _cache_filename(content_hash: str, mode: str, version: str | None = None) ->
     reprocessed under the current configuration.
     """
     if version:
-        return f"{content_hash}_{mode}_{version}.json"
-    return f"{content_hash}_{mode}.json"
+        return f"{content_hash}_{_MODE}_{version}.json"
+    return f"{content_hash}_{_MODE}.json"
 
 
 def cache_get(
     working_folder: Path,
     content_hash: str,
-    mode: str = "rules",
     version: str | None = None,
 ) -> DocumentExtractionResult | None:
-    """Return the cached extraction result for *content_hash* + *mode* + *version*, or ``None`` on miss.
+    """Return the cached extraction result for *content_hash* + *version*, or ``None`` on miss.
 
     Returns ``None`` without raising if the cache file is absent or corrupt.
     """
-    cache_file = _cache_dir(working_folder) / _cache_filename(content_hash, mode, version)
+    cache_file = _cache_dir(working_folder) / _cache_filename(content_hash, version)
     if not cache_file.exists():
         return None
 
@@ -58,10 +59,9 @@ def cache_get(
 def cache_put(
     working_folder: Path,
     result: DocumentExtractionResult,
-    mode: str = "rules",
     version: str | None = None,
 ) -> None:
-    """Write *result* to ``.cache/<content_hash>_<mode>[_<version>].json``.
+    """Write *result* to ``.cache/<content_hash>_llm[_<version>].json``.
 
     Uses an atomic write (tmp file + rename) to prevent corrupt partial writes
     if the process is interrupted.
@@ -69,7 +69,7 @@ def cache_put(
     cache_directory = _cache_dir(working_folder)
     cache_directory.mkdir(parents=True, exist_ok=True)
 
-    filename = _cache_filename(result.content_hash, mode, version)
+    filename = _cache_filename(result.content_hash, version)
     cache_file = cache_directory / filename
     tmp_file = cache_directory / f"{result.content_hash}.tmp"
 
@@ -77,7 +77,7 @@ def cache_put(
         data = _serialize(result)
         tmp_file.write_text(json.dumps(data, indent=2), encoding="utf-8")
         tmp_file.replace(cache_file)
-        logger.debug("Cached extraction result for hash {} (mode={})", result.content_hash[:12], mode)
+        logger.debug("Cached extraction result for hash {}", result.content_hash[:12])
     except Exception as exc:
         logger.warning("Failed to write cache for '{}': {}", result.source_path.name, exc)
         if tmp_file.exists():

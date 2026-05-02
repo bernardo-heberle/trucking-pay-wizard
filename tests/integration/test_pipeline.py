@@ -1,8 +1,9 @@
-"""Integration test: Ingest -> mocked OCR -> Extract -> Report.
+"""Integration test: Ingest -> mocked OCR -> mocked LLM Extract -> Report.
 
 Exercises the full pipeline with synthetic PDF documents and a mocked Azure
-client, verifying that extracted values flow correctly through all stages and
-appear in the final Excel and combined PDF outputs.
+client and mocked Anthropic client, verifying that extracted values flow
+correctly through all stages and appear in the final Excel and combined PDF
+outputs.
 """
 
 from __future__ import annotations
@@ -14,8 +15,8 @@ import fitz
 import openpyxl
 import pytest
 
-from src.extract.extractor import extract_document
-from src.extract.models import Certainty
+from src.extract.llm.extractor import LlmExtractor
+from src.extract.models import Certainty, ExtractedField
 from src.ingest import ingest_document
 from src.ocr.models import BoundingBox, OcrLine, OcrPage, OcrResult
 from src.report import build_report
@@ -32,7 +33,7 @@ def _make_synthetic_pdf(path: Path, text_lines: list[tuple[str, float]]) -> None
 
 
 def _build_mock_ocr_result(source_path: Path, content_hash: str) -> OcrResult:
-    """Build a canned OcrResult whose text matches known extraction patterns."""
+    """Build a canned OcrResult for use with the mocked extractor."""
     lines_text = [
         "Settlement Statement",
         "Order ID: BSAT1066",
@@ -63,6 +64,42 @@ def _build_mock_ocr_result(source_path: Path, content_hash: str) -> OcrResult:
     )
 
 
+def _make_extraction_result(source_path: Path, content_hash: str, page_count: int):
+    """Build a canned DocumentExtractionResult as if returned by LlmExtractor."""
+    from src.extract.models import DocumentExtractionResult, SourceSpan
+    return DocumentExtractionResult(
+        source_path=source_path,
+        content_hash=content_hash,
+        page_count=page_count,
+        fields=[
+            ExtractedField(
+                name="pay",
+                value="1,200.50",
+                source_document=source_path.name,
+                source_page=1,
+                source_spans=[SourceSpan(
+                    page_number=1,
+                    bounding_box=BoundingBox(x=1.0, y=2.0, width=4.0, height=0.25),
+                )],
+                certainty=Certainty.HIGH,
+                confidence=0.97,
+            ),
+            ExtractedField(
+                name="date",
+                value="05/15/2024",
+                source_document=source_path.name,
+                source_page=1,
+                source_spans=[SourceSpan(
+                    page_number=1,
+                    bounding_box=BoundingBox(x=1.0, y=3.5, width=3.5, height=0.25),
+                )],
+                certainty=Certainty.HIGH,
+                confidence=0.95,
+            ),
+        ],
+    )
+
+
 class TestFullPipeline:
 
     def test_end_to_end(self, tmp_path: Path) -> None:
@@ -81,8 +118,12 @@ class TestFullPipeline:
         # 3. Build a mock OCR result (bypassing Azure)
         ocr_result = _build_mock_ocr_result(source, ingested.content_hash)
 
-        # 4. Extract
-        extraction = extract_document(ocr_result, page_count=ingested.page_count)
+        # 4. Extract using a mocked LlmExtractor
+        canned = _make_extraction_result(source, ingested.content_hash, ingested.page_count)
+        mock_extractor = MagicMock(spec=LlmExtractor)
+        mock_extractor.extract.return_value = canned
+
+        extraction = mock_extractor.extract(ocr_result, page_count=ingested.page_count)
         field_names = {f.name for f in extraction.fields}
         assert "pay" in field_names
         assert "date" in field_names
@@ -125,7 +166,8 @@ class TestFullPipeline:
 
     def test_multiple_documents(self, tmp_path: Path) -> None:
         """Verify the pipeline handles multiple documents correctly."""
-        sources: list[Path] = []
+        from src.extract.models import DocumentExtractionResult, SourceSpan
+
         extractions = []
 
         for idx, (pay, date) in enumerate([("500.00", "01/01/2024"), ("900.00", "06/30/2024")]):
@@ -135,38 +177,40 @@ class TestFullPipeline:
                 (f"Total Payment to Carrier: ${pay}", 200),
                 (f"Pickup Exactly: {date}", 320),
             ])
-            sources.append(src)
 
             ingested = ingest_document(src)
-            lines_text = [
-                "Settlement",
-                f"Total Payment to Carrier: ${pay}",
-                f"Pickup Exactly: {date}",
-            ]
-            lines: list[OcrLine] = []
-            offset = 0
-            for i, text in enumerate(lines_text):
-                start = offset
-                end = offset + len(text)
-                lines.append(
-                    OcrLine(
-                        text=text,
-                        page_number=1,
-                        bounding_box=BoundingBox(x=1.0, y=0.5 + i, width=4.0, height=0.25),
-                        char_start=start,
-                        char_end=end,
-                    )
-                )
-                offset = end + (1 if i < len(lines_text) - 1 else 0)
-
-            ocr = OcrResult(
+            canned = DocumentExtractionResult(
                 source_path=src,
                 content_hash=ingested.content_hash,
-                pages=[OcrPage(page_number=1, width_inches=8.5, height_inches=11.0, line_count=3)],
-                lines=lines,
+                page_count=1,
+                fields=[
+                    ExtractedField(
+                        name="pay",
+                        value=pay,
+                        source_document=src.name,
+                        source_page=1,
+                        source_spans=[SourceSpan(
+                            page_number=1,
+                            bounding_box=BoundingBox(x=1.0, y=2.0, width=4.0, height=0.25),
+                        )],
+                        certainty=Certainty.HIGH,
+                        confidence=0.95,
+                    ),
+                    ExtractedField(
+                        name="date",
+                        value=date,
+                        source_document=src.name,
+                        source_page=1,
+                        source_spans=[SourceSpan(
+                            page_number=1,
+                            bounding_box=BoundingBox(x=1.0, y=3.5, width=3.5, height=0.25),
+                        )],
+                        certainty=Certainty.HIGH,
+                        confidence=0.95,
+                    ),
+                ],
             )
-            extraction = extract_document(ocr, page_count=1)
-            extractions.append(extraction)
+            extractions.append(canned)
 
         output_dir = tmp_path / "output"
         pdf_path, excel_path = build_report(extractions, output_dir)

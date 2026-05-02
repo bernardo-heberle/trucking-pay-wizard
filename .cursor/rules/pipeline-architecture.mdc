@@ -30,7 +30,7 @@ Keep contracts narrow (ISP). A caller that only needs extracted text should not 
 
 ### Extraction contract: success vs. failure
 
-`Extractor.extract()` always returns a `DocumentExtractionResult`. It never returns `None`. It raises only for non-retryable configuration errors (bad API key, malformed request).
+`LlmExtractor.extract()` always returns a `DocumentExtractionResult`. It never returns `None`. It raises only for non-retryable configuration errors (bad API key, malformed request).
 
 - **Success**: `result.extraction_error is None`, `result.fields` contains zero or more extracted fields.
 - **Soft failure** (retries exhausted): `result.extraction_error` is a non-empty string, `result.fields` is empty.
@@ -42,7 +42,7 @@ extraction = extractor.extract(ocr_result, page_count=ingested.page_count)
 if extraction.extraction_error:
     logger.warning("Extraction failed for '{}': {}", source_path.name, extraction.extraction_error)
 else:
-    cache_put(folder, extraction, mode=mode, version=version)
+    cache_put(folder, extraction, version=version)
 results.append(extraction)
 ```
 
@@ -50,13 +50,11 @@ results.append(extraction)
 
 New stages slot in without editing existing ones. Write stages that consume a well-defined input and produce a well-defined output so new stages can be inserted around them.
 
-## Extraction Strategy
+## Extraction
 
-The extraction stage uses a strategy pattern (`Extractor` protocol in `src/extract/base.py`). Both `RulesExtractor` and `LlmExtractor` implement the same interface and return `DocumentExtractionResult`. The active strategy is determined by `EXTRACTION_MODE` in the config.
+The extraction stage uses `LlmExtractor` (`src/extract/llm/extractor.py`). It receives an `OcrResult` and returns a `DocumentExtractionResult`. The extractor is instantiated with `LlmExtractor.from_config()`.
 
-When adding a new extraction strategy, implement the `Extractor` protocol and register it in `create_extractor()`. Never hardcode an extraction strategy in the pipeline — always go through the factory.
-
-## Schema-Driven Extraction (LLM)
+## Schema-Driven Extraction
 
 LLM extraction is schema-driven. Each schema subclasses `ExtractionSchema` and defines the fields to extract, the tool_use JSON definition, and a parser. To support a new document type, add a schema in `src/extract/llm/schemas/` — the `LlmExtractor` does not change.
 
@@ -66,7 +64,7 @@ LLM extraction is schema-driven. Each schema subclasses `ExtractionSchema` and d
 
 ## Traceability
 
-Every extracted value must carry provenance. This is a hard requirement — it applies to both rules and LLM extraction.
+Every extracted value must carry provenance. This is a hard requirement.
 
 ```python
 @dataclass

@@ -155,14 +155,11 @@ Fields include:
 - net pay
 - payment dates
 
-### Extraction Strategies
+### Extraction Strategy
 
-The extraction stage uses a **strategy pattern** controlled by the `EXTRACTION_MODE` config flag:
+The extraction stage uses schema-driven LLM extraction via the Anthropic API (Claude Haiku). OCR text is PII-sanitized before it leaves the machine, then sent with a tool-use schema that forces structured JSON output. Each field includes a confidence score.
 
-- **Rules** (`EXTRACTION_MODE=rules`) — regex patterns tried in priority order; first match wins. Deterministic and fast. This is the default.
-- **LLM** (`EXTRACTION_MODE=llm`) — schema-driven structured extraction via the Anthropic API (Claude Haiku). OCR text is PII-sanitized before it leaves the machine, then sent with a tool-use schema that forces structured JSON output. Each field includes a confidence score.
-
-Both strategies produce the same `DocumentExtractionResult` with provenance metadata, so caching, validation, and report assembly work identically regardless of which strategy ran.
+Extraction always returns a `DocumentExtractionResult` with provenance metadata, consumed by caching, validation, and report assembly.
 
 ### LLM Failure Handling
 
@@ -228,9 +225,9 @@ In a future integration scenario, report assembly output could also feed directl
 
 The architecture prioritizes:
 
-- **modularity** — pipeline and GUI are independent layers; extraction strategies are swappable via config
-- **traceability** — extracted values link back to source documents regardless of extraction strategy
-- **reliability** — deterministic rules provide the baseline; LLM extraction adds coverage with confidence scoring and human review as safety nets
+- **modularity** — pipeline and GUI are independent layers; each stage has a defined contract
+- **traceability** — extracted values link back to source documents
+- **reliability** — LLM extraction with confidence scoring and human review as safety nets
 - **privacy** — PII sanitization scrubs sensitive identifiers before any text reaches external APIs
-- **provider independence** — the OCR layer wraps Azure Document Intelligence through an adapter; extraction wraps both rules and LLM behind a common protocol; either provider can be swapped without touching the rest of the pipeline
+- **provider independence** — the OCR layer wraps Azure Document Intelligence through an adapter; the extractor can be swapped without touching the rest of the pipeline
 - **deliverability** — the tool ships as a self-contained executable

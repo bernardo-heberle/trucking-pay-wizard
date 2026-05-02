@@ -68,7 +68,7 @@ class TestCacheGet:
     def test_corrupt_json_returns_none(self, tmp_path: Path) -> None:
         cache_dir = tmp_path / ".cache"
         cache_dir.mkdir()
-        (cache_dir / f"{_HASH_A}_rules.json").write_text("{invalid json", encoding="utf-8")
+        (cache_dir / f"{_HASH_A}_llm.json").write_text("{invalid json", encoding="utf-8")
         assert cache_get(tmp_path, _HASH_A) is None
 
     def test_source_path_overridden_on_load(self, tmp_path: Path) -> None:
@@ -76,7 +76,6 @@ class TestCacheGet:
         result = _make_result(original_path, content_hash=_HASH_A)
         cache_put(tmp_path, result)
 
-        current_path = tmp_path / "new_folder" / "doc.pdf"
         loaded = cache_get(tmp_path, _HASH_A)
         assert loaded is not None
         # source_path in cache file is stale; cache_get returns the stored path
@@ -91,7 +90,7 @@ class TestCachePut:
         result = _make_result(tmp_path / "doc.pdf", content_hash=_HASH_A)
         cache_put(tmp_path, result)
 
-        cache_file = tmp_path / ".cache" / f"{_HASH_A}_rules.json"
+        cache_file = tmp_path / ".cache" / f"{_HASH_A}_llm.json"
         assert cache_file.exists()
 
     def test_put_is_idempotent(self, tmp_path: Path) -> None:
@@ -99,7 +98,7 @@ class TestCachePut:
         cache_put(tmp_path, result)
         cache_put(tmp_path, result)  # second write must not raise
 
-        cache_file = tmp_path / ".cache" / f"{_HASH_A}_rules.json"
+        cache_file = tmp_path / ".cache" / f"{_HASH_A}_llm.json"
         assert cache_file.exists()
 
     def test_no_tmp_file_left_behind(self, tmp_path: Path) -> None:
@@ -141,7 +140,7 @@ class TestRoundTrip:
         result = _make_result(tmp_path / "doc.pdf", content_hash=_HASH_A)
         cache_put(tmp_path, result)
 
-        cache_file = tmp_path / ".cache" / f"{_HASH_A}_rules.json"
+        cache_file = tmp_path / ".cache" / f"{_HASH_A}_llm.json"
         data = json.loads(cache_file.read_text(encoding="utf-8"))
         assert data["content_hash"] == _HASH_A
         assert "fields" in data
@@ -152,33 +151,33 @@ class TestCacheVersioning:
     """Verify that the version parameter correctly partitions cache entries."""
 
     def test_filename_without_version(self) -> None:
-        assert _cache_filename("abc123", "rules") == "abc123_rules.json"
+        assert _cache_filename("abc123") == "abc123_llm.json"
 
     def test_filename_with_version(self) -> None:
-        assert _cache_filename("abc123", "llm", "v1fp") == "abc123_llm_v1fp.json"
+        assert _cache_filename("abc123", "v1fp") == "abc123_llm_v1fp.json"
 
     def test_version_mismatch_is_cache_miss(self, tmp_path: Path) -> None:
         result = _make_result(tmp_path / "doc.pdf")
-        cache_put(tmp_path, result, mode="llm", version="old_fingerprint")
+        cache_put(tmp_path, result, version="old_fingerprint")
 
-        assert cache_get(tmp_path, _HASH_A, mode="llm", version="new_fingerprint") is None
+        assert cache_get(tmp_path, _HASH_A, version="new_fingerprint") is None
 
     def test_version_match_is_cache_hit(self, tmp_path: Path) -> None:
         result = _make_result(tmp_path / "doc.pdf")
-        cache_put(tmp_path, result, mode="llm", version="same_fp")
+        cache_put(tmp_path, result, version="same_fp")
 
-        loaded = cache_get(tmp_path, _HASH_A, mode="llm", version="same_fp")
+        loaded = cache_get(tmp_path, _HASH_A, version="same_fp")
         assert loaded is not None
         assert loaded.content_hash == _HASH_A
 
     def test_no_version_does_not_match_versioned(self, tmp_path: Path) -> None:
         result = _make_result(tmp_path / "doc.pdf")
-        cache_put(tmp_path, result, mode="llm")
+        cache_put(tmp_path, result)
 
-        assert cache_get(tmp_path, _HASH_A, mode="llm", version="some_fp") is None
+        assert cache_get(tmp_path, _HASH_A, version="some_fp") is None
 
     def test_versioned_does_not_match_no_version(self, tmp_path: Path) -> None:
         result = _make_result(tmp_path / "doc.pdf")
-        cache_put(tmp_path, result, mode="llm", version="some_fp")
+        cache_put(tmp_path, result, version="some_fp")
 
-        assert cache_get(tmp_path, _HASH_A, mode="llm") is None
+        assert cache_get(tmp_path, _HASH_A) is None

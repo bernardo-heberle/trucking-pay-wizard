@@ -45,9 +45,9 @@ The system should:
 
 ## Design Philosophy
 
-### Deterministic + Verifiable
+### Verifiable
 
-Rule-based extraction remains the baseline — deterministic, auditable, and fast. LLM extraction is a complementary strategy that broadens document coverage. Every LLM-extracted value carries a confidence score; values below the threshold are flagged for human review. The transition path is: rules-only baseline, dual-mode evaluation, eventual LLM-primary with confidence-based review.
+Every extracted value carries a confidence score. Values below the review threshold are flagged for human review. Provenance metadata traces each extracted value back to its source location in the document.
 
 ### Human-in-the-loop
 

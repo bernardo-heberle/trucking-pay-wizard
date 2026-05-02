@@ -1,4 +1,4 @@
 
 - Add a lot more test data.
 
-- Test things through the LLM mode pipeline, add the toggle to the beta tester.
+- Test the pipeline end-to-end with beta tester.

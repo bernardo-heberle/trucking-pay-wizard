@@ -8,12 +8,12 @@ alwaysApply: false
 
 ## Priorities
 
-Prioritize tests for **extraction rules** and **validation logic** — bugs here produce incorrect financial values that staff rely on. Do not chase coverage metrics.
+Prioritize tests for **extraction** and **validation logic** — bugs here produce incorrect financial values that staff rely on. Do not chase coverage metrics.
 
 ## Test Levels
 
 **Unit tests** (`tests/unit/`)
-- Extraction functions — each rule, edge case, and failure mode
+- Extraction — schema parsing, PII sanitizer, LlmExtractor with mocked client
 - Validators — currency formats, date formats, numeric consistency checks
 - Formatting/output helpers
 

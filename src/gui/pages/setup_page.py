@@ -20,16 +20,12 @@ from src.gui._widgets import TruckProgressWidget, add_corner_sparkles
 from src.ingest import collect_source_files
 
 
-def _extraction_version(mode: str) -> str | None:
+def _extraction_version() -> str:
     """Compute a cache-version fingerprint for the current extraction config.
 
-    For LLM mode the fingerprint captures the sanitizer patterns and
-    schema definition so that changes to either automatically invalidate
-    stale cached results.  Rules mode returns ``None`` for now.
+    Captures the sanitizer patterns and schema definition so that changes
+    to either automatically invalidate stale cached results.
     """
-    if mode != "llm":
-        return None
-
     from src.extract.llm.sanitizer import sanitizer_fingerprint
     from src.extract.llm.schemas.income import IncomeDocumentSchema
 
@@ -59,24 +55,19 @@ class _PipelineWorker(QObject):
     def run(self) -> None:
         try:
             from src.cache import cache_get, cache_put
-            from src.config import load_settings
-            from src.extract import create_extractor
+            from src.extract.llm.extractor import LlmExtractor
             from src.ingest import ingest_document
             from src.ocr import analyze_document, build_client
             from src.report import build_report
 
-            settings = load_settings()
-            mode = settings.extraction_mode
-            extractor = create_extractor(mode)
-
-            version = _extraction_version(mode)
+            extractor = LlmExtractor.from_config()
+            version = _extraction_version()
 
             source_files = collect_source_files(self._folder)
             n = len(source_files)
             total = n + 1
             self.progress.emit(
-                f"Found {n} document{'s' if n != 1 else ''} — starting… "
-                f"(extraction: {mode})"
+                f"Found {n} document{'s' if n != 1 else ''} — starting…"
             )
             self.progress_step.emit(0, total)
 
@@ -87,7 +78,7 @@ class _PipelineWorker(QObject):
                 ingested = ingest_document(source_path)
                 extraction = cache_get(
                     self._folder, ingested.content_hash,
-                    mode=mode, version=version,
+                    version=version,
                 )
 
                 if extraction is not None:
@@ -109,7 +100,7 @@ class _PipelineWorker(QObject):
                             extraction.extraction_error,
                         )
                     else:
-                        cache_put(self._folder, extraction, mode=mode, version=version)
+                        cache_put(self._folder, extraction, version=version)
 
                 results.append(extraction)
                 self.progress_step.emit(i, total)

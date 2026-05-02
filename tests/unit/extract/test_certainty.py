@@ -1,31 +1,10 @@
-"""Unit tests for the Certainty enum and per-pattern certainty tagging."""
+"""Unit tests for the Certainty enum and overall_certainty logic."""
 
 from __future__ import annotations
 
 from pathlib import Path
 
-import pytest
-
 from src.extract.models import Certainty, DocumentExtractionResult, ExtractedField
-from src.extract.rules import EXPECTED_FIELDS
-from src.extract.rules import date as date_rules
-from src.extract.rules import pay as pay_rules
-
-_VALID_CERTAINTIES = {"high", "review"}
-
-
-class TestPatternCertaintyKeys:
-    """Every pattern dict must include a valid ``certainty`` key."""
-
-    @pytest.mark.parametrize("pattern", pay_rules.PATTERNS, ids=lambda p: p["name"])
-    def test_pay_pattern_has_certainty(self, pattern: dict) -> None:
-        assert "certainty" in pattern
-        assert pattern["certainty"] in _VALID_CERTAINTIES
-
-    @pytest.mark.parametrize("pattern", date_rules.PATTERNS, ids=lambda p: p["name"])
-    def test_date_pattern_has_certainty(self, pattern: dict) -> None:
-        assert "certainty" in pattern
-        assert pattern["certainty"] in _VALID_CERTAINTIES
 
 
 class TestCertaintyEnum:
@@ -37,13 +16,6 @@ class TestCertaintyEnum:
 
     def test_is_str_subclass(self) -> None:
         assert isinstance(Certainty.HIGH, str)
-
-
-class TestExpectedFields:
-
-    def test_expected_fields_contains_pay_and_date(self) -> None:
-        assert "pay" in EXPECTED_FIELDS
-        assert "date" in EXPECTED_FIELDS
 
 
 class TestOverallCertainty:

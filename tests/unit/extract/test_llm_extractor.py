@@ -20,7 +20,6 @@ from src.ocr.models import BoundingBox, OcrLine, OcrPage, OcrResult
 
 def _make_settings(**overrides) -> Settings:
     defaults = dict(
-        extraction_mode="llm",
         anthropic_api_key="sk-test-key",
         llm_model="claude-3-5-haiku-20241022",
         confidence_high_threshold=0.9,

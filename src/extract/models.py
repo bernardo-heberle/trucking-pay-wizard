@@ -6,6 +6,8 @@ from pathlib import Path
 
 from src.ocr.models import BoundingBox
 
+EXPECTED_FIELDS: list[str] = ["pay", "date"]
+
 
 class Certainty(str, Enum):
     """How reliable an extracted value is.

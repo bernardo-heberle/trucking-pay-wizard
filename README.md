@@ -64,7 +64,7 @@ Current focus areas:
 - folder-based batch processing workflow
 - desktop GUI for folder management, document input, and result review
 - OCR integration
-- financial field extraction and validation (rules-based and LLM-based strategies behind a config flag)
+- financial field extraction and validation (schema-driven LLM extraction via Anthropic API)
 - report assembly (combined PDF + CSV/Excel generation)
 - packaging as a distributable executable
 - evaluation with DTC staff for feedback
@@ -79,8 +79,7 @@ The tool reads settings from a `.env` file in the project root (see `.env.exampl
 |---|---|---|
 | `AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT` | Always | Azure OCR endpoint |
 | `AZURE_DOCUMENT_INTELLIGENCE_KEY` | Always | Azure OCR API key |
-| `EXTRACTION_MODE` | No (default: `rules`) | `rules` for regex extraction, `llm` for LLM extraction |
-| `ANTHROPIC_API_KEY` | When `EXTRACTION_MODE=llm` | Anthropic API key for Claude |
+| `ANTHROPIC_API_KEY` | Always | Anthropic API key for Claude |
 | `LLM_MODEL` | No | Override the default Claude model (`claude-haiku-4-5`) |
 
 ---

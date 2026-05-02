@@ -1,0 +1,1076 @@
+{
+  "source_path": "R123456 2020 Toyota Camry.pdf",
+  "content_hash": "bb22cc33dd44ee55ff66aa11bb22cc33dd44ee55ff66aa11bb22cc33dd44ee55",
+  "pages": [
+    {
+      "page_number": 1,
+      "width_inches": 8.5,
+      "height_inches": 11.0,
+      "line_count": 65
+    },
+    {
+      "page_number": 2,
+      "width_inches": 8.5,
+      "height_inches": 11.0,
+      "line_count": 23
+    }
+  ],
+  "lines": [
+    {
+      "text": "10/29/24, 12:15 PM",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 0.5,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 0,
+      "char_end": 18
+    },
+    {
+      "text": "V2 Dispatch | Auto Transport Dispatch Simplified",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 0.65,
+        "width": 3.8,
+        "height": 0.25
+      },
+      "char_start": 19,
+      "char_end": 67
+    },
+    {
+      "text": "Dispatch Details | Load #R123456",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 0.79,
+        "width": 2.6,
+        "height": 0.25
+      },
+      "char_start": 68,
+      "char_end": 100
+    },
+    {
+      "text": "Order ID",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 0.94,
+        "width": 0.6,
+        "height": 0.25
+      },
+      "char_start": 101,
+      "char_end": 109
+    },
+    {
+      "text": "R123456",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.08,
+        "width": 0.6,
+        "height": 0.25
+      },
+      "char_start": 110,
+      "char_end": 117
+    },
+    {
+      "text": "Current Status",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.23,
+        "width": 1.1,
+        "height": 0.25
+      },
+      "char_start": 118,
+      "char_end": 132
+    },
+    {
+      "text": "Delivered",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.38,
+        "width": 0.7,
+        "height": 0.25
+      },
+      "char_start": 133,
+      "char_end": 142
+    },
+    {
+      "text": "Last Update",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.52,
+        "width": 0.9,
+        "height": 0.25
+      },
+      "char_start": 143,
+      "char_end": 154
+    },
+    {
+      "text": "April 12, 2024 at 3:45 PM",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.67,
+        "width": 2.0,
+        "height": 0.25
+      },
+      "char_start": 155,
+      "char_end": 180
+    },
+    {
+      "text": "V2D Reference #",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.82,
+        "width": 1.2,
+        "height": 0.25
+      },
+      "char_start": 181,
+      "char_end": 196
+    },
+    {
+      "text": "556789",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.96,
+        "width": 0.5,
+        "height": 0.25
+      },
+      "char_start": 197,
+      "char_end": 203
+    },
+    {
+      "text": "Dispatch Date",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.11,
+        "width": 1.0,
+        "height": 0.25
+      },
+      "char_start": 204,
+      "char_end": 217
+    },
+    {
+      "text": "March 28, 2024 (Thu)",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.25,
+        "width": 1.6,
+        "height": 0.25
+      },
+      "char_start": 218,
+      "char_end": 238
+    },
+    {
+      "text": "Pickup Date",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.4,
+        "width": 0.9,
+        "height": 0.25
+      },
+      "char_start": 239,
+      "char_end": 250
+    },
+    {
+      "text": "April 8, 2024 (Mon)",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.55,
+        "width": 1.5,
+        "height": 0.25
+      },
+      "char_start": 251,
+      "char_end": 270
+    },
+    {
+      "text": "Delivery Date",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.69,
+        "width": 1.0,
+        "height": 0.25
+      },
+      "char_start": 271,
+      "char_end": 284
+    },
+    {
+      "text": "April 12, 2024 (Fri)",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.84,
+        "width": 1.6,
+        "height": 0.25
+      },
+      "char_start": 285,
+      "char_end": 305
+    },
+    {
+      "text": "Carrier Type",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.98,
+        "width": 1.0,
+        "height": 0.25
+      },
+      "char_start": 306,
+      "char_end": 318
+    },
+    {
+      "text": "Open",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.13,
+        "width": 0.3,
+        "height": 0.25
+      },
+      "char_start": 319,
+      "char_end": 323
+    },
+    {
+      "text": "Carrier Information",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.28,
+        "width": 1.5,
+        "height": 0.25
+      },
+      "char_start": 324,
+      "char_end": 343
+    },
+    {
+      "text": "Eagle Express",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.42,
+        "width": 1.0,
+        "height": 0.25
+      },
+      "char_start": 344,
+      "char_end": 357
+    },
+    {
+      "text": "1200 Commerce Blvd Ste 300",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.57,
+        "width": 2.1,
+        "height": 0.25
+      },
+      "char_start": 358,
+      "char_end": 384
+    },
+    {
+      "text": "Torrance, CA 90501",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.72,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 385,
+      "char_end": 403
+    },
+    {
+      "text": "Driver Name : John Doe",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.86,
+        "width": 1.8,
+        "height": 0.25
+      },
+      "char_start": 404,
+      "char_end": 426
+    },
+    {
+      "text": "Driver Phone : (555) 123-4567",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.01,
+        "width": 2.3,
+        "height": 0.25
+      },
+      "char_start": 427,
+      "char_end": 456
+    },
+    {
+      "text": "Office Phone : (555) 123-4567",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.15,
+        "width": 2.3,
+        "height": 0.25
+      },
+      "char_start": 457,
+      "char_end": 486
+    },
+    {
+      "text": "Agent Information",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.3,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 487,
+      "char_end": 504
+    },
+    {
+      "text": "National Auto Movers",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.45,
+        "width": 1.6,
+        "height": 0.25
+      },
+      "char_start": 505,
+      "char_end": 525
+    },
+    {
+      "text": "200 Park Avenue Ste 400",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.59,
+        "width": 1.8,
+        "height": 0.25
+      },
+      "char_start": 526,
+      "char_end": 549
+    },
+    {
+      "text": "New York, NY 10001",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.74,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 550,
+      "char_end": 568
+    },
+    {
+      "text": "Contact : Alex, Chris, Pat",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.88,
+        "width": 2.1,
+        "height": 0.25
+      },
+      "char_start": 569,
+      "char_end": 595
+    },
+    {
+      "text": "Phone : (555) 888-9999",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.03,
+        "width": 1.8,
+        "height": 0.25
+      },
+      "char_start": 596,
+      "char_end": 618
+    },
+    {
+      "text": "MC Number : 112233",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.18,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 619,
+      "char_end": 637
+    },
+    {
+      "text": "Pickup Location",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.32,
+        "width": 1.2,
+        "height": 0.25
+      },
+      "char_start": 638,
+      "char_end": 653
+    },
+    {
+      "text": "Mike Johnson",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.47,
+        "width": 1.0,
+        "height": 0.25
+      },
+      "char_start": 654,
+      "char_end": 666
+    },
+    {
+      "text": "789 Elm Street",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.62,
+        "width": 1.1,
+        "height": 0.25
+      },
+      "char_start": 667,
+      "char_end": 681
+    },
+    {
+      "text": "Fayetteville, GA 30215",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.76,
+        "width": 1.8,
+        "height": 0.25
+      },
+      "char_start": 682,
+      "char_end": 704
+    },
+    {
+      "text": "Phone : (555) 777-6666",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.91,
+        "width": 1.8,
+        "height": 0.25
+      },
+      "char_start": 705,
+      "char_end": 727
+    },
+    {
+      "text": "Delivery Location",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.05,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 728,
+      "char_end": 745
+    },
+    {
+      "text": "Harbor Auto Receiving",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.2,
+        "width": 1.7,
+        "height": 0.25
+      },
+      "char_start": 746,
+      "char_end": 767
+    },
+    {
+      "text": "555 Harbor Blvd",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.35,
+        "width": 1.2,
+        "height": 0.25
+      },
+      "char_start": 768,
+      "char_end": 783
+    },
+    {
+      "text": "Long Beach, CA 90802",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.49,
+        "width": 1.6,
+        "height": 0.25
+      },
+      "char_start": 784,
+      "char_end": 804
+    },
+    {
+      "text": "Phone : (555) 444-3333",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.64,
+        "width": 1.8,
+        "height": 0.25
+      },
+      "char_start": 805,
+      "char_end": 827
+    },
+    {
+      "text": "Vehicle Information - 1 Vehicle",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.78,
+        "width": 2.5,
+        "height": 0.25
+      },
+      "char_start": 828,
+      "char_end": 859
+    },
+    {
+      "text": "Year",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.93,
+        "width": 0.3,
+        "height": 0.25
+      },
+      "char_start": 860,
+      "char_end": 864
+    },
+    {
+      "text": "Make",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.08,
+        "width": 0.3,
+        "height": 0.25
+      },
+      "char_start": 865,
+      "char_end": 869
+    },
+    {
+      "text": "Model",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.22,
+        "width": 0.4,
+        "height": 0.25
+      },
+      "char_start": 870,
+      "char_end": 875
+    },
+    {
+      "text": "Type",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.37,
+        "width": 0.3,
+        "height": 0.25
+      },
+      "char_start": 876,
+      "char_end": 880
+    },
+    {
+      "text": "Condition",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.52,
+        "width": 0.7,
+        "height": 0.25
+      },
+      "char_start": 881,
+      "char_end": 890
+    },
+    {
+      "text": "Color",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.66,
+        "width": 0.4,
+        "height": 0.25
+      },
+      "char_start": 891,
+      "char_end": 896
+    },
+    {
+      "text": "Plate",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.81,
+        "width": 0.4,
+        "height": 0.25
+      },
+      "char_start": 897,
+      "char_end": 902
+    },
+    {
+      "text": "Vin",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.95,
+        "width": 0.2,
+        "height": 0.25
+      },
+      "char_start": 903,
+      "char_end": 906
+    },
+    {
+      "text": "Lot #",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.1,
+        "width": 0.4,
+        "height": 0.25
+      },
+      "char_start": 907,
+      "char_end": 912
+    },
+    {
+      "text": "2020",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.25,
+        "width": 0.3,
+        "height": 0.25
+      },
+      "char_start": 913,
+      "char_end": 917
+    },
+    {
+      "text": "Toyota",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.39,
+        "width": 0.5,
+        "height": 0.25
+      },
+      "char_start": 918,
+      "char_end": 924
+    },
+    {
+      "text": "Camry",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.54,
+        "width": 0.4,
+        "height": 0.25
+      },
+      "char_start": 925,
+      "char_end": 930
+    },
+    {
+      "text": "Car",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.68,
+        "width": 0.2,
+        "height": 0.25
+      },
+      "char_start": 931,
+      "char_end": 934
+    },
+    {
+      "text": "Running",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.83,
+        "width": 0.6,
+        "height": 0.25
+      },
+      "char_start": 935,
+      "char_end": 942
+    },
+    {
+      "text": "Silver",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.98,
+        "width": 0.5,
+        "height": 0.25
+      },
+      "char_start": 943,
+      "char_end": 949
+    },
+    {
+      "text": "4T1BF1FK5LU123456",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.12,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 950,
+      "char_end": 967
+    },
+    {
+      "text": "Additional Comments",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.27,
+        "width": 1.5,
+        "height": 0.25
+      },
+      "char_start": 968,
+      "char_end": 987
+    },
+    {
+      "text": "Delivery Window: 4/10/2024 - 4/15/2024 *** PLEASE DO NOT ACCEPT WITH OVER 1/4 TANK OF GAS OR ANY CRACKS IN THE WINDSHIELD ***",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.42,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 988,
+      "char_end": 1113
+    },
+    {
+      "text": "Vin#4T1BF1FK5LU123456 Booking#223344 *** DRIVERS MUST CALL TO MAKE AN APPOINTMENT FOR PICK UP OR DELIVERY 24 HOURS IN ADVANCE ***",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.56,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 1114,
+      "char_end": 1243
+    },
+    {
+      "text": "https://www.v2dispatch.com/print.php",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.71,
+        "width": 2.9,
+        "height": 0.25
+      },
+      "char_start": 1244,
+      "char_end": 1280
+    },
+    {
+      "text": "1/2",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.85,
+        "width": 0.2,
+        "height": 0.25
+      },
+      "char_start": 1281,
+      "char_end": 1284
+    },
+    {
+      "text": "10/29/24, 12:15 PM",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 0.5,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 1286,
+      "char_end": 1304
+    },
+    {
+      "text": "V2 Dispatch | Auto Transport Dispatch Simplified",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 0.9,
+        "width": 3.8,
+        "height": 0.25
+      },
+      "char_start": 1305,
+      "char_end": 1353
+    },
+    {
+      "text": "Load Payment",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.3,
+        "width": 1.0,
+        "height": 0.25
+      },
+      "char_start": 1354,
+      "char_end": 1366
+    },
+    {
+      "text": "Total Payment",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.7,
+        "width": 1.0,
+        "height": 0.25
+      },
+      "char_start": 1367,
+      "char_end": 1380
+    },
+    {
+      "text": "$920",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.1,
+        "width": 0.3,
+        "height": 0.25
+      },
+      "char_start": 1381,
+      "char_end": 1385
+    },
+    {
+      "text": "Collect On Delivery",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.5,
+        "width": 1.5,
+        "height": 0.25
+      },
+      "char_start": 1386,
+      "char_end": 1405
+    },
+    {
+      "text": "$0",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.9,
+        "width": 0.2,
+        "height": 0.25
+      },
+      "char_start": 1406,
+      "char_end": 1408
+    },
+    {
+      "text": "Agent Pays Carrier",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.3,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 1409,
+      "char_end": 1427
+    },
+    {
+      "text": "$920",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.7,
+        "width": 0.3,
+        "height": 0.25
+      },
+      "char_start": 1428,
+      "char_end": 1432
+    },
+    {
+      "text": "Payment will be processed upon confirmation of delivery.",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.1,
+        "width": 4.5,
+        "height": 0.25
+      },
+      "char_start": 1433,
+      "char_end": 1489
+    },
+    {
+      "text": "Contract Terms",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.5,
+        "width": 1.1,
+        "height": 0.25
+      },
+      "char_start": 1490,
+      "char_end": 1504
+    },
+    {
+      "text": "- As a courtesy, please give clients a call at least 1-2 hours prior to picking up or delivering a vehicle.",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.9,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 1505,
+      "char_end": 1612
+    },
+    {
+      "text": "- All drivers should fill out a BOL upon pickup and delivery. Please call National Auto Movers if there are any circumstances which prevent driver from doing so.",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.3,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 1613,
+      "char_end": 1774
+    },
+    {
+      "text": "- Any vehicle that is listed as INOP must be loaded & unloaded with a winch.",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.7,
+        "width": 6.1,
+        "height": 0.25
+      },
+      "char_start": 1775,
+      "char_end": 1851
+    },
+    {
+      "text": "- Dry run fees will not be paid out unless agreed upon before assignment of the load.",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.1,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 1852,
+      "char_end": 1937
+    },
+    {
+      "text": "- We ask that all carriers call in if and when cancelling a load.",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.5,
+        "width": 5.2,
+        "height": 0.25
+      },
+      "char_start": 1938,
+      "char_end": 2003
+    },
+    {
+      "text": "- Any additional funds requested for vehicle modifications, items, etc. will not be paid unless discussed BEFORE the vehicle is loaded. * MUST CONTACT",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.9,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 2004,
+      "char_end": 2154
+    },
+    {
+      "text": "US*",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.3,
+        "width": 0.2,
+        "height": 0.25
+      },
+      "char_start": 2155,
+      "char_end": 2158
+    },
+    {
+      "text": "Authority to transport this vehicle is hereby assigned to Eagle Express. By accepting this agreement Eagle Express certifies that is has the proper legal authority and insurance",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.7,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 2159,
+      "char_end": 2336
+    },
+    {
+      "text": "to carry the above described vehicle, only on trucks owned by Eagle Express.",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.1,
+        "width": 6.1,
+        "height": 0.25
+      },
+      "char_start": 2337,
+      "char_end": 2413
+    },
+    {
+      "text": "@ 2021 V2 Dispatch Inc.",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.5,
+        "width": 1.8,
+        "height": 0.25
+      },
+      "char_start": 2414,
+      "char_end": 2437
+    },
+    {
+      "text": "https://www.v2dispatch.com/print.php",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.9,
+        "width": 2.9,
+        "height": 0.25
+      },
+      "char_start": 2438,
+      "char_end": 2474
+    },
+    {
+      "text": "2/2",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.3,
+        "width": 0.2,
+        "height": 0.25
+      },
+      "char_start": 2475,
+      "char_end": 2478
+    }
+  ]
+}

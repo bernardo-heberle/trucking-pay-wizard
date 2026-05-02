@@ -4,6 +4,7 @@ import re
 from decimal import Decimal, InvalidOperation
 from typing import Any
 
+from src.extract.exceptions import MalformedToolResponse
 from src.extract.models import Certainty, ExtractedField
 
 from .base import ExtractionSchema
@@ -14,55 +15,66 @@ _TOOL_SCHEMA: dict[str, Any] = {
     "name": _TOOL_NAME,
     "description": (
         "Extract financial fields from a trucking income document.  "
-        "Return each field with a confidence score between 0.0 and 1.0."
+        "Always return the full object structure for every field — never a "
+        "plain string or number.  Set value to null when a field is not found."
     ),
     "input_schema": {
         "type": "object",
         "properties": {
             "pay": {
-                "type": ["object", "null"],
+                # Always an object — value is null when not found.
+                # Using a type union here risks the model returning a plain
+                # string instead of the required object structure.
+                "type": "object",
                 "description": (
                     "Total payment to carrier — the dollar amount the "
-                    "carrier receives for the load."
+                    "carrier receives for the load.  Always return this "
+                    "as an object with 'value' and 'confidence' keys."
                 ),
                 "properties": {
                     "value": {
-                        "type": "string",
+                        "type": ["string", "null"],
                         "description": (
                             "Plain decimal number — no currency symbol, no commas, "
-                            "always two decimal places (e.g. '1500.00', '820.00', '1200.50')."
+                            "always two decimal places (e.g. '1500.00', '820.00', '1200.50'). "
+                            "null when not found."
                         ),
                     },
                     "confidence": {
                         "type": "number",
-                        "description": "Confidence 0.0-1.0 that this value is correct.",
+                        "description": "Confidence 0.0-1.0 that this value is correct. Use 0.0 when value is null.",
                     },
                 },
                 "required": ["value", "confidence"],
+                "additionalProperties": False,
             },
             "date": {
-                "type": ["object", "null"],
+                "type": "object",
                 "description": (
                     "Pickup or earliest date for the load — the date the "
-                    "truck was or will be picked up."
+                    "truck was or will be picked up.  Always return this "
+                    "as an object with 'value' and 'confidence' keys."
                 ),
                 "properties": {
                     "value": {
-                        "type": "string",
+                        "type": ["string", "null"],
                         "description": (
                             "Raw date string as it appears in the document "
-                            "(e.g. '03/11/2024', 'March 13, 2024')."
+                            "(e.g. '03/11/2024', 'March 13, 2024'). "
+                            "null when not found."
                         ),
                     },
                     "confidence": {
                         "type": "number",
-                        "description": "Confidence 0.0-1.0 that this value is correct.",
+                        "description": "Confidence 0.0-1.0 that this value is correct. Use 0.0 when value is null.",
                     },
                 },
                 "required": ["value", "confidence"],
+                "additionalProperties": False,
             },
         },
         "required": ["pay", "date"],
+        "additionalProperties": False,
     },
 }
 
@@ -80,8 +92,11 @@ always two decimal places (e.g. '1500.00', '820.00', '1200.50').
 - For date: return the date string exactly as it appears in the document text.
 - If a field is clearly present, return it with high confidence (>= 0.9).
 - If you are uncertain or the value is ambiguous, lower your confidence score.
-- If a field is not present in the document, return null for that field.
-- Do NOT fabricate values. Only extract what is explicitly stated."""
+- Do NOT fabricate values. Only extract what is explicitly stated.
+
+Output format — always use this exact JSON structure, never a plain string:
+  Found:     {"value": "1500.00", "confidence": 0.95}
+  Not found: {"value": null, "confidence": 0.0}"""
 
 
 def _normalize_pay_value(raw: str) -> str | None:
@@ -123,9 +138,17 @@ class IncomeDocumentSchema(ExtractionSchema):
         for field_name in ("pay", "date"):
             entry = tool_input.get(field_name)
             if entry is None:
+                # Field omitted entirely — treated as not found.
                 continue
 
-            raw_value = entry.get("value", "")
+            if not isinstance(entry, dict):
+                raise MalformedToolResponse(
+                    f"Field '{field_name}' has unexpected type {type(entry).__name__!r} "
+                    f"(expected object with 'value' and 'confidence'). "
+                    f"Raw value: {entry!r}"
+                )
+
+            raw_value = entry.get("value") or ""  # null value → empty string → not found
             confidence = float(entry.get("confidence", 0.0))
 
             if not raw_value:

@@ -8,3 +8,13 @@ class ExtractionError(Exception):
     immediately.  Retryable failures (rate limits, network errors) raise this
     only after all retry attempts are exhausted.
     """
+
+
+class MalformedToolResponse(Exception):
+    """Raised when the model returns a tool response that violates the schema.
+
+    For example: a field that should be ``{"value": "...", "confidence": ...}``
+    is returned as a plain string.  The extractor treats this as a soft failure
+    and retries.  If all retries are exhausted, the affected fields are
+    reported as not found.
+    """

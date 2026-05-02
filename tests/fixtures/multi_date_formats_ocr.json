@@ -1,0 +1,896 @@
+{
+  "source_path": "MULTI667 2017 Chevrolet SS.pdf",
+  "content_hash": "1122aabb3344ccdd5566eeff1122aabb3344ccdd5566eeff1122aabb3344ccdd",
+  "pages": [
+    {
+      "page_number": 1,
+      "width_inches": 8.5,
+      "height_inches": 11.0,
+      "line_count": 51
+    },
+    {
+      "page_number": 2,
+      "width_inches": 8.5,
+      "height_inches": 11.0,
+      "line_count": 22
+    }
+  ],
+  "lines": [
+    {
+      "text": "10/29/24, 12:15 PM",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 0.5,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 0,
+      "char_end": 18
+    },
+    {
+      "text": "V2 Dispatch | Auto Transport Dispatch Simplified",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 0.69,
+        "width": 3.8,
+        "height": 0.25
+      },
+      "char_start": 19,
+      "char_end": 67
+    },
+    {
+      "text": "Dispatch Details | Load #MULTI667",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 0.87,
+        "width": 2.6,
+        "height": 0.25
+      },
+      "char_start": 68,
+      "char_end": 101
+    },
+    {
+      "text": "Order ID",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.06,
+        "width": 0.6,
+        "height": 0.25
+      },
+      "char_start": 102,
+      "char_end": 110
+    },
+    {
+      "text": "MULTI667",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.25,
+        "width": 0.6,
+        "height": 0.25
+      },
+      "char_start": 111,
+      "char_end": 119
+    },
+    {
+      "text": "Current Status",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.43,
+        "width": 1.1,
+        "height": 0.25
+      },
+      "char_start": 120,
+      "char_end": 134
+    },
+    {
+      "text": "Delivered",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.62,
+        "width": 0.7,
+        "height": 0.25
+      },
+      "char_start": 135,
+      "char_end": 144
+    },
+    {
+      "text": "Last Update",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.8,
+        "width": 0.9,
+        "height": 0.25
+      },
+      "char_start": 145,
+      "char_end": 156
+    },
+    {
+      "text": "March 20, 2024 at 11:52 AM",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.99,
+        "width": 2.1,
+        "height": 0.25
+      },
+      "char_start": 157,
+      "char_end": 183
+    },
+    {
+      "text": "V2D Reference #",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.18,
+        "width": 1.2,
+        "height": 0.25
+      },
+      "char_start": 184,
+      "char_end": 199
+    },
+    {
+      "text": "988343",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.36,
+        "width": 0.5,
+        "height": 0.25
+      },
+      "char_start": 200,
+      "char_end": 206
+    },
+    {
+      "text": "Dispatch Date",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.55,
+        "width": 1.0,
+        "height": 0.25
+      },
+      "char_start": 207,
+      "char_end": 220
+    },
+    {
+      "text": "March 2, 2024 (Sat)",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.74,
+        "width": 1.5,
+        "height": 0.25
+      },
+      "char_start": 221,
+      "char_end": 240
+    },
+    {
+      "text": "Pickup Date",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.92,
+        "width": 0.9,
+        "height": 0.25
+      },
+      "char_start": 241,
+      "char_end": 252
+    },
+    {
+      "text": "March 13, 2024 (Wed)",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.11,
+        "width": 1.6,
+        "height": 0.25
+      },
+      "char_start": 253,
+      "char_end": 273
+    },
+    {
+      "text": "Delivery Date",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.29,
+        "width": 1.0,
+        "height": 0.25
+      },
+      "char_start": 274,
+      "char_end": 287
+    },
+    {
+      "text": "March 20, 2024 (Wed)",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.48,
+        "width": 1.6,
+        "height": 0.25
+      },
+      "char_start": 288,
+      "char_end": 308
+    },
+    {
+      "text": "Carrier Type",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.67,
+        "width": 1.0,
+        "height": 0.25
+      },
+      "char_start": 309,
+      "char_end": 321
+    },
+    {
+      "text": "Open",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.85,
+        "width": 0.3,
+        "height": 0.25
+      },
+      "char_start": 322,
+      "char_end": 326
+    },
+    {
+      "text": "Carrier Information",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.04,
+        "width": 1.5,
+        "height": 0.25
+      },
+      "char_start": 327,
+      "char_end": 346
+    },
+    {
+      "text": "Eagle Express",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.23,
+        "width": 1.0,
+        "height": 0.25
+      },
+      "char_start": 347,
+      "char_end": 360
+    },
+    {
+      "text": "1200 Commerce Blvd Ste B300",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.41,
+        "width": 2.2,
+        "height": 0.25
+      },
+      "char_start": 361,
+      "char_end": 388
+    },
+    {
+      "text": "Torrance, CA 90501",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.6,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 389,
+      "char_end": 407
+    },
+    {
+      "text": "Driver Name : John Doe",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.78,
+        "width": 1.8,
+        "height": 0.25
+      },
+      "char_start": 408,
+      "char_end": 430
+    },
+    {
+      "text": "Driver Phone : (555) 123-4567",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.97,
+        "width": 2.3,
+        "height": 0.25
+      },
+      "char_start": 431,
+      "char_end": 460
+    },
+    {
+      "text": "Office Phone : (555) 123-4567",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.16,
+        "width": 2.3,
+        "height": 0.25
+      },
+      "char_start": 461,
+      "char_end": 490
+    },
+    {
+      "text": "Agent Information",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.34,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 491,
+      "char_end": 508
+    },
+    {
+      "text": "RoadRunner Auto Transport",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.53,
+        "width": 2.0,
+        "height": 0.25
+      },
+      "char_start": 509,
+      "char_end": 534
+    },
+    {
+      "text": "15 Grumman Rd W Ste 1500",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.72,
+        "width": 1.9,
+        "height": 0.25
+      },
+      "char_start": 535,
+      "char_end": 559
+    },
+    {
+      "text": "Bethpage, NY 11714",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.9,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 560,
+      "char_end": 578
+    },
+    {
+      "text": "Contact : Chris, Shawn, Carlos",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.09,
+        "width": 2.4,
+        "height": 0.25
+      },
+      "char_start": 579,
+      "char_end": 609
+    },
+    {
+      "text": "Phone : (555) 605-2666",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.27,
+        "width": 1.8,
+        "height": 0.25
+      },
+      "char_start": 610,
+      "char_end": 632
+    },
+    {
+      "text": "MC Number : 89820",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.46,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 633,
+      "char_end": 650
+    },
+    {
+      "text": "Pickup Location",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.65,
+        "width": 1.2,
+        "height": 0.25
+      },
+      "char_start": 651,
+      "char_end": 666
+    },
+    {
+      "text": "Sam Torres",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.83,
+        "width": 0.8,
+        "height": 0.25
+      },
+      "char_start": 667,
+      "char_end": 677
+    },
+    {
+      "text": "565 Emerald Lake Dr",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.02,
+        "width": 1.5,
+        "height": 0.25
+      },
+      "char_start": 678,
+      "char_end": 697
+    },
+    {
+      "text": "Fayetteville, GA 30215",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.21,
+        "width": 1.8,
+        "height": 0.25
+      },
+      "char_start": 698,
+      "char_end": 720
+    },
+    {
+      "text": "Phone : (555) 704-5507",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.39,
+        "width": 1.8,
+        "height": 0.25
+      },
+      "char_start": 721,
+      "char_end": 743
+    },
+    {
+      "text": "Delivery Location",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.58,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 744,
+      "char_end": 761
+    },
+    {
+      "text": "Pasha Auto",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.76,
+        "width": 0.8,
+        "height": 0.25
+      },
+      "char_start": 762,
+      "char_end": 772
+    },
+    {
+      "text": "15501 Texaco Ave.",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.95,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 773,
+      "char_end": 790
+    },
+    {
+      "text": "Paramount, CA 90723",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.14,
+        "width": 1.5,
+        "height": 0.25
+      },
+      "char_start": 791,
+      "char_end": 810
+    },
+    {
+      "text": "Phone : (555) 363-7485",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.32,
+        "width": 1.8,
+        "height": 0.25
+      },
+      "char_start": 811,
+      "char_end": 833
+    },
+    {
+      "text": "Vehicle Information - 1 Vehicle",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.51,
+        "width": 2.5,
+        "height": 0.25
+      },
+      "char_start": 834,
+      "char_end": 865
+    },
+    {
+      "text": "Year   Make        Model   Type   Condition   Color   Vin",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.7,
+        "width": 4.6,
+        "height": 0.25
+      },
+      "char_start": 866,
+      "char_end": 923
+    },
+    {
+      "text": "2017   Chevrolet   SS      Car    Running     Black   6G3F15RW7HL308730",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.88,
+        "width": 5.7,
+        "height": 0.25
+      },
+      "char_start": 924,
+      "char_end": 995
+    },
+    {
+      "text": "Additional Comments",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.07,
+        "width": 1.5,
+        "height": 0.25
+      },
+      "char_start": 996,
+      "char_end": 1015
+    },
+    {
+      "text": "Delivery Window: 3/19/2024 - 3/25/2024",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.25,
+        "width": 3.0,
+        "height": 0.25
+      },
+      "char_start": 1016,
+      "char_end": 1054
+    },
+    {
+      "text": "*** PLEASE DO NOT ACCEPT WITH OVER 1/4 TANK OF GAS ***",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.44,
+        "width": 4.3,
+        "height": 0.25
+      },
+      "char_start": 1055,
+      "char_end": 1109
+    },
+    {
+      "text": "https://www.v2dispatch.com/print.php",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.63,
+        "width": 2.9,
+        "height": 0.25
+      },
+      "char_start": 1110,
+      "char_end": 1146
+    },
+    {
+      "text": "1/2",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.81,
+        "width": 0.2,
+        "height": 0.25
+      },
+      "char_start": 1147,
+      "char_end": 1150
+    },
+    {
+      "text": "10/29/24, 12:15 PM",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 0.5,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 1152,
+      "char_end": 1170
+    },
+    {
+      "text": "V2 Dispatch | Auto Transport Dispatch Simplified",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 0.9,
+        "width": 3.8,
+        "height": 0.25
+      },
+      "char_start": 1171,
+      "char_end": 1219
+    },
+    {
+      "text": "Load Payment",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.3,
+        "width": 1.0,
+        "height": 0.25
+      },
+      "char_start": 1220,
+      "char_end": 1232
+    },
+    {
+      "text": "Total Payment",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.7,
+        "width": 1.0,
+        "height": 0.25
+      },
+      "char_start": 1233,
+      "char_end": 1246
+    },
+    {
+      "text": "$820",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.1,
+        "width": 0.3,
+        "height": 0.25
+      },
+      "char_start": 1247,
+      "char_end": 1251
+    },
+    {
+      "text": "Collect On Delivery",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.5,
+        "width": 1.5,
+        "height": 0.25
+      },
+      "char_start": 1252,
+      "char_end": 1271
+    },
+    {
+      "text": "$0",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.9,
+        "width": 0.2,
+        "height": 0.25
+      },
+      "char_start": 1272,
+      "char_end": 1274
+    },
+    {
+      "text": "Agent Pays Carrier",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.3,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 1275,
+      "char_end": 1293
+    },
+    {
+      "text": "$820",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.7,
+        "width": 0.3,
+        "height": 0.25
+      },
+      "char_start": 1294,
+      "char_end": 1298
+    },
+    {
+      "text": "Payment will be processed upon confirmation of delivery.",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.1,
+        "width": 4.5,
+        "height": 0.25
+      },
+      "char_start": 1299,
+      "char_end": 1355
+    },
+    {
+      "text": "Contract Terms",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.5,
+        "width": 1.1,
+        "height": 0.25
+      },
+      "char_start": 1356,
+      "char_end": 1370
+    },
+    {
+      "text": "- As a courtesy, please give clients a call 1-2 hours prior to pickup or delivery.",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.9,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 1371,
+      "char_end": 1453
+    },
+    {
+      "text": "- All drivers should fill out a BOL upon pickup and delivery.",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.3,
+        "width": 4.9,
+        "height": 0.25
+      },
+      "char_start": 1454,
+      "char_end": 1515
+    },
+    {
+      "text": "- Any vehicle listed as INOP must be loaded & unloaded with a winch.",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.7,
+        "width": 5.4,
+        "height": 0.25
+      },
+      "char_start": 1516,
+      "char_end": 1584
+    },
+    {
+      "text": "- Dry run fees will not be paid unless agreed upon before assignment.",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.1,
+        "width": 5.5,
+        "height": 0.25
+      },
+      "char_start": 1585,
+      "char_end": 1654
+    },
+    {
+      "text": "- We ask that all carriers call in if and when cancelling a load.",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.5,
+        "width": 5.2,
+        "height": 0.25
+      },
+      "char_start": 1655,
+      "char_end": 1720
+    },
+    {
+      "text": "Authority to transport this vehicle is hereby assigned to Eagle Express.",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.9,
+        "width": 5.8,
+        "height": 0.25
+      },
+      "char_start": 1721,
+      "char_end": 1793
+    },
+    {
+      "text": "By accepting this agreement Eagle Express certifies that it has the proper legal",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.3,
+        "width": 6.4,
+        "height": 0.25
+      },
+      "char_start": 1794,
+      "char_end": 1874
+    },
+    {
+      "text": "authority and insurance to carry the above described vehicle.",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.7,
+        "width": 4.9,
+        "height": 0.25
+      },
+      "char_start": 1875,
+      "char_end": 1936
+    },
+    {
+      "text": "@ 2021 V2 Dispatch Inc.",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.1,
+        "width": 1.8,
+        "height": 0.25
+      },
+      "char_start": 1937,
+      "char_end": 1960
+    },
+    {
+      "text": "https://www.v2dispatch.com/print.php",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.5,
+        "width": 2.9,
+        "height": 0.25
+      },
+      "char_start": 1961,
+      "char_end": 1997
+    },
+    {
+      "text": "2/2",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.9,
+        "width": 0.2,
+        "height": 0.25
+      },
+      "char_start": 1998,
+      "char_end": 2001
+    }
+  ]
+}

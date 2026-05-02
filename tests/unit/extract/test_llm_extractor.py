@@ -334,6 +334,46 @@ class TestRetryBehavior:
         assert client.messages.create.call_count == 1
         mock_sleep.assert_not_called()
 
+    def test_malformed_field_type_retried_then_fails(self, mock_sleep) -> None:
+        """When Claude returns a plain string for a field instead of the required
+        object, the extractor retries all attempts and reports not-found."""
+        settings = _make_settings()
+        client = MagicMock()
+        # Claude returns "1850.00" (string) instead of {"value": "1850.00", "confidence": 0.9}
+        client.messages.create.return_value = _mock_tool_response(
+            "extract_income_fields",
+            {"pay": "1850.00", "date": None},
+        )
+
+        extractor = LlmExtractor(client=client, settings=settings)
+        result = extractor.extract(_make_ocr_result(), page_count=1)
+
+        assert result.fields == []
+        assert result.extraction_error is not None
+        assert client.messages.create.call_count == _MAX_ATTEMPTS
+
+    def test_malformed_field_type_retried_then_succeeds(self, mock_sleep) -> None:
+        """After a malformed response, the extractor retries and succeeds on the next call."""
+        settings = _make_settings()
+        client = MagicMock()
+        malformed = _mock_tool_response(
+            "extract_income_fields",
+            {"pay": "1850.00", "date": None},  # string instead of object
+        )
+        good = _mock_tool_response(
+            "extract_income_fields",
+            {"pay": {"value": "1850.00", "confidence": 0.95}, "date": None},
+        )
+        client.messages.create.side_effect = [malformed, good]
+
+        extractor = LlmExtractor(client=client, settings=settings)
+        result = extractor.extract(_make_ocr_result(), page_count=1)
+
+        assert result.extraction_error is None
+        assert len(result.fields) == 1
+        assert result.fields[0].value == "1850.00"
+        assert client.messages.create.call_count == 2
+
     def test_no_tool_use_retried_then_succeeds(self, mock_sleep) -> None:
         """A missing tool_use block on the first attempt is retried."""
         settings = _make_settings()

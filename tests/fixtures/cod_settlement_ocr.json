@@ -1,0 +1,566 @@
+{
+  "source_path": "CODX9999 2002 Toyota Tacoma.pdf",
+  "content_hash": "ee55ff66aa11bb22cc33dd44ee55ff66aa11bb22cc33dd44ee55ff66aa11bb22",
+  "pages": [
+    {
+      "page_number": 1,
+      "width_inches": 8.5,
+      "height_inches": 11.0,
+      "line_count": 46
+    }
+  ],
+  "lines": [
+    {
+      "text": "Carrier Information",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 0.5,
+        "width": 1.5,
+        "height": 0.25
+      },
+      "char_start": 0,
+      "char_end": 19
+    },
+    {
+      "text": "Carrier: Eagle Express Inc",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 0.71,
+        "width": 2.1,
+        "height": 0.25
+      },
+      "char_start": 20,
+      "char_end": 46
+    },
+    {
+      "text": "1200 Commerce Blvd STE# 300",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 0.91,
+        "width": 2.2,
+        "height": 0.25
+      },
+      "char_start": 47,
+      "char_end": 74
+    },
+    {
+      "text": "torrance, CA 90501",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.12,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 75,
+      "char_end": 93
+    },
+    {
+      "text": "MC Number: 1234567",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.33,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 94,
+      "char_end": 112
+    },
+    {
+      "text": "Driver: TBD John",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.53,
+        "width": 1.3,
+        "height": 0.25
+      },
+      "char_start": 113,
+      "char_end": 129
+    },
+    {
+      "text": "Driver Phone: (555) 123-4567",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.74,
+        "width": 2.2,
+        "height": 0.25
+      },
+      "char_start": 130,
+      "char_end": 158
+    },
+    {
+      "text": "Order Information",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.95,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 159,
+      "char_end": 176
+    },
+    {
+      "text": "Dispatch Date: 03/08/2024",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.15,
+        "width": 2.0,
+        "height": 0.25
+      },
+      "char_start": 177,
+      "char_end": 202
+    },
+    {
+      "text": "Pickup Estimated: 03/12/2024",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.36,
+        "width": 2.2,
+        "height": 0.25
+      },
+      "char_start": 203,
+      "char_end": 231
+    },
+    {
+      "text": "Delivery Estimated: 03/19/2024",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.57,
+        "width": 2.4,
+        "height": 0.25
+      },
+      "char_start": 232,
+      "char_end": 262
+    },
+    {
+      "text": "Ship Via: Open",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.77,
+        "width": 1.1,
+        "height": 0.25
+      },
+      "char_start": 263,
+      "char_end": 277
+    },
+    {
+      "text": "Condition: Operable",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.98,
+        "width": 1.5,
+        "height": 0.25
+      },
+      "char_start": 278,
+      "char_end": 297
+    },
+    {
+      "text": "Eagle Express Inc agrees to pay Riverside Logistics LLC $350.00 within 5 business days of delivery.",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.18,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 298,
+      "char_end": 397
+    },
+    {
+      "text": "Payment will be made with Company Check.",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.39,
+        "width": 3.2,
+        "height": 0.25
+      },
+      "char_start": 398,
+      "char_end": 438
+    },
+    {
+      "text": "*Cash/Certified Funds on Delivery.",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.6,
+        "width": 2.7,
+        "height": 0.25
+      },
+      "char_start": 439,
+      "char_end": 473
+    },
+    {
+      "text": "** The company (broker, dealer, auction, etc.) that originated this dispatch sheet.",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.8,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 474,
+      "char_end": 557
+    },
+    {
+      "text": "Vehicle Information",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.01,
+        "width": 1.5,
+        "height": 0.25
+      },
+      "char_start": 558,
+      "char_end": 577
+    },
+    {
+      "text": "1 2002 toyota tacoma  Type: Pickup  Color: Gray  VIN: 5TENX22N02Z123456  Lot #: 749",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.22,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 578,
+      "char_end": 661
+    },
+    {
+      "text": "Pickup Information",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.42,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 662,
+      "char_end": 680
+    },
+    {
+      "text": "Name: OFFICE (AUCTION HOUSE)",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.63,
+        "width": 2.2,
+        "height": 0.25
+      },
+      "char_start": 681,
+      "char_end": 709
+    },
+    {
+      "text": "1618 AUCTION DR",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.84,
+        "width": 1.2,
+        "height": 0.25
+      },
+      "char_start": 710,
+      "char_end": 725
+    },
+    {
+      "text": "pelzer, SC 29669",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.04,
+        "width": 1.3,
+        "height": 0.25
+      },
+      "char_start": 726,
+      "char_end": 742
+    },
+    {
+      "text": "Phone: 844-450-4960",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.25,
+        "width": 1.5,
+        "height": 0.25
+      },
+      "char_start": 743,
+      "char_end": 762
+    },
+    {
+      "text": "Delivery Information",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.46,
+        "width": 1.6,
+        "height": 0.25
+      },
+      "char_start": 763,
+      "char_end": 783
+    },
+    {
+      "text": "Name: BOB JONES",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.66,
+        "width": 1.2,
+        "height": 0.25
+      },
+      "char_start": 784,
+      "char_end": 799
+    },
+    {
+      "text": "1326 WEST CHANNEL ISLANDS BLVD",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.87,
+        "width": 2.4,
+        "height": 0.25
+      },
+      "char_start": 800,
+      "char_end": 830
+    },
+    {
+      "text": "oxnard, CA 93033",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.08,
+        "width": 1.3,
+        "height": 0.25
+      },
+      "char_start": 831,
+      "char_end": 847
+    },
+    {
+      "text": "Phone: 805-555-8640",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.28,
+        "width": 1.5,
+        "height": 0.25
+      },
+      "char_start": 848,
+      "char_end": 867
+    },
+    {
+      "text": "DISPATCH INSTRUCTIONS",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.49,
+        "width": 1.7,
+        "height": 0.25
+      },
+      "char_start": 868,
+      "char_end": 889
+    },
+    {
+      "text": "This should be picked up within 2 days of 03/12/2024.",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.7,
+        "width": 4.2,
+        "height": 0.25
+      },
+      "char_start": 890,
+      "char_end": 943
+    },
+    {
+      "text": "This should be delivered within 2 days of 03/19/2024.",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.9,
+        "width": 4.2,
+        "height": 0.25
+      },
+      "char_start": 944,
+      "char_end": 997
+    },
+    {
+      "text": "CONTRACT TERMS",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.11,
+        "width": 1.1,
+        "height": 0.25
+      },
+      "char_start": 998,
+      "char_end": 1012
+    },
+    {
+      "text": "*** PLEASE READ CAREFULLY ***",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.32,
+        "width": 2.3,
+        "height": 0.25
+      },
+      "char_start": 1013,
+      "char_end": 1042
+    },
+    {
+      "text": "Do not discuss rates with customer!",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.52,
+        "width": 2.8,
+        "height": 0.25
+      },
+      "char_start": 1043,
+      "char_end": 1078
+    },
+    {
+      "text": "PLEASE GIVE THE CUSTOMER AT LEAST A 24 HOUR NOTICE FOR PICKUP AND DELIVERY.",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.73,
+        "width": 6.0,
+        "height": 0.25
+      },
+      "char_start": 1079,
+      "char_end": 1154
+    },
+    {
+      "text": "Authority to transport this vehicle is hereby assigned to Eagle Express Inc.",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.93,
+        "width": 6.1,
+        "height": 0.25
+      },
+      "char_start": 1155,
+      "char_end": 1231
+    },
+    {
+      "text": "CD reference # 40261923",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.14,
+        "width": 1.8,
+        "height": 0.25
+      },
+      "char_start": 1232,
+      "char_end": 1255
+    },
+    {
+      "text": "Contact: John, Mike, Sarah",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.35,
+        "width": 2.1,
+        "height": 0.25
+      },
+      "char_start": 1256,
+      "char_end": 1282
+    },
+    {
+      "text": "Phone: (555) 123-4567",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.55,
+        "width": 1.7,
+        "height": 0.25
+      },
+      "char_start": 1283,
+      "char_end": 1304
+    },
+    {
+      "text": "Phone 2: (555) 987-6543",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.76,
+        "width": 1.8,
+        "height": 0.25
+      },
+      "char_start": 1305,
+      "char_end": 1328
+    },
+    {
+      "text": "Fax: (555) 111-2222",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.97,
+        "width": 1.5,
+        "height": 0.25
+      },
+      "char_start": 1329,
+      "char_end": 1348
+    },
+    {
+      "text": "Price Listed: N/A",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.17,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 1349,
+      "char_end": 1366
+    },
+    {
+      "text": "Total Payment to Carrier: $1,400.00",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.38,
+        "width": 2.8,
+        "height": 0.25
+      },
+      "char_start": 1367,
+      "char_end": 1402
+    },
+    {
+      "text": "On Delivery to Carrier: $1,750.00 *COD",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.59,
+        "width": 3.0,
+        "height": 0.25
+      },
+      "char_start": 1403,
+      "char_end": 1441
+    },
+    {
+      "text": "Carrier owes Company **: $350.00 after COD is paid",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.79,
+        "width": 4.0,
+        "height": 0.25
+      },
+      "char_start": 1442,
+      "char_end": 1492
+    }
+  ]
+}

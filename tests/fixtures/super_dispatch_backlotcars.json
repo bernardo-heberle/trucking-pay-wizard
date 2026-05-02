@@ -1,0 +1,1346 @@
+{
+  "source_path": "X789012 2021 Ford F-150.pdf",
+  "content_hash": "cc33dd44ee55ff66aa11bb22cc33dd44ee55ff66aa11bb22cc33dd44ee55ff66",
+  "pages": [
+    {
+      "page_number": 1,
+      "width_inches": 8.5,
+      "height_inches": 11.0,
+      "line_count": 66
+    },
+    {
+      "page_number": 2,
+      "width_inches": 8.5,
+      "height_inches": 11.0,
+      "line_count": 26
+    },
+    {
+      "page_number": 3,
+      "width_inches": 8.5,
+      "height_inches": 11.0,
+      "line_count": 18
+    }
+  ],
+  "lines": [
+    {
+      "text": "Order ID: X789012",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 0.5,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 0,
+      "char_end": 17
+    },
+    {
+      "text": "Dispatch Sheet",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 0.64,
+        "width": 1.1,
+        "height": 0.25
+      },
+      "char_start": 18,
+      "char_end": 32
+    },
+    {
+      "text": "OPENLANE dba",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 0.79,
+        "width": 1.0,
+        "height": 0.25
+      },
+      "char_start": 33,
+      "char_end": 45
+    },
+    {
+      "text": "BacklotCars Inc",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 0.93,
+        "width": 1.2,
+        "height": 0.25
+      },
+      "char_start": 46,
+      "char_end": 61
+    },
+    {
+      "text": "Shipper",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.08,
+        "width": 0.6,
+        "height": 0.25
+      },
+      "char_start": 62,
+      "char_end": 69
+    },
+    {
+      "text": "1100 Main St #1500",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.22,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 70,
+      "char_end": 88
+    },
+    {
+      "text": "Kansas City, MO 64105",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.36,
+        "width": 1.7,
+        "height": 0.25
+      },
+      "char_start": 89,
+      "char_end": 110
+    },
+    {
+      "text": "Co. Phone: 816-298-8222",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.51,
+        "width": 1.8,
+        "height": 0.25
+      },
+      "char_start": 111,
+      "char_end": 134
+    },
+    {
+      "text": "Email: transport@openlane.com",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.65,
+        "width": 2.3,
+        "height": 0.25
+      },
+      "char_start": 135,
+      "char_end": 164
+    },
+    {
+      "text": "Carrier Information",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.8,
+        "width": 1.5,
+        "height": 0.25
+      },
+      "char_start": 165,
+      "char_end": 184
+    },
+    {
+      "text": "Carrier: EAGLE EXPRESS INC",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.94,
+        "width": 2.1,
+        "height": 0.25
+      },
+      "char_start": 185,
+      "char_end": 211
+    },
+    {
+      "text": "1200 Commerce Blvd #300",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.08,
+        "width": 1.8,
+        "height": 0.25
+      },
+      "char_start": 212,
+      "char_end": 235
+    },
+    {
+      "text": "TORRANCE, California 90501",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.23,
+        "width": 2.1,
+        "height": 0.25
+      },
+      "char_start": 236,
+      "char_end": 262
+    },
+    {
+      "text": "Order Information",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.37,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 263,
+      "char_end": 280
+    },
+    {
+      "text": "Dispatch Date: 04/18/2024",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.52,
+        "width": 2.0,
+        "height": 0.25
+      },
+      "char_start": 281,
+      "char_end": 306
+    },
+    {
+      "text": "Carrier Pickup Estimated:",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.66,
+        "width": 2.0,
+        "height": 0.25
+      },
+      "char_start": 307,
+      "char_end": 332
+    },
+    {
+      "text": "04/22/2024",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.8,
+        "width": 0.8,
+        "height": 0.25
+      },
+      "char_start": 333,
+      "char_end": 343
+    },
+    {
+      "text": "Carrier Delivery Estimated:",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.95,
+        "width": 2.2,
+        "height": 0.25
+      },
+      "char_start": 344,
+      "char_end": 371
+    },
+    {
+      "text": "04/25/2024",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.09,
+        "width": 0.8,
+        "height": 0.25
+      },
+      "char_start": 372,
+      "char_end": 382
+    },
+    {
+      "text": "Ship Via: OPEN",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.23,
+        "width": 1.1,
+        "height": 0.25
+      },
+      "char_start": 383,
+      "char_end": 397
+    },
+    {
+      "text": "Condition: Operable",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.38,
+        "width": 1.5,
+        "height": 0.25
+      },
+      "char_start": 398,
+      "char_end": 417
+    },
+    {
+      "text": "OPENLANE",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.52,
+        "width": 0.6,
+        "height": 0.25
+      },
+      "char_start": 418,
+      "char_end": 426
+    },
+    {
+      "text": "Contact: John",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.67,
+        "width": 1.0,
+        "height": 0.25
+      },
+      "char_start": 427,
+      "char_end": 440
+    },
+    {
+      "text": "Phone: 5551234567",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.81,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 441,
+      "char_end": 458
+    },
+    {
+      "text": "Email: Dispatch@eagleexpress.com",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.95,
+        "width": 2.6,
+        "height": 0.25
+      },
+      "char_start": 459,
+      "char_end": 491
+    },
+    {
+      "text": "Total Payment to Carrier: $1,350.00",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.1,
+        "width": 2.8,
+        "height": 0.25
+      },
+      "char_start": 492,
+      "char_end": 527
+    },
+    {
+      "text": "Payment method:",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.24,
+        "width": 1.2,
+        "height": 0.25
+      },
+      "char_start": 528,
+      "char_end": 543
+    },
+    {
+      "text": "Payment terms: ACH",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.39,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 544,
+      "char_end": 562
+    },
+    {
+      "text": "Shipper owes Carrier: $1,350.00",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.53,
+        "width": 2.5,
+        "height": 0.25
+      },
+      "char_start": 563,
+      "char_end": 594
+    },
+    {
+      "text": "Billing Information",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.67,
+        "width": 1.5,
+        "height": 0.25
+      },
+      "char_start": 595,
+      "char_end": 614
+    },
+    {
+      "text": "Contact:",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.82,
+        "width": 0.6,
+        "height": 0.25
+      },
+      "char_start": 615,
+      "char_end": 623
+    },
+    {
+      "text": "Phone:",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.96,
+        "width": 0.5,
+        "height": 0.25
+      },
+      "char_start": 624,
+      "char_end": 630
+    },
+    {
+      "text": "Email:",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.11,
+        "width": 0.5,
+        "height": 0.25
+      },
+      "char_start": 631,
+      "char_end": 637
+    },
+    {
+      "text": "Vehicle Information",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.25,
+        "width": 1.5,
+        "height": 0.25
+      },
+      "char_start": 638,
+      "char_end": 657
+    },
+    {
+      "text": "Total Vehicles: 1",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.39,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 658,
+      "char_end": 675
+    },
+    {
+      "text": "#",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.54,
+        "width": 0.1,
+        "height": 0.25
+      },
+      "char_start": 676,
+      "char_end": 677
+    },
+    {
+      "text": "Vehicle",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.68,
+        "width": 0.6,
+        "height": 0.25
+      },
+      "char_start": 678,
+      "char_end": 685
+    },
+    {
+      "text": "Type",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.83,
+        "width": 0.3,
+        "height": 0.25
+      },
+      "char_start": 686,
+      "char_end": 690
+    },
+    {
+      "text": "Color",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.97,
+        "width": 0.4,
+        "height": 0.25
+      },
+      "char_start": 691,
+      "char_end": 696
+    },
+    {
+      "text": "VIN",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.11,
+        "width": 0.2,
+        "height": 0.25
+      },
+      "char_start": 697,
+      "char_end": 700
+    },
+    {
+      "text": "Lot #",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.26,
+        "width": 0.4,
+        "height": 0.25
+      },
+      "char_start": 701,
+      "char_end": 706
+    },
+    {
+      "text": "1 2021 Ford F-150",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.4,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 707,
+      "char_end": 724
+    },
+    {
+      "text": "Pickup",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.55,
+        "width": 0.5,
+        "height": 0.25
+      },
+      "char_start": 725,
+      "char_end": 731
+    },
+    {
+      "text": "White",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.69,
+        "width": 0.4,
+        "height": 0.25
+      },
+      "char_start": 732,
+      "char_end": 737
+    },
+    {
+      "text": "1FTFW1E86MFA12345",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.83,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 738,
+      "char_end": 755
+    },
+    {
+      "text": "Pickup Information",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.98,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 756,
+      "char_end": 774
+    },
+    {
+      "text": "Name: Sam Williams",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.12,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 775,
+      "char_end": 793
+    },
+    {
+      "text": "DESERT AUTO GROUP",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.27,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 794,
+      "char_end": 811
+    },
+    {
+      "text": "4500 EAST MAIN DRIVE",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.41,
+        "width": 1.6,
+        "height": 0.25
+      },
+      "char_start": 812,
+      "char_end": 832
+    },
+    {
+      "text": "FLAGSTAFF, AZ 86004",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.55,
+        "width": 1.5,
+        "height": 0.25
+      },
+      "char_start": 833,
+      "char_end": 852
+    },
+    {
+      "text": "Phone: 5556667777",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.7,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 853,
+      "char_end": 870
+    },
+    {
+      "text": "Mobile:",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.84,
+        "width": 0.6,
+        "height": 0.25
+      },
+      "char_start": 871,
+      "char_end": 878
+    },
+    {
+      "text": "Notes: Gate release code: 7K2N88. Pickup",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.98,
+        "width": 3.2,
+        "height": 0.25
+      },
+      "char_start": 879,
+      "char_end": 919
+    },
+    {
+      "text": "instructions:",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.13,
+        "width": 1.0,
+        "height": 0.25
+      },
+      "char_start": 920,
+      "char_end": 933
+    },
+    {
+      "text": "Delivery Information",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.27,
+        "width": 1.6,
+        "height": 0.25
+      },
+      "char_start": 934,
+      "char_end": 954
+    },
+    {
+      "text": "Name: TOM BROWN",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.42,
+        "width": 1.2,
+        "height": 0.25
+      },
+      "char_start": 955,
+      "char_end": 970
+    },
+    {
+      "text": "CAROLINA AUTO SALES INC",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.56,
+        "width": 1.8,
+        "height": 0.25
+      },
+      "char_start": 971,
+      "char_end": 994
+    },
+    {
+      "text": "1500 West Garrison Blvd",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.7,
+        "width": 1.8,
+        "height": 0.25
+      },
+      "char_start": 995,
+      "char_end": 1018
+    },
+    {
+      "text": "Gastonia, NC 28054",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.85,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 1019,
+      "char_end": 1037
+    },
+    {
+      "text": "Phone: 5558889999",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.99,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 1038,
+      "char_end": 1055
+    },
+    {
+      "text": "Mobile:",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.14,
+        "width": 0.6,
+        "height": 0.25
+      },
+      "char_start": 1056,
+      "char_end": 1063
+    },
+    {
+      "text": "Notes: Drop off instructions: CALL CALL",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.28,
+        "width": 3.1,
+        "height": 0.25
+      },
+      "char_start": 1064,
+      "char_end": 1103
+    },
+    {
+      "text": "CALL 24 hrs in advance DON'T USE HOURS",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.42,
+        "width": 3.0,
+        "height": 0.25
+      },
+      "char_start": 1104,
+      "char_end": 1142
+    },
+    {
+      "text": "Tom 555-888-9999 Maria 555-777-1234",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.57,
+        "width": 2.8,
+        "height": 0.25
+      },
+      "char_start": 1143,
+      "char_end": 1178
+    },
+    {
+      "text": "Please do not leave vehicles unattended",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.71,
+        "width": 3.1,
+        "height": 0.25
+      },
+      "char_start": 1179,
+      "char_end": 1218
+    },
+    {
+      "text": "AUTHORIZATION OF DROP MUST BE CONFIRMED",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.86,
+        "width": 3.1,
+        "height": 0.25
+      },
+      "char_start": 1219,
+      "char_end": 1258
+    },
+    {
+      "text": "DISPATCH INSTRUCTIONS",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 0.5,
+        "width": 1.7,
+        "height": 0.25
+      },
+      "char_start": 1260,
+      "char_end": 1281
+    },
+    {
+      "text": "Dry run fees (DRF) will only be paid if the vehicle availability has been confirmed by the carrier along with the",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 0.87,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 1282,
+      "char_end": 1395
+    },
+    {
+      "text": "customer's name who provided confirmation.",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.23,
+        "width": 3.4,
+        "height": 0.25
+      },
+      "char_start": 1396,
+      "char_end": 1438
+    },
+    {
+      "text": "UNATTENDED DROPS It is MANDATORY that we receive pictures for ALL unattended deliveries including pictures of",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.6,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 1439,
+      "char_end": 1548
+    },
+    {
+      "text": "the vehicle location, pictures of all 4 angles of car (front, back, and both sides) and pictures of key location.",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.96,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 1549,
+      "char_end": 1662
+    },
+    {
+      "text": "CONTRACT TERMS *** PLEASE READ CAREFULLY ***",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.33,
+        "width": 3.5,
+        "height": 0.25
+      },
+      "char_start": 1663,
+      "char_end": 1707
+    },
+    {
+      "text": "Please provide at least 24-hour notice to the customer before Pickup and Delivery. Please complete a careful",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.69,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 1708,
+      "char_end": 1816
+    },
+    {
+      "text": "inspection of the vehicle on Pickup.",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.06,
+        "width": 2.9,
+        "height": 0.25
+      },
+      "char_start": 1817,
+      "char_end": 1853
+    },
+    {
+      "text": "Carrier Terms & Agreement",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.42,
+        "width": 2.0,
+        "height": 0.25
+      },
+      "char_start": 1854,
+      "char_end": 1879
+    },
+    {
+      "text": "Every shipment tendered to a Carrier by BacklotCars will be subject to the terms of the BacklotCars Broker-Carrier Agreement;",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.79,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 1880,
+      "char_end": 2005
+    },
+    {
+      "text": "BacklotCars' Terms and Conditions, to the extent applicable which are posted online at (www.backlotcars.com); and applicable",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.15,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 2006,
+      "char_end": 2130
+    },
+    {
+      "text": "law.",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.52,
+        "width": 0.3,
+        "height": 0.25
+      },
+      "char_start": 2131,
+      "char_end": 2135
+    },
+    {
+      "text": "In the event of a conflict between the terms and provisions of the BacklotCars Broker-Carrier Agreement and the BacklotCars'",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.88,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 2136,
+      "char_end": 2260
+    },
+    {
+      "text": "Terms and Conditions, the terms and provisions of the Agreement shall control.",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.25,
+        "width": 6.2,
+        "height": 0.25
+      },
+      "char_start": 2261,
+      "char_end": 2339
+    },
+    {
+      "text": "Documentation and General Procedures:",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.62,
+        "width": 3.0,
+        "height": 0.25
+      },
+      "char_start": 2340,
+      "char_end": 2377
+    },
+    {
+      "text": "1. Carrier should contact customers at least two (2) hours prior to pick up or delivery of a vehicle to schedule a convenient time",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.98,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 2378,
+      "char_end": 2508
+    },
+    {
+      "text": "during normal business hours for access. Failure to schedule an appointment may result in a missed or delayed pick up or",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.35,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 2509,
+      "char_end": 2629
+    },
+    {
+      "text": "delivery. BacklotCars will not incur any dry run fees as a result of Carrier's failure to schedule an appointment.",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.71,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 2630,
+      "char_end": 2744
+    },
+    {
+      "text": "2. In the event that Carrier is unable to perform the requested Services, Carrier shall notify BacklotCars within one (1) day after",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.08,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 2745,
+      "char_end": 2876
+    },
+    {
+      "text": "Carrier determines it is unable to perform the requested Services.",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.44,
+        "width": 5.3,
+        "height": 0.25
+      },
+      "char_start": 2877,
+      "char_end": 2943
+    },
+    {
+      "text": "3. Carrier shall not disclose or discuss the terms of the BacklotCars Broker-Carrier Agreement including the rates or the",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.81,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 2944,
+      "char_end": 3065
+    },
+    {
+      "text": "valuation of the Services with customers or other third parties.",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.17,
+        "width": 5.1,
+        "height": 0.25
+      },
+      "char_start": 3066,
+      "char_end": 3130
+    },
+    {
+      "text": "4. Carrier will be responsible for loading and unloading all shipments. Carrier must utilize appropriate equipment, including a",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.54,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 3131,
+      "char_end": 3258
+    },
+    {
+      "text": "winch for inoperable vehicles, when loading and unloading vehicles.",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.9,
+        "width": 5.4,
+        "height": 0.25
+      },
+      "char_start": 3259,
+      "char_end": 3326
+    },
+    {
+      "text": "5. Carrier must verify that the vehicle identification number (VIN) on the BacklotCars dispatch paperwork matches the VIN on",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.27,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 3327,
+      "char_end": 3451
+    },
+    {
+      "text": "the vehicle. Any discrepancies must be reported to BacklotCars prior to pick up.",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.63,
+        "width": 6.4,
+        "height": 0.25
+      },
+      "char_start": 3452,
+      "char_end": 3532
+    },
+    {
+      "text": "6. Carrier shall not, under any circumstances aside from loading and unloading, drive any vehicle consigned to them unless",
+      "page_number": 3,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 0.5,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 3534,
+      "char_end": 3656
+    },
+    {
+      "text": "given specific approval from BacklotCars. Driving vehicles without authorization will result in non-payment of carriage as well as",
+      "page_number": 3,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 0.9,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 3657,
+      "char_end": 3787
+    },
+    {
+      "text": "any additional BacklotCars Customer imposed penalties (including, but not limited to, additional mileage charges).",
+      "page_number": 3,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.3,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 3788,
+      "char_end": 3902
+    },
+    {
+      "text": "7. Carrier shall provide evidence of pickup in the form designated by BacklotCars indicating the quantity of vehicles picked up,",
+      "page_number": 3,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.7,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 3903,
+      "char_end": 4031
+    },
+    {
+      "text": "a description of each vehicle including its condition, odometer reading, BacklotCars Order ID, VIN(s), and the legible name and",
+      "page_number": 3,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.1,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 4032,
+      "char_end": 4159
+    },
+    {
+      "text": "signature of a representative of the pickup location.",
+      "page_number": 3,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.5,
+        "width": 4.2,
+        "height": 0.25
+      },
+      "char_start": 4160,
+      "char_end": 4213
+    },
+    {
+      "text": "8. Carrier will deliver all vehicles to the appropriate destination as listed on the pickup notice. Carrier shall be liable for any",
+      "page_number": 3,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.9,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 4214,
+      "char_end": 4345
+    },
+    {
+      "text": "damages resulting from delivery at an alternative destination.",
+      "page_number": 3,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.3,
+        "width": 5.0,
+        "height": 0.25
+      },
+      "char_start": 4346,
+      "char_end": 4408
+    },
+    {
+      "text": "9. Carrier shall provide to BacklotCars, within twenty-four (24) hours of delivery, an invoice and detailed condition report",
+      "page_number": 3,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.7,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 4409,
+      "char_end": 4533
+    },
+    {
+      "text": "containing the quantity of vehicles delivered, a description of each vehicle and its condition, VIN(s), and acknowledgement of",
+      "page_number": 3,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.1,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 4534,
+      "char_end": 4660
+    },
+    {
+      "text": "delivery by the recipient of the shipment, including the recipient's legible name and signature.",
+      "page_number": 3,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.5,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 4661,
+      "char_end": 4757
+    },
+    {
+      "text": "10. BacklotCars pays Carrier, via ACH, all complete and undisputed amounts set forth in each Carrier invoice in full within thirty",
+      "page_number": 3,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.9,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 4758,
+      "char_end": 4888
+    },
+    {
+      "text": "(30) days from the date of BacklotCars' receipt of the invoice.",
+      "page_number": 3,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.3,
+        "width": 5.0,
+        "height": 0.25
+      },
+      "char_start": 4889,
+      "char_end": 4952
+    },
+    {
+      "text": "Powered by Super Dispatch",
+      "page_number": 3,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.7,
+        "width": 2.0,
+        "height": 0.25
+      },
+      "char_start": 4953,
+      "char_end": 4978
+    },
+    {
+      "text": "This agreement is made by and between a \"Carrier\" and a \"Broker / Shipper\". Super Dispatch",
+      "page_number": 3,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.1,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 4979,
+      "char_end": 5069
+    },
+    {
+      "text": "Inc. and its affiliates are not party to this agreement. Super Dispatch Inc. and affiliates",
+      "page_number": 3,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.5,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 5070,
+      "char_end": 5161
+    },
+    {
+      "text": "have no obligation under this agreement and expressly disclaim any and all liability and",
+      "page_number": 3,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.9,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 5162,
+      "char_end": 5250
+    },
+    {
+      "text": "warranties arising out of, or in connection with this agreement.",
+      "page_number": 3,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.3,
+        "width": 5.1,
+        "height": 0.25
+      },
+      "char_start": 5251,
+      "char_end": 5315
+    }
+  ]
+}

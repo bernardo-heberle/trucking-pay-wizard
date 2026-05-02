@@ -8,7 +8,7 @@ import anthropic
 from loguru import logger
 
 from src.config import Settings, load_settings
-from src.extract.exceptions import ExtractionError
+from src.extract.exceptions import ExtractionError, MalformedToolResponse
 from src.extract.llm.client import build_anthropic_client
 from src.extract.llm.sanitizer import sanitize_text
 from src.extract.llm.schemas.base import ExtractionSchema
@@ -28,6 +28,10 @@ _NON_RETRYABLE_STATUSES = {400, 401, 403}
 
 class _NoToolUseBlock(Exception):
     """Raised internally when Claude returns a response with no tool_use block."""
+
+
+# Alias so the retry loop can treat both soft failures the same way.
+_RetryableSoftFailure = (_NoToolUseBlock, MalformedToolResponse)
 
 
 def _is_retryable(exc: Exception) -> bool:
@@ -101,13 +105,14 @@ class LlmExtractor:
                 # Non-retryable configuration error — propagate immediately.
                 raise
 
-            except _NoToolUseBlock:
-                last_error = "LLM response contained no tool_use block"
+            except _RetryableSoftFailure as exc:
+                last_error = str(exc) if str(exc) else "LLM response contained no tool_use block"
                 logger.warning(
-                    "Attempt {}/{}: no tool_use block for '{}' — {}",
+                    "Attempt {}/{}: malformed LLM response for '{}': {} — {}",
                     attempt,
                     _MAX_ATTEMPTS,
                     source_name,
+                    last_error,
                     "retrying" if attempt < _MAX_ATTEMPTS else "giving up",
                 )
 

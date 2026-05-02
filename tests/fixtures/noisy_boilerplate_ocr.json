@@ -1,0 +1,764 @@
+{
+  "source_path": "NOISY567 2020 Jeep Wrangler.pdf",
+  "content_hash": "aabb1122cc33dd44ee55ff66aabb1122cc33dd44ee55ff66aabb1122cc33dd44",
+  "pages": [
+    {
+      "page_number": 1,
+      "width_inches": 8.5,
+      "height_inches": 11.0,
+      "line_count": 43
+    },
+    {
+      "page_number": 2,
+      "width_inches": 8.5,
+      "height_inches": 11.0,
+      "line_count": 19
+    }
+  ],
+  "lines": [
+    {
+      "text": "Order ID: NOISY567",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 0.5,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 0,
+      "char_end": 18
+    },
+    {
+      "text": "Dispatch Sheet",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 0.72,
+        "width": 1.1,
+        "height": 0.25
+      },
+      "char_start": 19,
+      "char_end": 33
+    },
+    {
+      "text": "OPENLANE dba",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 0.94,
+        "width": 1.0,
+        "height": 0.25
+      },
+      "char_start": 34,
+      "char_end": 46
+    },
+    {
+      "text": "BacklotCars Inc",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.16,
+        "width": 1.2,
+        "height": 0.25
+      },
+      "char_start": 47,
+      "char_end": 62
+    },
+    {
+      "text": "Shipper",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.38,
+        "width": 0.6,
+        "height": 0.25
+      },
+      "char_start": 63,
+      "char_end": 70
+    },
+    {
+      "text": "1100 Main St #1500",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.6,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 71,
+      "char_end": 89
+    },
+    {
+      "text": "Kansas City, MO 64105",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.83,
+        "width": 1.7,
+        "height": 0.25
+      },
+      "char_start": 90,
+      "char_end": 111
+    },
+    {
+      "text": "Co. Phone: 816-298-8222",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.05,
+        "width": 1.8,
+        "height": 0.25
+      },
+      "char_start": 112,
+      "char_end": 135
+    },
+    {
+      "text": "Email: transport@openlane.com",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.27,
+        "width": 2.3,
+        "height": 0.25
+      },
+      "char_start": 136,
+      "char_end": 165
+    },
+    {
+      "text": "Carrier Information",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.49,
+        "width": 1.5,
+        "height": 0.25
+      },
+      "char_start": 166,
+      "char_end": 185
+    },
+    {
+      "text": "Carrier: EAGLE EXPRESS INC",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.71,
+        "width": 2.1,
+        "height": 0.25
+      },
+      "char_start": 186,
+      "char_end": 212
+    },
+    {
+      "text": "1200 Commerce Blvd #300",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.93,
+        "width": 1.8,
+        "height": 0.25
+      },
+      "char_start": 213,
+      "char_end": 236
+    },
+    {
+      "text": "TORRANCE, California 90501",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.15,
+        "width": 2.1,
+        "height": 0.25
+      },
+      "char_start": 237,
+      "char_end": 263
+    },
+    {
+      "text": "Order Information",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.37,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 264,
+      "char_end": 281
+    },
+    {
+      "text": "Dispatch Date: 03/12/2024",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.59,
+        "width": 2.0,
+        "height": 0.25
+      },
+      "char_start": 282,
+      "char_end": 307
+    },
+    {
+      "text": "Carrier Pickup Estimated:",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.81,
+        "width": 2.0,
+        "height": 0.25
+      },
+      "char_start": 308,
+      "char_end": 333
+    },
+    {
+      "text": "03/16/2024",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.03,
+        "width": 0.8,
+        "height": 0.25
+      },
+      "char_start": 334,
+      "char_end": 344
+    },
+    {
+      "text": "Carrier Delivery Estimated:",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.26,
+        "width": 2.2,
+        "height": 0.25
+      },
+      "char_start": 345,
+      "char_end": 372
+    },
+    {
+      "text": "03/20/2024",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.48,
+        "width": 0.8,
+        "height": 0.25
+      },
+      "char_start": 373,
+      "char_end": 383
+    },
+    {
+      "text": "Ship Via: OPEN",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.7,
+        "width": 1.1,
+        "height": 0.25
+      },
+      "char_start": 384,
+      "char_end": 398
+    },
+    {
+      "text": "Condition: Operable",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.92,
+        "width": 1.5,
+        "height": 0.25
+      },
+      "char_start": 399,
+      "char_end": 418
+    },
+    {
+      "text": "OPENLANE",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.14,
+        "width": 0.6,
+        "height": 0.25
+      },
+      "char_start": 419,
+      "char_end": 427
+    },
+    {
+      "text": "Contact: Mike",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.36,
+        "width": 1.0,
+        "height": 0.25
+      },
+      "char_start": 428,
+      "char_end": 441
+    },
+    {
+      "text": "Phone: 5551234567",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.58,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 442,
+      "char_end": 459
+    },
+    {
+      "text": "Email: Dispatch@eagleexpress.com",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.8,
+        "width": 2.6,
+        "height": 0.25
+      },
+      "char_start": 460,
+      "char_end": 492
+    },
+    {
+      "text": "Total Payment to Carrier: $944.00",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.02,
+        "width": 2.6,
+        "height": 0.25
+      },
+      "char_start": 493,
+      "char_end": 526
+    },
+    {
+      "text": "Payment method:",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.24,
+        "width": 1.2,
+        "height": 0.25
+      },
+      "char_start": 527,
+      "char_end": 542
+    },
+    {
+      "text": "Payment terms: ACH",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.47,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 543,
+      "char_end": 561
+    },
+    {
+      "text": "Shipper owes Carrier: $944.00",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.69,
+        "width": 2.3,
+        "height": 0.25
+      },
+      "char_start": 562,
+      "char_end": 591
+    },
+    {
+      "text": "Vehicle Information",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.91,
+        "width": 1.5,
+        "height": 0.25
+      },
+      "char_start": 592,
+      "char_end": 611
+    },
+    {
+      "text": "Total Vehicles: 1",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.13,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 612,
+      "char_end": 629
+    },
+    {
+      "text": "#   Vehicle              Type   Color   VIN",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.35,
+        "width": 3.4,
+        "height": 0.25
+      },
+      "char_start": 630,
+      "char_end": 673
+    },
+    {
+      "text": "1   2020 Jeep Wrangler   Car    Red     1C4GJXAG5LW229114",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.57,
+        "width": 4.6,
+        "height": 0.25
+      },
+      "char_start": 674,
+      "char_end": 731
+    },
+    {
+      "text": "Pickup Information",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.79,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 732,
+      "char_end": 750
+    },
+    {
+      "text": "Name: FLAGSTAFF NISSAN SUBARU",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.01,
+        "width": 2.3,
+        "height": 0.25
+      },
+      "char_start": 751,
+      "char_end": 780
+    },
+    {
+      "text": "4960 EAST MARKETPLACE DRIVE",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.23,
+        "width": 2.2,
+        "height": 0.25
+      },
+      "char_start": 781,
+      "char_end": 808
+    },
+    {
+      "text": "FLAGSTAFF, AZ 86001",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.45,
+        "width": 1.5,
+        "height": 0.25
+      },
+      "char_start": 809,
+      "char_end": 828
+    },
+    {
+      "text": "Phone: (928) 522-6386",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.67,
+        "width": 1.7,
+        "height": 0.25
+      },
+      "char_start": 829,
+      "char_end": 850
+    },
+    {
+      "text": "Delivery Information",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.9,
+        "width": 1.6,
+        "height": 0.25
+      },
+      "char_start": 851,
+      "char_end": 871
+    },
+    {
+      "text": "Name: ED VOYLES CHRYSLER DODGE JEEP RAM",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.12,
+        "width": 3.1,
+        "height": 0.25
+      },
+      "char_start": 872,
+      "char_end": 911
+    },
+    {
+      "text": "789 COBB PARKWAY SOUTH",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.34,
+        "width": 1.8,
+        "height": 0.25
+      },
+      "char_start": 912,
+      "char_end": 934
+    },
+    {
+      "text": "MARIETTA, GA 30060",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.56,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 935,
+      "char_end": 953
+    },
+    {
+      "text": "Phone: (404) 392-1166",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.78,
+        "width": 1.7,
+        "height": 0.25
+      },
+      "char_start": 954,
+      "char_end": 975
+    },
+    {
+      "text": "DISPATCH INSTRUCTIONS",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 0.5,
+        "width": 1.7,
+        "height": 0.25
+      },
+      "char_start": 977,
+      "char_end": 998
+    },
+    {
+      "text": "Dry run fees (DRF) will only be paid if confirmed by carrier with customer name.",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 0.9,
+        "width": 6.4,
+        "height": 0.25
+      },
+      "char_start": 999,
+      "char_end": 1079
+    },
+    {
+      "text": "UNATTENDED DROPS: Pictures required for all unattended deliveries.",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.3,
+        "width": 5.3,
+        "height": 0.25
+      },
+      "char_start": 1080,
+      "char_end": 1146
+    },
+    {
+      "text": "CONTRACT TERMS *** PLEASE READ CAREFULLY ***",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.7,
+        "width": 3.5,
+        "height": 0.25
+      },
+      "char_start": 1147,
+      "char_end": 1191
+    },
+    {
+      "text": "Please provide at least 24-hour notice before Pickup and Delivery.",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.1,
+        "width": 5.3,
+        "height": 0.25
+      },
+      "char_start": 1192,
+      "char_end": 1258
+    },
+    {
+      "text": "Carrier Terms & Agreement",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.5,
+        "width": 2.0,
+        "height": 0.25
+      },
+      "char_start": 1259,
+      "char_end": 1284
+    },
+    {
+      "text": "BacklotCars pays Carrier, via ACH, all complete and undisputed amounts within",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.9,
+        "width": 6.2,
+        "height": 0.25
+      },
+      "char_start": 1285,
+      "char_end": 1362
+    },
+    {
+      "text": "thirty (30) days from the date of BacklotCars' receipt of the invoice.",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.3,
+        "width": 5.6,
+        "height": 0.25
+      },
+      "char_start": 1363,
+      "char_end": 1433
+    },
+    {
+      "text": "Express payment option: invoice amount reduced by three percent (3%) of total",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.7,
+        "width": 6.2,
+        "height": 0.25
+      },
+      "char_start": 1434,
+      "char_end": 1511
+    },
+    {
+      "text": "for payment within one (1) business day of invoice receipt.",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.1,
+        "width": 4.7,
+        "height": 0.25
+      },
+      "char_start": 1512,
+      "char_end": 1571
+    },
+    {
+      "text": "Storage and storage fees accrued as a result of Carrier delay are the sole",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.5,
+        "width": 5.9,
+        "height": 0.25
+      },
+      "char_start": 1572,
+      "char_end": 1646
+    },
+    {
+      "text": "responsibility of Carrier. Storage fees not to exceed $100 per day.",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.9,
+        "width": 5.4,
+        "height": 0.25
+      },
+      "char_start": 1647,
+      "char_end": 1714
+    },
+    {
+      "text": "BacklotCars may withhold payment to protect itself from services not performed",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.3,
+        "width": 6.2,
+        "height": 0.25
+      },
+      "char_start": 1715,
+      "char_end": 1793
+    },
+    {
+      "text": "in accordance with this Agreement or from claims arising out of Carrier performance.",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.7,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 1794,
+      "char_end": 1878
+    },
+    {
+      "text": "Failure to submit invoice may result in delay in payment and/or non-payment.",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.1,
+        "width": 6.1,
+        "height": 0.25
+      },
+      "char_start": 1879,
+      "char_end": 1955
+    },
+    {
+      "text": "Carrier must report any delay in pickup or delivery to BacklotCars immediately.",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.5,
+        "width": 6.3,
+        "height": 0.25
+      },
+      "char_start": 1956,
+      "char_end": 2035
+    },
+    {
+      "text": "Carrier shall not pick up a vehicle and hold prior to delivery to BacklotCars.",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.9,
+        "width": 6.2,
+        "height": 0.25
+      },
+      "char_start": 2036,
+      "char_end": 2114
+    },
+    {
+      "text": "Load building should occur prior to pickup \u2014 not during transit.",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.3,
+        "width": 5.1,
+        "height": 0.25
+      },
+      "char_start": 2115,
+      "char_end": 2179
+    },
+    {
+      "text": "Powered by Super Dispatch",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.7,
+        "width": 2.0,
+        "height": 0.25
+      },
+      "char_start": 2180,
+      "char_end": 2205
+    }
+  ]
+}

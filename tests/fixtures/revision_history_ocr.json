@@ -1,0 +1,728 @@
+{
+  "source_path": "FE12853712 2021 Ford Escape.pdf",
+  "content_hash": "ff66aa11bb22cc33dd44ee55ff66aa11bb22cc33dd44ee55ff66aa11bb22cc33",
+  "pages": [
+    {
+      "page_number": 1,
+      "width_inches": 8.5,
+      "height_inches": 11.0,
+      "line_count": 41
+    },
+    {
+      "page_number": 2,
+      "width_inches": 8.5,
+      "height_inches": 11.0,
+      "line_count": 18
+    }
+  ],
+  "lines": [
+    {
+      "text": "Order ID: FE12853712",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 0.5,
+        "width": 1.6,
+        "height": 0.25
+      },
+      "char_start": 0,
+      "char_end": 20
+    },
+    {
+      "text": "ShipYourCarNow",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 0.73,
+        "width": 1.1,
+        "height": 0.25
+      },
+      "char_start": 21,
+      "char_end": 35
+    },
+    {
+      "text": "Powered by Super Dispatch",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 0.96,
+        "width": 2.0,
+        "height": 0.25
+      },
+      "char_start": 36,
+      "char_end": 61
+    },
+    {
+      "text": "Shipper",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.2,
+        "width": 0.6,
+        "height": 0.25
+      },
+      "char_start": 62,
+      "char_end": 69
+    },
+    {
+      "text": "888 Freight Lane",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.43,
+        "width": 1.3,
+        "height": 0.25
+      },
+      "char_start": 70,
+      "char_end": 86
+    },
+    {
+      "text": "Austin, TX 78701",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.66,
+        "width": 1.3,
+        "height": 0.25
+      },
+      "char_start": 87,
+      "char_end": 103
+    },
+    {
+      "text": "Co. Phone: 512-555-7890",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.89,
+        "width": 1.8,
+        "height": 0.25
+      },
+      "char_start": 104,
+      "char_end": 127
+    },
+    {
+      "text": "Email: dispatch@sycn.com",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.12,
+        "width": 1.9,
+        "height": 0.25
+      },
+      "char_start": 128,
+      "char_end": 152
+    },
+    {
+      "text": "Carrier Information",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.35,
+        "width": 1.5,
+        "height": 0.25
+      },
+      "char_start": 153,
+      "char_end": 172
+    },
+    {
+      "text": "Carrier: EAGLE EXPRESS INC",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.59,
+        "width": 2.1,
+        "height": 0.25
+      },
+      "char_start": 173,
+      "char_end": 199
+    },
+    {
+      "text": "1200 Commerce Blvd #300",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.82,
+        "width": 1.8,
+        "height": 0.25
+      },
+      "char_start": 200,
+      "char_end": 223
+    },
+    {
+      "text": "TORRANCE, California 90501",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.05,
+        "width": 2.1,
+        "height": 0.25
+      },
+      "char_start": 224,
+      "char_end": 250
+    },
+    {
+      "text": "Contact: John",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.28,
+        "width": 1.0,
+        "height": 0.25
+      },
+      "char_start": 251,
+      "char_end": 264
+    },
+    {
+      "text": "Phone: 5551234567",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.51,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 265,
+      "char_end": 282
+    },
+    {
+      "text": "Email: Dispatch@eagleexpress.com",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.74,
+        "width": 2.6,
+        "height": 0.25
+      },
+      "char_start": 283,
+      "char_end": 315
+    },
+    {
+      "text": "Order Information",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.98,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 316,
+      "char_end": 333
+    },
+    {
+      "text": "Dispatch Date: 03/09/2024",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.21,
+        "width": 2.0,
+        "height": 0.25
+      },
+      "char_start": 334,
+      "char_end": 359
+    },
+    {
+      "text": "Carrier Pickup Exact: 03/12/2024",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.44,
+        "width": 2.6,
+        "height": 0.25
+      },
+      "char_start": 360,
+      "char_end": 392
+    },
+    {
+      "text": "Carrier Delivery Not Later Than: 03/15/2024",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.67,
+        "width": 3.4,
+        "height": 0.25
+      },
+      "char_start": 393,
+      "char_end": 436
+    },
+    {
+      "text": "Ship Via: OPEN",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.9,
+        "width": 1.1,
+        "height": 0.25
+      },
+      "char_start": 437,
+      "char_end": 451
+    },
+    {
+      "text": "Condition: Operable",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.13,
+        "width": 1.5,
+        "height": 0.25
+      },
+      "char_start": 452,
+      "char_end": 471
+    },
+    {
+      "text": "Total Payment to Carrier: $750.00",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.37,
+        "width": 2.6,
+        "height": 0.25
+      },
+      "char_start": 472,
+      "char_end": 505
+    },
+    {
+      "text": "Carrier owes Shipper: $ 0.00",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.6,
+        "width": 2.2,
+        "height": 0.25
+      },
+      "char_start": 506,
+      "char_end": 534
+    },
+    {
+      "text": "Shipper owes Carrier: $750.00",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.83,
+        "width": 2.3,
+        "height": 0.25
+      },
+      "char_start": 535,
+      "char_end": 564
+    },
+    {
+      "text": "Payment terms: NET 30 / ACH",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.06,
+        "width": 2.2,
+        "height": 0.25
+      },
+      "char_start": 565,
+      "char_end": 592
+    },
+    {
+      "text": "Vehicle Information",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.29,
+        "width": 1.5,
+        "height": 0.25
+      },
+      "char_start": 593,
+      "char_end": 612
+    },
+    {
+      "text": "Total Vehicles: 1",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.52,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 613,
+      "char_end": 630
+    },
+    {
+      "text": "#   Vehicle             Type   Color   VIN",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.76,
+        "width": 3.4,
+        "height": 0.25
+      },
+      "char_start": 631,
+      "char_end": 673
+    },
+    {
+      "text": "1   2021 Ford Escape    SUV    Blue    1FMCU9G60MUA12345",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.99,
+        "width": 4.5,
+        "height": 0.25
+      },
+      "char_start": 674,
+      "char_end": 730
+    },
+    {
+      "text": "Pickup Information",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.22,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 731,
+      "char_end": 749
+    },
+    {
+      "text": "Name: JOSHUA GREEN",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.45,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 750,
+      "char_end": 768
+    },
+    {
+      "text": "Sunrise Mazda",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.68,
+        "width": 1.0,
+        "height": 0.25
+      },
+      "char_start": 769,
+      "char_end": 782
+    },
+    {
+      "text": "451 Auto Row Pkwy",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.91,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 783,
+      "char_end": 800
+    },
+    {
+      "text": "Roseville, CA 95661",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.15,
+        "width": 1.5,
+        "height": 0.25
+      },
+      "char_start": 801,
+      "char_end": 820
+    },
+    {
+      "text": "Phone: 9165554321",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.38,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 821,
+      "char_end": 838
+    },
+    {
+      "text": "Delivery Information",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.61,
+        "width": 1.6,
+        "height": 0.25
+      },
+      "char_start": 839,
+      "char_end": 859
+    },
+    {
+      "text": "Name: DANIELLE MOORE",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.84,
+        "width": 1.6,
+        "height": 0.25
+      },
+      "char_start": 860,
+      "char_end": 880
+    },
+    {
+      "text": "Coastal Auto Group",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.07,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 881,
+      "char_end": 899
+    },
+    {
+      "text": "777 Ocean Drive",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.3,
+        "width": 1.2,
+        "height": 0.25
+      },
+      "char_start": 900,
+      "char_end": 915
+    },
+    {
+      "text": "miami, FL 33139",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.54,
+        "width": 1.2,
+        "height": 0.25
+      },
+      "char_start": 916,
+      "char_end": 931
+    },
+    {
+      "text": "Phone: 3055557890",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.77,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 932,
+      "char_end": 949
+    },
+    {
+      "text": "REVISIONS",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 0.5,
+        "width": 0.7,
+        "height": 0.25
+      },
+      "char_start": 951,
+      "char_end": 960
+    },
+    {
+      "text": "Mar 9, 2024 at 12:47 PM",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 0.9,
+        "width": 1.8,
+        "height": 0.25
+      },
+      "char_start": 961,
+      "char_end": 984
+    },
+    {
+      "text": "Order Modified",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.3,
+        "width": 1.1,
+        "height": 0.25
+      },
+      "char_start": 985,
+      "char_end": 999
+    },
+    {
+      "text": "Updated by Shipper",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.7,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 1000,
+      "char_end": 1018
+    },
+    {
+      "text": "Field         Old Value     New Value",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.1,
+        "width": 3.0,
+        "height": 0.25
+      },
+      "char_start": 1019,
+      "char_end": 1056
+    },
+    {
+      "text": "Price         $0.00         $750.00",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.5,
+        "width": 2.8,
+        "height": 0.25
+      },
+      "char_start": 1057,
+      "char_end": 1092
+    },
+    {
+      "text": "Pickup Date   03/09/2024    03/12/2024",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.9,
+        "width": 3.0,
+        "height": 0.25
+      },
+      "char_start": 1093,
+      "char_end": 1131
+    },
+    {
+      "text": "DISPATCH INSTRUCTIONS",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.3,
+        "width": 1.7,
+        "height": 0.25
+      },
+      "char_start": 1132,
+      "char_end": 1153
+    },
+    {
+      "text": "Carrier must use the Super Dispatch app to submit BOL and delivery photos.",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.7,
+        "width": 5.9,
+        "height": 0.25
+      },
+      "char_start": 1154,
+      "char_end": 1228
+    },
+    {
+      "text": "Payment NET 30 days via ACH after delivery confirmation and invoice receipt.",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.1,
+        "width": 6.1,
+        "height": 0.25
+      },
+      "char_start": 1229,
+      "char_end": 1305
+    },
+    {
+      "text": "ACH early payment option available: 7% discount for next-business-day payment.",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.5,
+        "width": 6.2,
+        "height": 0.25
+      },
+      "char_start": 1306,
+      "char_end": 1384
+    },
+    {
+      "text": "CONTRACT TERMS *** PLEASE READ CAREFULLY ***",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.9,
+        "width": 3.5,
+        "height": 0.25
+      },
+      "char_start": 1385,
+      "char_end": 1429
+    },
+    {
+      "text": "Please provide at least 24-hour notice to the customer before Pickup and Delivery.",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.3,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 1430,
+      "char_end": 1512
+    },
+    {
+      "text": "Please complete a careful inspection of the vehicle on Pickup.",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.7,
+        "width": 5.0,
+        "height": 0.25
+      },
+      "char_start": 1513,
+      "char_end": 1575
+    },
+    {
+      "text": "$50/day storage fee applies for any hold beyond 5 business days.",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.1,
+        "width": 5.1,
+        "height": 0.25
+      },
+      "char_start": 1576,
+      "char_end": 1640
+    },
+    {
+      "text": "Carrier Terms & Agreement",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.5,
+        "width": 2.0,
+        "height": 0.25
+      },
+      "char_start": 1641,
+      "char_end": 1666
+    },
+    {
+      "text": "This agreement is made by and between a \"Carrier\" and a \"Broker / Shipper\".",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.9,
+        "width": 6.0,
+        "height": 0.25
+      },
+      "char_start": 1667,
+      "char_end": 1742
+    },
+    {
+      "text": "Super Dispatch Inc. and its affiliates are not party to this agreement.",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.3,
+        "width": 5.7,
+        "height": 0.25
+      },
+      "char_start": 1743,
+      "char_end": 1814
+    }
+  ]
+}

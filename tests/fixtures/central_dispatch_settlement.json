@@ -1,0 +1,854 @@
+{
+  "source_path": "ABCD1234 2019 Honda Civic.pdf",
+  "content_hash": "aa11bb22cc33dd44ee55ff66aa11bb22cc33dd44ee55ff66aa11bb22cc33dd44",
+  "pages": [
+    {
+      "page_number": 1,
+      "width_inches": 8.5,
+      "height_inches": 11.0,
+      "line_count": 70
+    }
+  ],
+  "lines": [
+    {
+      "text": "Carrier Information",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 0.5,
+        "width": 1.5,
+        "height": 0.25
+      },
+      "char_start": 0,
+      "char_end": 19
+    },
+    {
+      "text": "Carrier: Eagle Express Inc",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 0.64,
+        "width": 2.1,
+        "height": 0.25
+      },
+      "char_start": 20,
+      "char_end": 46
+    },
+    {
+      "text": "1200 Commerce Blvd STE# 300",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 0.77,
+        "width": 2.2,
+        "height": 0.25
+      },
+      "char_start": 47,
+      "char_end": 74
+    },
+    {
+      "text": "torrance, CA 90501",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 0.91,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 75,
+      "char_end": 93
+    },
+    {
+      "text": "MC Number: 1234567",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.04,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 94,
+      "char_end": 112
+    },
+    {
+      "text": "Driver: John Doe",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.18,
+        "width": 1.3,
+        "height": 0.25
+      },
+      "char_start": 113,
+      "char_end": 129
+    },
+    {
+      "text": "Driver Phone: (555) 123-4567",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.31,
+        "width": 2.2,
+        "height": 0.25
+      },
+      "char_start": 130,
+      "char_end": 158
+    },
+    {
+      "text": "Order ID: ABCD1234",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.45,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 159,
+      "char_end": 177
+    },
+    {
+      "text": "Contact: John, Mike, Sarah",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.59,
+        "width": 2.1,
+        "height": 0.25
+      },
+      "char_start": 178,
+      "char_end": 204
+    },
+    {
+      "text": "Phone: (555) 123-4567",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.72,
+        "width": 1.7,
+        "height": 0.25
+      },
+      "char_start": 205,
+      "char_end": 226
+    },
+    {
+      "text": "Phone 2: (555) 987-6543",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.86,
+        "width": 1.8,
+        "height": 0.25
+      },
+      "char_start": 227,
+      "char_end": 250
+    },
+    {
+      "text": "Fax: (555) 111-2222",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.99,
+        "width": 1.5,
+        "height": 0.25
+      },
+      "char_start": 251,
+      "char_end": 270
+    },
+    {
+      "text": "Dispatch Sheet",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.13,
+        "width": 1.1,
+        "height": 0.25
+      },
+      "char_start": 271,
+      "char_end": 285
+    },
+    {
+      "text": "CentralDispatch",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.26,
+        "width": 1.2,
+        "height": 0.25
+      },
+      "char_start": 286,
+      "char_end": 301
+    },
+    {
+      "text": "by Cox Automotive",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.4,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 302,
+      "char_end": 319
+    },
+    {
+      "text": "Pacific Auto",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.54,
+        "width": 1.0,
+        "height": 0.25
+      },
+      "char_start": 320,
+      "char_end": 332
+    },
+    {
+      "text": "Transport LLC",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.67,
+        "width": 1.0,
+        "height": 0.25
+      },
+      "char_start": 333,
+      "char_end": 346
+    },
+    {
+      "text": "9800 Wilshire Blvd #200",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.81,
+        "width": 1.8,
+        "height": 0.25
+      },
+      "char_start": 347,
+      "char_end": 370
+    },
+    {
+      "text": "beverly hills, CA 90210",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.94,
+        "width": 1.8,
+        "height": 0.25
+      },
+      "char_start": 371,
+      "char_end": 394
+    },
+    {
+      "text": "Co. Phone: (555) 333-4444 Main",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.08,
+        "width": 2.4,
+        "height": 0.25
+      },
+      "char_start": 395,
+      "char_end": 425
+    },
+    {
+      "text": "Dispatch Info",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.21,
+        "width": 1.0,
+        "height": 0.25
+      },
+      "char_start": 426,
+      "char_end": 439
+    },
+    {
+      "text": "Contact: Mark Stevens",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.35,
+        "width": 1.7,
+        "height": 0.25
+      },
+      "char_start": 440,
+      "char_end": 461
+    },
+    {
+      "text": "Phone: (555) 444-5555",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.49,
+        "width": 1.7,
+        "height": 0.25
+      },
+      "char_start": 462,
+      "char_end": 483
+    },
+    {
+      "text": "Fax: (555) 444-5556",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.62,
+        "width": 1.5,
+        "height": 0.25
+      },
+      "char_start": 484,
+      "char_end": 503
+    },
+    {
+      "text": "MC #: 654321",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.76,
+        "width": 1.0,
+        "height": 0.25
+      },
+      "char_start": 504,
+      "char_end": 516
+    },
+    {
+      "text": "Vehicle Information",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.89,
+        "width": 1.5,
+        "height": 0.25
+      },
+      "char_start": 517,
+      "char_end": 536
+    },
+    {
+      "text": "Total Vehicles: 1",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.03,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 537,
+      "char_end": 554
+    },
+    {
+      "text": "1 2019 honda civic Type: Car Color: Blue Plate: VIN: 2HGFC2F53KH012345 Lot #: Additional Info:",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.16,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 555,
+      "char_end": 649
+    },
+    {
+      "text": "Pickup Information",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.3,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 650,
+      "char_end": 668
+    },
+    {
+      "text": "Name: Jane Smith",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.44,
+        "width": 1.3,
+        "height": 0.25
+      },
+      "char_start": 669,
+      "char_end": 685
+    },
+    {
+      "text": "123 Main Street",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.57,
+        "width": 1.2,
+        "height": 0.25
+      },
+      "char_start": 686,
+      "char_end": 701
+    },
+    {
+      "text": "los angeles, CA 90001",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.71,
+        "width": 1.7,
+        "height": 0.25
+      },
+      "char_start": 702,
+      "char_end": 723
+    },
+    {
+      "text": "Phone: 555-222-3333",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.84,
+        "width": 1.5,
+        "height": 0.25
+      },
+      "char_start": 724,
+      "char_end": 743
+    },
+    {
+      "text": "Delivery Information",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.98,
+        "width": 1.6,
+        "height": 0.25
+      },
+      "char_start": 744,
+      "char_end": 764
+    },
+    {
+      "text": "Name: Jane Smith",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.11,
+        "width": 1.3,
+        "height": 0.25
+      },
+      "char_start": 765,
+      "char_end": 781
+    },
+    {
+      "text": "456 Oak Avenue #8",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.25,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 782,
+      "char_end": 799
+    },
+    {
+      "text": "phoenix, AZ 85001",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.39,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 800,
+      "char_end": 817
+    },
+    {
+      "text": "Phone: 555-222-3333",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.52,
+        "width": 1.5,
+        "height": 0.25
+      },
+      "char_start": 818,
+      "char_end": 837
+    },
+    {
+      "text": "DISPATCH INSTRUCTIONS",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.66,
+        "width": 1.7,
+        "height": 0.25
+      },
+      "char_start": 838,
+      "char_end": 859
+    },
+    {
+      "text": "NOTE: Vehicle is in a gated lot. Driver must check in at the front office before loading.",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.79,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 860,
+      "char_end": 949
+    },
+    {
+      "text": "This needs to load exactly 4/15. Delivery must be within 3 days.",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.93,
+        "width": 5.1,
+        "height": 0.25
+      },
+      "char_start": 950,
+      "char_end": 1014
+    },
+    {
+      "text": "This must be picked up exactly on 04/15/2024. This should be delivered within 3 days of 04/18/2024.",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.06,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 1015,
+      "char_end": 1114
+    },
+    {
+      "text": "CONTRACT TERMS",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.2,
+        "width": 1.1,
+        "height": 0.25
+      },
+      "char_start": 1115,
+      "char_end": 1129
+    },
+    {
+      "text": "*** PLEASE READ CAREFULLY ***",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.34,
+        "width": 2.3,
+        "height": 0.25
+      },
+      "char_start": 1130,
+      "char_end": 1159
+    },
+    {
+      "text": "Do not discuss rates with customer!",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.47,
+        "width": 2.8,
+        "height": 0.25
+      },
+      "char_start": 1160,
+      "char_end": 1195
+    },
+    {
+      "text": "ADDITIONAL TERMS",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.61,
+        "width": 1.3,
+        "height": 0.25
+      },
+      "char_start": 1196,
+      "char_end": 1212
+    },
+    {
+      "text": "Call or text Mark at 555-444-5555",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.74,
+        "width": 2.6,
+        "height": 0.25
+      },
+      "char_start": 1213,
+      "char_end": 1246
+    },
+    {
+      "text": "PLEASE GIVE THE CUSTOMER AT LEAST A 24 HOUR NOTICE FOR PICKUP AND DELIVERY. PLEASE DO A THOROUGH INSPECTION OF THE VEHICLE ON",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.88,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 1247,
+      "char_end": 1372
+    },
+    {
+      "text": "PICKUP.",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.01,
+        "width": 0.6,
+        "height": 0.25
+      },
+      "char_start": 1373,
+      "char_end": 1380
+    },
+    {
+      "text": "Authority to transport this vehicle is hereby assigned to Eagle Express Inc. By accepting this agreement Eagle Express Inc certifies that it has the",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.15,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 1381,
+      "char_end": 1529
+    },
+    {
+      "text": "proper legal authority and insurance to carry the above described vehicle, only on trucks owned by Eagle Express Inc. All invoices must be",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.29,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 1530,
+      "char_end": 1668
+    },
+    {
+      "text": "accompanied by a signed delivery receipt and faxed to Pacific Auto Transport LLC. The above agreed upon price includes any and all surcharges",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.42,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 1669,
+      "char_end": 1810
+    },
+    {
+      "text": "unless otherwise agreed to by both Eagle Express Inc and Pacific Auto Transport LLC.",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.56,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 1811,
+      "char_end": 1895
+    },
+    {
+      "text": "The agreement between Eagle Express Inc and Pacific Auto Transport LLC, as described in this dispatch sheet, is solely between Eagle Express Inc and",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.69,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 1896,
+      "char_end": 2044
+    },
+    {
+      "text": "Pacific Auto Transport LLC. Dealertrack Central Dispatch, Inc. is not a party to such agreement, has no obligation under such agreement and",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.83,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 2045,
+      "char_end": 2184
+    },
+    {
+      "text": "expressly disclaims all liability whatsoever arising out of, or in connection with such agreement.",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.96,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 2185,
+      "char_end": 2283
+    },
+    {
+      "text": "CD reference # 40567890",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.1,
+        "width": 1.8,
+        "height": 0.25
+      },
+      "char_start": 2284,
+      "char_end": 2307
+    },
+    {
+      "text": "Order Information",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.24,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 2308,
+      "char_end": 2325
+    },
+    {
+      "text": "Dispatch Date: 04/10/2024",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.37,
+        "width": 2.0,
+        "height": 0.25
+      },
+      "char_start": 2326,
+      "char_end": 2351
+    },
+    {
+      "text": "Pickup Exactly: 04/15/2024",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.51,
+        "width": 2.1,
+        "height": 0.25
+      },
+      "char_start": 2352,
+      "char_end": 2378
+    },
+    {
+      "text": "Delivery Estimated: 04/18/2024",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.64,
+        "width": 2.4,
+        "height": 0.25
+      },
+      "char_start": 2379,
+      "char_end": 2409
+    },
+    {
+      "text": "Ship Via: Open",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.78,
+        "width": 1.1,
+        "height": 0.25
+      },
+      "char_start": 2410,
+      "char_end": 2424
+    },
+    {
+      "text": "Condition: Operable",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.91,
+        "width": 1.5,
+        "height": 0.25
+      },
+      "char_start": 2425,
+      "char_end": 2444
+    },
+    {
+      "text": "Price Listed: N/A",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.05,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 2445,
+      "char_end": 2462
+    },
+    {
+      "text": "Total Payment to Carrier: $1,850.00",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.19,
+        "width": 2.8,
+        "height": 0.25
+      },
+      "char_start": 2463,
+      "char_end": 2498
+    },
+    {
+      "text": "On Delivery to Carrier: None",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.32,
+        "width": 2.2,
+        "height": 0.25
+      },
+      "char_start": 2499,
+      "char_end": 2527
+    },
+    {
+      "text": "Company* owes Carrier: $1,850.00",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.46,
+        "width": 2.6,
+        "height": 0.25
+      },
+      "char_start": 2528,
+      "char_end": 2560
+    },
+    {
+      "text": "Pacific Auto Transport LLC agrees to pay Eagle Express Inc $1,850.00 immediately upon receiving",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.59,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 2561,
+      "char_end": 2656
+    },
+    {
+      "text": "a signed Bill of Lading. Payment will be made with Company Check.",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.73,
+        "width": 5.2,
+        "height": 0.25
+      },
+      "char_start": 2657,
+      "char_end": 2722
+    },
+    {
+      "text": "*The company (broker, dealer, auction, rental company, etc.) that originated this dispatch sheet.",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.86,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 2723,
+      "char_end": 2820
+    }
+  ]
+}

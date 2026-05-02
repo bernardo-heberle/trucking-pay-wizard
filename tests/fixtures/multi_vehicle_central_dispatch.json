@@ -1,0 +1,1076 @@
+{
+  "source_path": "55678 EAST 2022 BMW X5.pdf",
+  "content_hash": "dd44ee55ff66aa11bb22cc33dd44ee55ff66aa11bb22cc33dd44ee55ff66aa11",
+  "pages": [
+    {
+      "page_number": 1,
+      "width_inches": 8.5,
+      "height_inches": 11.0,
+      "line_count": 64
+    },
+    {
+      "page_number": 2,
+      "width_inches": 8.5,
+      "height_inches": 11.0,
+      "line_count": 24
+    }
+  ],
+  "lines": [
+    {
+      "text": "Carrier Information",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 0.5,
+        "width": 1.5,
+        "height": 0.25
+      },
+      "char_start": 0,
+      "char_end": 19
+    },
+    {
+      "text": "Carrier: Eagle Express Inc",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 0.65,
+        "width": 2.1,
+        "height": 0.25
+      },
+      "char_start": 20,
+      "char_end": 46
+    },
+    {
+      "text": "1200 Commerce Blvd STE# 300",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 0.8,
+        "width": 2.2,
+        "height": 0.25
+      },
+      "char_start": 47,
+      "char_end": 74
+    },
+    {
+      "text": "torrance, CA 90501",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 0.95,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 75,
+      "char_end": 93
+    },
+    {
+      "text": "MC Number: 1234567",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.09,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 94,
+      "char_end": 112
+    },
+    {
+      "text": "Driver: John Doe",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.24,
+        "width": 1.3,
+        "height": 0.25
+      },
+      "char_start": 113,
+      "char_end": 129
+    },
+    {
+      "text": "Driver Phone: (555) 123-4567",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.39,
+        "width": 2.2,
+        "height": 0.25
+      },
+      "char_start": 130,
+      "char_end": 158
+    },
+    {
+      "text": "Contact: John, Mike, Sarah",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.54,
+        "width": 2.1,
+        "height": 0.25
+      },
+      "char_start": 159,
+      "char_end": 185
+    },
+    {
+      "text": "Phone: (555) 123-4567",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.69,
+        "width": 1.7,
+        "height": 0.25
+      },
+      "char_start": 186,
+      "char_end": 207
+    },
+    {
+      "text": "Phone 2: (555) 987-6543",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.84,
+        "width": 1.8,
+        "height": 0.25
+      },
+      "char_start": 208,
+      "char_end": 231
+    },
+    {
+      "text": "Fax: (555) 111-2222",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.98,
+        "width": 1.5,
+        "height": 0.25
+      },
+      "char_start": 232,
+      "char_end": 251
+    },
+    {
+      "text": "Order Information",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.13,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 252,
+      "char_end": 269
+    },
+    {
+      "text": "Dispatch Date: 05/01/2024",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.28,
+        "width": 2.0,
+        "height": 0.25
+      },
+      "char_start": 270,
+      "char_end": 295
+    },
+    {
+      "text": "Pickup Estimated: 05/06/2024",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.43,
+        "width": 2.2,
+        "height": 0.25
+      },
+      "char_start": 296,
+      "char_end": 324
+    },
+    {
+      "text": "Delivery Estimated: 05/11/2024",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.58,
+        "width": 2.4,
+        "height": 0.25
+      },
+      "char_start": 325,
+      "char_end": 355
+    },
+    {
+      "text": "Ship Via: Open",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.73,
+        "width": 1.1,
+        "height": 0.25
+      },
+      "char_start": 356,
+      "char_end": 370
+    },
+    {
+      "text": "Condition: Operable",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.88,
+        "width": 1.5,
+        "height": 0.25
+      },
+      "char_start": 371,
+      "char_end": 390
+    },
+    {
+      "text": "Price Listed: N/A",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.02,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 391,
+      "char_end": 408
+    },
+    {
+      "text": "Total Payment to Carrier: $4,500.00",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.17,
+        "width": 2.8,
+        "height": 0.25
+      },
+      "char_start": 409,
+      "char_end": 444
+    },
+    {
+      "text": "On Delivery to Carrier: None",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.32,
+        "width": 2.2,
+        "height": 0.25
+      },
+      "char_start": 445,
+      "char_end": 473
+    },
+    {
+      "text": "Company* owes Carrier: $4,500.00",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.47,
+        "width": 2.6,
+        "height": 0.25
+      },
+      "char_start": 474,
+      "char_end": 506
+    },
+    {
+      "text": "Luxury Auto Relocation Inc agrees to pay Eagle Express Inc $4,500.00 within 10",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.62,
+        "width": 6.2,
+        "height": 0.25
+      },
+      "char_start": 507,
+      "char_end": 585
+    },
+    {
+      "text": "business days of receiving a signed Bill of Lading. Payment will be made with Certified Funds.",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.77,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 586,
+      "char_end": 680
+    },
+    {
+      "text": "*The company (broker, dealer, auction, rental company, etc.) that originated this dispatch sheet.",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.91,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 681,
+      "char_end": 778
+    },
+    {
+      "text": "Total Vehicles: 3",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.06,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 779,
+      "char_end": 796
+    },
+    {
+      "text": "1 2022",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.21,
+        "width": 0.5,
+        "height": 0.25
+      },
+      "char_start": 797,
+      "char_end": 803
+    },
+    {
+      "text": "Type: SUV Color: White Plate: VIN: 5UXCR6C09N9K12345 Lot #: Additional Info: MUST CHECK FOR MILEAGE : 200 AND",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.36,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 804,
+      "char_end": 913
+    },
+    {
+      "text": "bmw x5",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.51,
+        "width": 0.5,
+        "height": 0.25
+      },
+      "char_start": 914,
+      "char_end": 920
+    },
+    {
+      "text": "UNDER IS OK FOR PICK UP, MUST PICK UP 2 SETS OF KEYS",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.66,
+        "width": 4.2,
+        "height": 0.25
+      },
+      "char_start": 921,
+      "char_end": 973
+    },
+    {
+      "text": "2 2022",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.8,
+        "width": 0.5,
+        "height": 0.25
+      },
+      "char_start": 974,
+      "char_end": 980
+    },
+    {
+      "text": "Type: SUV Color: Black Plate: VIN: 5UXCR6C09N9K67890 Lot #: Additional Info: MUST CHECK FOR MILEAGE : 200 AND",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.95,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 981,
+      "char_end": 1090
+    },
+    {
+      "text": "bmw x5",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.1,
+        "width": 0.5,
+        "height": 0.25
+      },
+      "char_start": 1091,
+      "char_end": 1097
+    },
+    {
+      "text": "UNDER IS OK FOR PICK UP, MUST PICK UP 2 SETS OF KEYS",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.25,
+        "width": 4.2,
+        "height": 0.25
+      },
+      "char_start": 1098,
+      "char_end": 1150
+    },
+    {
+      "text": "3 2022",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.4,
+        "width": 0.5,
+        "height": 0.25
+      },
+      "char_start": 1151,
+      "char_end": 1157
+    },
+    {
+      "text": "Type: SUV Color: Gray Plate: VIN: 5UXCR6C09N9K11223 Lot #: Additional Info: MUST CHECK FOR MILEAGE : 200 AND",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.55,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 1158,
+      "char_end": 1266
+    },
+    {
+      "text": "bmw x3",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.7,
+        "width": 0.5,
+        "height": 0.25
+      },
+      "char_start": 1267,
+      "char_end": 1273
+    },
+    {
+      "text": "UNDER IS OK FOR PICK UP, MUST PICK UP 2 SETS OF KEYS",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.84,
+        "width": 4.2,
+        "height": 0.25
+      },
+      "char_start": 1274,
+      "char_end": 1326
+    },
+    {
+      "text": "Pickup Information",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.99,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 1327,
+      "char_end": 1345
+    },
+    {
+      "text": "Name: East Coast BMW",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.14,
+        "width": 1.6,
+        "height": 0.25
+      },
+      "char_start": 1346,
+      "char_end": 1366
+    },
+    {
+      "text": "500 Auto Center Drive",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.29,
+        "width": 1.7,
+        "height": 0.25
+      },
+      "char_start": 1367,
+      "char_end": 1388
+    },
+    {
+      "text": "birmingham, AL 35210",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.44,
+        "width": 1.6,
+        "height": 0.25
+      },
+      "char_start": 1389,
+      "char_end": 1409
+    },
+    {
+      "text": "Phone: (555) 444-5555",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.59,
+        "width": 1.7,
+        "height": 0.25
+      },
+      "char_start": 1410,
+      "char_end": 1431
+    },
+    {
+      "text": "Delivery Information",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.73,
+        "width": 1.6,
+        "height": 0.25
+      },
+      "char_start": 1432,
+      "char_end": 1452
+    },
+    {
+      "text": "Name: West Coast Imports",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.88,
+        "width": 1.9,
+        "height": 0.25
+      },
+      "char_start": 1453,
+      "char_end": 1477
+    },
+    {
+      "text": "8000 Auto Center Dr",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.03,
+        "width": 1.5,
+        "height": 0.25
+      },
+      "char_start": 1478,
+      "char_end": 1497
+    },
+    {
+      "text": "buena park, CA 90621",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.18,
+        "width": 1.6,
+        "height": 0.25
+      },
+      "char_start": 1498,
+      "char_end": 1518
+    },
+    {
+      "text": "Phone: (555) 666-7777",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.33,
+        "width": 1.7,
+        "height": 0.25
+      },
+      "char_start": 1519,
+      "char_end": 1540
+    },
+    {
+      "text": "DISPATCH INSTRUCTIONS",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.48,
+        "width": 1.7,
+        "height": 0.25
+      },
+      "char_start": 1541,
+      "char_end": 1562
+    },
+    {
+      "text": "This should be picked up within 2 days of 05/06/2024. This should be delivered within 2 days of 05/11/2024.",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.62,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 1563,
+      "char_end": 1670
+    },
+    {
+      "text": "Order ID: 55678 EAST",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.77,
+        "width": 1.6,
+        "height": 0.25
+      },
+      "char_start": 1671,
+      "char_end": 1691
+    },
+    {
+      "text": "Dispatch Sheet",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.92,
+        "width": 1.1,
+        "height": 0.25
+      },
+      "char_start": 1692,
+      "char_end": 1706
+    },
+    {
+      "text": "CentralDispatch",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.07,
+        "width": 1.2,
+        "height": 0.25
+      },
+      "char_start": 1707,
+      "char_end": 1722
+    },
+    {
+      "text": "by Cox Automotive",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.22,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 1723,
+      "char_end": 1740
+    },
+    {
+      "text": "Luxury Auto",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.37,
+        "width": 0.9,
+        "height": 0.25
+      },
+      "char_start": 1741,
+      "char_end": 1752
+    },
+    {
+      "text": "Relocation Inc",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.52,
+        "width": 1.1,
+        "height": 0.25
+      },
+      "char_start": 1753,
+      "char_end": 1767
+    },
+    {
+      "text": "500 Wake Forest Road #100",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.66,
+        "width": 2.0,
+        "height": 0.25
+      },
+      "char_start": 1768,
+      "char_end": 1793
+    },
+    {
+      "text": "raleigh, NC 27601",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.81,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 1794,
+      "char_end": 1811
+    },
+    {
+      "text": "Co. Phone: (555) 888-1111",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.96,
+        "width": 2.0,
+        "height": 0.25
+      },
+      "char_start": 1812,
+      "char_end": 1837
+    },
+    {
+      "text": "Dispatch Info",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.11,
+        "width": 1.0,
+        "height": 0.25
+      },
+      "char_start": 1838,
+      "char_end": 1851
+    },
+    {
+      "text": "Contact: Jennifer",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.26,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 1852,
+      "char_end": 1869
+    },
+    {
+      "text": "Phone: (555) 888-1111",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.41,
+        "width": 1.7,
+        "height": 0.25
+      },
+      "char_start": 1870,
+      "char_end": 1891
+    },
+    {
+      "text": "Fax: (555) 888-1112",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.55,
+        "width": 1.5,
+        "height": 0.25
+      },
+      "char_start": 1892,
+      "char_end": 1911
+    },
+    {
+      "text": "MC #: 998877",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.7,
+        "width": 1.0,
+        "height": 0.25
+      },
+      "char_start": 1912,
+      "char_end": 1924
+    },
+    {
+      "text": "Vehicle Information",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.85,
+        "width": 1.5,
+        "height": 0.25
+      },
+      "char_start": 1925,
+      "char_end": 1944
+    },
+    {
+      "text": "CONTRACT TERMS",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 0.5,
+        "width": 1.1,
+        "height": 0.25
+      },
+      "char_start": 1946,
+      "char_end": 1960
+    },
+    {
+      "text": "*** PLEASE READ CAREFULLY ***",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 0.9,
+        "width": 2.3,
+        "height": 0.25
+      },
+      "char_start": 1961,
+      "char_end": 1990
+    },
+    {
+      "text": "****** PLEASE DO NOT EVER DISCUSS PRICES WITH CUSTOMERS ****** IF PRICE OF TRANSPORTATION IS DISCUSS WITH CUSTOMERS THERE WILL",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.29,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 1991,
+      "char_end": 2117
+    },
+    {
+      "text": "BE A 10% CHARGE FROM TRANSPORTATION AGREED COST.",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.69,
+        "width": 3.8,
+        "height": 0.25
+      },
+      "char_start": 2118,
+      "char_end": 2166
+    },
+    {
+      "text": "**** WE DO NOT PAY FOR DRY RUNS*",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.08,
+        "width": 2.6,
+        "height": 0.25
+      },
+      "char_start": 2167,
+      "char_end": 2199
+    },
+    {
+      "text": "WE DO NOT PAY FOR DRY RUNS .",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.48,
+        "width": 2.2,
+        "height": 0.25
+      },
+      "char_start": 2200,
+      "char_end": 2228
+    },
+    {
+      "text": "Call customers a day in advance to schedule pick up time, if your not able to reach customer, CALL JENNIFER 555-888-1111 immediately,",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.88,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 2229,
+      "char_end": 2362
+    },
+    {
+      "text": "************ MUST CALL CUSTOMERS IN ADVANCE*",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.27,
+        "width": 3.5,
+        "height": 0.25
+      },
+      "char_start": 2363,
+      "char_end": 2407
+    },
+    {
+      "text": "FOR CARRIERS: ZELLE PAYMENT MUST CALL OR EMAIL JENNIFER@555-888-1111 OR JENNIFER@LUXURYAUTO.COM",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.67,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 2408,
+      "char_end": 2503
+    },
+    {
+      "text": "INVOICES, SIGN DELIVERED BILL OF LADING (BOL), W-9, AND ZELLE INFO. PICTURES MUST BE SENT OVER FOR PAYMENT PROCESS",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.06,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 2504,
+      "char_end": 2618
+    },
+    {
+      "text": "****",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.46,
+        "width": 0.3,
+        "height": 0.25
+      },
+      "char_start": 2619,
+      "char_end": 2623
+    },
+    {
+      "text": "*** VERY IMPORTANT *",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.85,
+        "width": 1.6,
+        "height": 0.25
+      },
+      "char_start": 2624,
+      "char_end": 2644
+    },
+    {
+      "text": "PLEASE TEXT OR EMAIL ZELLE INFO WITH PROFILE NAME OF ACCOUNT HOLDER.",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.25,
+        "width": 5.4,
+        "height": 0.25
+      },
+      "char_start": 2645,
+      "char_end": 2713
+    },
+    {
+      "text": "WE DO NOT PAY FOR DRY RUNS .",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.65,
+        "width": 2.2,
+        "height": 0.25
+      },
+      "char_start": 2714,
+      "char_end": 2742
+    },
+    {
+      "text": "PLEASE GIVE THE CUSTOMER AT LEAST A 24 HOUR NOTICE FOR PICKUP AND DELIVERY. PLEASE DO A THOROUGH INSPECTION OF THE VEHICLE ON",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.04,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 2743,
+      "char_end": 2868
+    },
+    {
+      "text": "PICKUP.",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.44,
+        "width": 0.6,
+        "height": 0.25
+      },
+      "char_start": 2869,
+      "char_end": 2876
+    },
+    {
+      "text": "Authority to transport this vehicle is hereby assigned to Eagle Express Inc. By accepting this agreement Eagle Express Inc certifies that it has the",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.83,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 2877,
+      "char_end": 3025
+    },
+    {
+      "text": "proper legal authority and insurance to carry the above described vehicle, only on trucks owned by Eagle Express Inc. All invoices must be",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.23,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 3026,
+      "char_end": 3164
+    },
+    {
+      "text": "accompanied by a signed delivery receipt and faxed to Luxury Auto Relocation Inc. The above agreed upon price includes any and all",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.62,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 3165,
+      "char_end": 3295
+    },
+    {
+      "text": "surcharges unless otherwise agreed to by both Eagle Express Inc and Luxury Auto Relocation Inc.",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.02,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 3296,
+      "char_end": 3391
+    },
+    {
+      "text": "The agreement between Eagle Express Inc and Luxury Auto Relocation Inc, as described in this dispatch sheet, is solely between Eagle Express",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.42,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 3392,
+      "char_end": 3532
+    },
+    {
+      "text": "Inc and Luxury Auto Relocation Inc. Dealertrack Central Dispatch, Inc. is not a party to such agreement, has no obligation under such",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.81,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 3533,
+      "char_end": 3666
+    },
+    {
+      "text": "agreement and expressly disclaims all liability whatsoever arising out of, or in connection with such agreement.",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.21,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 3667,
+      "char_end": 3779
+    },
+    {
+      "text": "CD reference # 40334455",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.6,
+        "width": 1.8,
+        "height": 0.25
+      },
+      "char_start": 3780,
+      "char_end": 3803
+    }
+  ]
+}

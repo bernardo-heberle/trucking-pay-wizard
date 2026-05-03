@@ -8,6 +8,7 @@ outputs.
 
 from __future__ import annotations
 
+import datetime
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
@@ -161,7 +162,8 @@ class TestFullPipeline:
         header_map = {ws.cell(row=1, column=c).value: c for c in range(1, ws.max_column + 1)}
         # Pay is stored as float so Excel SUM formulas work.
         assert ws.cell(row=2, column=header_map["Pay"]).value == pytest.approx(1200.50)
-        assert ws.cell(row=2, column=header_map["Date"]).value == "05/15/2024"
+        # Date is stored as a datetime object so Excel MAX/MIN formulas work.
+        assert ws.cell(row=2, column=header_map["Date"]).value == datetime.datetime(2024, 5, 15)
         assert ws.cell(row=2, column=header_map["PDF Page"]).value == 2
 
         assert "Certainty" in header_map
@@ -370,11 +372,12 @@ class TestRealLlmExtractorWithMockedClient:
         assert pay.certainty == Certainty.REVIEW
 
     @patch("src.extract.llm.extractor.time.sleep")
-    def test_real_extractor_strips_dollar_and_commas_from_pay(
+    def test_real_extractor_preserves_raw_pay_and_resolves_location(
         self, _mock_sleep, tmp_path: Path
     ) -> None:
-        """The schema's _normalize_pay_value must strip '$' and ',' from the
-        LLM response before storing the field — end-to-end with a real extractor.
+        """The LLM now returns the value exactly as it appears in the document.
+        The schema stores it verbatim; the resolver finds it in the OCR text;
+        and pay verification normalizes it before comparing against OCR amounts.
         """
         source = tmp_path / "settlement.pdf"
         doc = fitz.open()
@@ -383,13 +386,14 @@ class TestRealLlmExtractorWithMockedClient:
         doc.close()
 
         ingested = ingest_document(source)
+        ocr_text = "Total Payment: $1,500.00"
         lines = [
             OcrLine(
-                text="Total Payment: $1,500.00",
+                text=ocr_text,
                 page_number=1,
                 bounding_box=BoundingBox(x=1.0, y=1.0, width=4.0, height=0.25),
                 char_start=0,
-                char_end=24,
+                char_end=len(ocr_text),
             )
         ]
         ocr = OcrResult(
@@ -400,8 +404,7 @@ class TestRealLlmExtractorWithMockedClient:
         )
 
         mock_client = MagicMock()
-        # LLM returns a value with currency symbols and commas (violating its
-        # own instructions) — schema must normalize it before storing.
+        # LLM returns the formatted value as it appears in the document.
         mock_client.messages.create.return_value = _mock_tool_response(
             "extract_income_fields",
             {
@@ -415,5 +418,10 @@ class TestRealLlmExtractorWithMockedClient:
         result = extractor.extract(ocr, page_count=1)
 
         pay = next(f for f in result.fields if f.name == "pay")
-        assert pay.value == "1500.00"
+        # Raw value is preserved verbatim — normalization is deferred to Excel export.
+        assert pay.value == "$1,500.00"
+        # OCR text contains "$1,500.00" — verification must pass and keep HIGH.
         assert pay.certainty == Certainty.HIGH
+        # Source location must be resolved from the OCR line.
+        assert len(pay.source_spans) == 1
+        assert pay.source_page == 1

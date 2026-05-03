@@ -30,8 +30,9 @@ _TOOL_SCHEMA: dict[str, Any] = {
                     "value": {
                         "type": "string",
                         "description": (
-                            "Plain decimal number — no currency symbol, no commas, "
-                            "always two decimal places (e.g. '1500.00', '820.00', '1200.50')."
+                            "The dollar amount exactly as it appears in the document, "
+                            "including any currency symbols, commas, or formatting "
+                            "(e.g. '$1,500.00', '$820.00', '1 200,50')."
                         ),
                     },
                     "confidence": {
@@ -76,8 +77,9 @@ receives for the load).
 - Extract the **pickup date** (or the earliest date associated with the load).
 
 Rules:
-- For pay: return a plain decimal number — no currency symbols, no commas, \
-always two decimal places (e.g. '1500.00', '820.00', '1200.50').
+- For pay: return the dollar amount exactly as it appears in the document, \
+including any currency symbols, commas, or formatting (e.g. '$1,500.00', \
+'$820.00', '1200.50').
 - For date: return the date string exactly as it appears in the document text.
 - If a field is clearly present, return it with high confidence (>= 0.9).
 - If you are uncertain or the value is ambiguous, lower your confidence score.
@@ -151,13 +153,13 @@ class IncomeDocumentSchema(ExtractionSchema):
                 continue
 
             if field_name == "pay":
-                normalized = _normalize_pay_value(raw_value)
-                if normalized is None:
-                    # Unparseable — keep raw string but cap certainty at REVIEW
+                # Keep the raw value as returned by the LLM so it can be
+                # matched back to the exact OCR text for PDF highlighting.
+                # Only cap certainty when the string contains no parseable
+                # number at all — a completely unrecognisable value needs review.
+                if _normalize_pay_value(raw_value) is None:
                     if certainty == Certainty.HIGH:
                         certainty = Certainty.REVIEW
-                else:
-                    raw_value = normalized
 
             fields.append(
                 ExtractedField(

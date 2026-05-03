@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import datetime
 from pathlib import Path
 
 import openpyxl
@@ -57,7 +58,8 @@ class TestExcelStructure:
         dd_col = header_map["Date"]
 
         assert ws.cell(row=2, column=gp_col).value == pytest.approx(750.0)
-        assert ws.cell(row=2, column=dd_col).value == "03/12/2024"
+        # Dates are stored as datetime objects so Excel MAX/MIN formulas work.
+        assert ws.cell(row=2, column=dd_col).value == datetime.datetime(2024, 3, 12)
 
     def test_pdf_page_offset(self, synthetic_source_pdf: Path, tmp_path: Path) -> None:
         result = make_extraction_result(synthetic_source_pdf)
@@ -127,11 +129,12 @@ class TestDynamicColumns:
 
 
 class TestDateNormalization:
+    """Date cells are written as datetime objects (not strings) so Excel MAX/MIN work."""
 
-    def test_month_name_date_normalized_to_mm_dd_yyyy(
+    def test_month_name_date_written_as_datetime(
         self, synthetic_source_pdf: Path, tmp_path: Path
     ) -> None:
-        """'March 20, 2024' is written to Excel as '03/20/2024'."""
+        """'March 20, 2024' is stored as datetime(2024, 3, 20) for native date handling."""
         result = make_extraction_result(
             synthetic_source_pdf,
             fields=[
@@ -148,12 +151,12 @@ class TestDateNormalization:
         ws = wb.active
         header_map = {ws.cell(row=1, column=c).value: c for c in range(1, ws.max_column + 1)}
         date_col = header_map["Date"]
-        assert ws.cell(row=2, column=date_col).value == "03/20/2024"
+        assert ws.cell(row=2, column=date_col).value == datetime.datetime(2024, 3, 20)
 
-    def test_abbreviated_month_date_normalized(
+    def test_abbreviated_month_date_written_as_datetime(
         self, synthetic_source_pdf: Path, tmp_path: Path
     ) -> None:
-        """'Mar 11, 2024' (abbreviated) is normalized to '03/11/2024'."""
+        """'Mar 11, 2024' (abbreviated) is stored as datetime(2024, 3, 11)."""
         result = make_extraction_result(
             synthetic_source_pdf,
             fields=[
@@ -170,12 +173,12 @@ class TestDateNormalization:
         ws = wb.active
         header_map = {ws.cell(row=1, column=c).value: c for c in range(1, ws.max_column + 1)}
         date_col = header_map["Date"]
-        assert ws.cell(row=2, column=date_col).value == "03/11/2024"
+        assert ws.cell(row=2, column=date_col).value == datetime.datetime(2024, 3, 11)
 
-    def test_already_normalized_date_unchanged(
+    def test_numeric_date_written_as_datetime(
         self, synthetic_source_pdf: Path, tmp_path: Path
     ) -> None:
-        """A date already in MM/DD/YYYY format is written without modification."""
+        """A date already in MM/DD/YYYY format is stored as datetime(2024, 5, 15)."""
         result = make_extraction_result(
             synthetic_source_pdf,
             fields=[
@@ -192,7 +195,29 @@ class TestDateNormalization:
         ws = wb.active
         header_map = {ws.cell(row=1, column=c).value: c for c in range(1, ws.max_column + 1)}
         date_col = header_map["Date"]
-        assert ws.cell(row=2, column=date_col).value == "05/15/2024"
+        assert ws.cell(row=2, column=date_col).value == datetime.datetime(2024, 5, 15)
+
+    def test_unparseable_date_kept_as_string(
+        self, synthetic_source_pdf: Path, tmp_path: Path
+    ) -> None:
+        """When no known format matches, the raw string is kept so the cell is reviewable."""
+        result = make_extraction_result(
+            synthetic_source_pdf,
+            fields=[
+                ExtractedField(
+                    name="date", value="unknown date",
+                    source_document=synthetic_source_pdf.name, source_page=1,
+                ),
+            ],
+        )
+        out = tmp_path / "out.xlsx"
+        build_excel([result], out, {synthetic_source_pdf.name: 2})
+
+        wb = openpyxl.load_workbook(str(out))
+        ws = wb.active
+        header_map = {ws.cell(row=1, column=c).value: c for c in range(1, ws.max_column + 1)}
+        date_col = header_map["Date"]
+        assert ws.cell(row=2, column=date_col).value == "unknown date"
 
 
 class TestCertaintyColumn:
@@ -308,15 +333,33 @@ class TestTotalsRow:
         expected_range = f"{pay_col_letter}2:{pay_col_letter}{totals_row - 1}"
         assert expected_range in pay_cell_value
 
-    def test_date_column_has_counta_formula(self, synthetic_source_pdf: Path, tmp_path: Path) -> None:
+    def test_date_column_has_total_days_formula(self, synthetic_source_pdf: Path, tmp_path: Path) -> None:
+        """Date totals must use MAX-MIN+1 to compute inclusive calendar day span."""
         result = make_extraction_result(synthetic_source_pdf)
         wb = self._build(tmp_path, [result])
         ws = wb.active
         header_map = {ws.cell(row=1, column=c).value: c for c in range(1, ws.max_column + 1)}
         totals_row = ws.max_row
-        date_cell_value = ws.cell(row=totals_row, column=header_map["Date"]).value
+        date_col = header_map["Date"]
+        date_col_letter = get_column_letter(date_col)
+        date_cell_value = ws.cell(row=totals_row, column=date_col).value
         assert isinstance(date_cell_value, str)
-        assert date_cell_value.upper().startswith("=COUNTA(")
+        assert date_cell_value.upper().startswith("=MAX(")
+        assert "-MIN(" in date_cell_value.upper()
+        assert "+1" in date_cell_value
+        # Pin the exact data range — must span exactly the data rows.
+        expected_range = f"{date_col_letter}2:{date_col_letter}{totals_row - 1}"
+        assert expected_range in date_cell_value
+
+    def test_date_totals_cell_has_integer_format(self, synthetic_source_pdf: Path, tmp_path: Path) -> None:
+        """The days total must display as a plain integer, not as a date serial."""
+        result = make_extraction_result(synthetic_source_pdf)
+        wb = self._build(tmp_path, [result])
+        ws = wb.active
+        header_map = {ws.cell(row=1, column=c).value: c for c in range(1, ws.max_column + 1)}
+        totals_row = ws.max_row
+        fmt = ws.cell(row=totals_row, column=header_map["Date"]).number_format
+        assert fmt == "0"
 
     def test_non_formula_columns_blank_in_totals(self, synthetic_source_pdf: Path, tmp_path: Path) -> None:
         """Certainty, PDF Page, and Notes columns should be empty in the totals row."""
@@ -481,3 +524,51 @@ class TestPayNumericCells:
         pay_val = ws.cell(row=2, column=header_map["Pay"]).value
 
         assert pay_val == "N/A"
+
+    def test_raw_pay_with_currency_symbol_parsed_to_float(
+        self, synthetic_source_pdf: Path, tmp_path: Path
+    ) -> None:
+        """Raw LLM value '$1,500.00' must be written as float 1500.0, not as a string."""
+        result = make_extraction_result(
+            synthetic_source_pdf,
+            fields=[
+                ExtractedField(
+                    name="pay", value="$1,500.00",
+                    source_document=synthetic_source_pdf.name, source_page=1,
+                    certainty=Certainty.HIGH,
+                ),
+            ],
+        )
+        out = tmp_path / "out.xlsx"
+        build_excel([result], out, {synthetic_source_pdf.name: 2})
+
+        wb = openpyxl.load_workbook(str(out))
+        ws = wb.active
+        header_map = {ws.cell(row=1, column=c).value: c for c in range(1, ws.max_column + 1)}
+        pay_val = ws.cell(row=2, column=header_map["Pay"]).value
+
+        assert pay_val == pytest.approx(1500.0)
+
+    def test_raw_pay_without_dollar_sign_but_with_commas_parsed(
+        self, synthetic_source_pdf: Path, tmp_path: Path
+    ) -> None:
+        """'1,200.50' (no dollar sign, has commas) is parsed to 1200.5."""
+        result = make_extraction_result(
+            synthetic_source_pdf,
+            fields=[
+                ExtractedField(
+                    name="pay", value="1,200.50",
+                    source_document=synthetic_source_pdf.name, source_page=1,
+                    certainty=Certainty.HIGH,
+                ),
+            ],
+        )
+        out = tmp_path / "out.xlsx"
+        build_excel([result], out, {synthetic_source_pdf.name: 2})
+
+        wb = openpyxl.load_workbook(str(out))
+        ws = wb.active
+        header_map = {ws.cell(row=1, column=c).value: c for c in range(1, ws.max_column + 1)}
+        pay_val = ws.cell(row=2, column=header_map["Pay"]).value
+
+        assert pay_val == pytest.approx(1200.50)

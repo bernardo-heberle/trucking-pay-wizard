@@ -14,7 +14,7 @@ from src.config import Settings
 from src.extract.exceptions import ExtractionError
 from src.extract.llm.extractor import LlmExtractor, _MAX_ATTEMPTS
 from src.extract.llm.schemas.income import IncomeDocumentSchema
-from src.extract.models import Certainty
+from src.extract.models import Certainty, ExtractedField
 from src.ocr.models import BoundingBox, OcrLine, OcrPage, OcrResult
 
 
@@ -45,12 +45,139 @@ def _make_ocr_result(text: str = "Total Payment to Carrier: $750.00") -> OcrResu
     )
 
 
+def _make_multi_line_ocr(lines_data: list[tuple[str, int]]) -> OcrResult:
+    """Build an OcrResult with multiple lines, one per (text, page_number) pair.
+
+    ``full_text`` offsets are computed automatically based on the ``full_text``
+    property (newlines within a page, double-newlines between pages).
+    """
+    # Compute the full_text first so we can derive char offsets.
+    pages_dict: dict[int, list[str]] = {}
+    for text, pg in lines_data:
+        pages_dict.setdefault(pg, []).append(text)
+    page_texts = ["\n".join(pages_dict[pn]) for pn in sorted(pages_dict)]
+    full_text = "\n\n".join(page_texts)
+
+    ocr_lines: list[OcrLine] = []
+    offset = 0
+    page_order = sorted(pages_dict)
+    for pg_idx, pg in enumerate(page_order):
+        for line_text in pages_dict[pg]:
+            ocr_lines.append(
+                OcrLine(
+                    text=line_text,
+                    page_number=pg,
+                    bounding_box=BoundingBox(x=1.0, y=float(len(ocr_lines)), width=5.0, height=0.25),
+                    char_start=offset,
+                    char_end=offset + len(line_text),
+                )
+            )
+            offset += len(line_text) + 1  # +1 for the '\n' separator
+        if pg_idx < len(page_order) - 1:
+            offset += 1  # extra '\n' for the page separator '\n\n'
+
+    return OcrResult(
+        source_path=Path("multi_doc.pdf"),
+        content_hash="multi123",
+        pages=[
+            OcrPage(page_number=pg, width_inches=8.5, height_inches=11.0, line_count=len(pages_dict[pg]))
+            for pg in page_order
+        ],
+        lines=ocr_lines,
+    )
+
+
 def _mock_tool_response(tool_name: str, tool_input: dict) -> MagicMock:
     """Build a mock Anthropic Messages response with a tool_use block."""
     tool_block = SimpleNamespace(type="tool_use", name=tool_name, input=tool_input)
     response = MagicMock()
     response.content = [tool_block]
     return response
+
+
+class TestResolveSourceLocations:
+    """Unit tests for LlmExtractor._resolve_source_locations.
+
+    The method is tested via a real LlmExtractor with a mocked client so that
+    the full extract() pipeline exercises the resolver — matching the contract
+    verified in production: resolver runs, then verifier runs.
+    """
+
+    def _extractor_with_response(self, tool_input: dict) -> tuple[LlmExtractor, MagicMock]:
+        settings = _make_settings()
+        client = MagicMock()
+        client.messages.create.return_value = _mock_tool_response(
+            "extract_income_fields", tool_input
+        )
+        return LlmExtractor(client=client, settings=settings), client
+
+    def test_source_spans_populated_when_value_found(self) -> None:
+        """When the raw LLM value appears in OCR text, source_spans must be non-empty."""
+        extractor, _ = self._extractor_with_response(
+            {"pay": {"value": "$750.00", "confidence": 0.95}, "date": None}
+        )
+        ocr = _make_ocr_result("Carrier payment: $750.00")
+        result = extractor.extract(ocr, page_count=1)
+
+        pay_field = next(f for f in result.fields if f.name == "pay")
+        assert len(pay_field.source_spans) == 1
+        assert pay_field.source_spans[0].page_number == 1
+        assert pay_field.source_page == 1
+
+    def test_source_spans_empty_when_value_not_found(self) -> None:
+        """When the raw value is absent from OCR text, source_spans stays empty."""
+        extractor, _ = self._extractor_with_response(
+            {"pay": {"value": "$999.99", "confidence": 0.95}, "date": None}
+        )
+        ocr = _make_ocr_result("Carrier payment: $750.00")
+        result = extractor.extract(ocr, page_count=1)
+
+        pay_field = next(f for f in result.fields if f.name == "pay")
+        assert pay_field.source_spans == []
+        assert pay_field.source_page is None
+
+    def test_source_spans_case_insensitive_match(self) -> None:
+        """Matching is case-insensitive — useful for date strings."""
+        extractor, _ = self._extractor_with_response(
+            {"pay": None, "date": {"value": "march 13, 2024", "confidence": 0.92}}
+        )
+        ocr = _make_ocr_result("Pickup: March 13, 2024")
+        result = extractor.extract(ocr, page_count=1)
+
+        date_field = next(f for f in result.fields if f.name == "date")
+        assert len(date_field.source_spans) == 1
+        assert date_field.source_page == 1
+
+    def test_source_page_set_to_page_of_first_matching_line(self) -> None:
+        """source_page must reflect which page the value was found on."""
+        ocr = _make_multi_line_ocr([
+            ("Header line only", 1),
+            ("Carrier payment: $750.00", 2),
+        ])
+        extractor, _ = self._extractor_with_response(
+            {"pay": {"value": "$750.00", "confidence": 0.95}, "date": None}
+        )
+        result = extractor.extract(ocr, page_count=2)
+
+        pay_field = next(f for f in result.fields if f.name == "pay")
+        assert pay_field.source_page == 2
+        assert pay_field.source_spans[0].page_number == 2
+
+    def test_bounding_box_coordinates_preserved_from_ocr_line(self) -> None:
+        """The SourceSpan bounding box must match the OcrLine's exact coordinates."""
+        extractor, _ = self._extractor_with_response(
+            {"pay": {"value": "$750.00", "confidence": 0.95}, "date": None}
+        )
+        ocr = _make_ocr_result("Carrier: $750.00")
+        result = extractor.extract(ocr, page_count=1)
+
+        pay_field = next(f for f in result.fields if f.name == "pay")
+        assert len(pay_field.source_spans) == 1
+        bbox = pay_field.source_spans[0].bounding_box
+        assert bbox.x == pytest.approx(1.0)
+        assert bbox.y == pytest.approx(1.0)
+        assert bbox.width == pytest.approx(5.0)
+        assert bbox.height == pytest.approx(0.25)
 
 
 class TestLlmExtractorExtract:
@@ -554,3 +681,38 @@ class TestPayOcrVerification:
         date_field = next(f for f in result.fields if f.name == "date")
         assert date_field.certainty == Certainty.HIGH
         assert date_field.value == "03/12/2024"
+
+    def test_raw_formatted_pay_stays_high_when_found_in_ocr(self) -> None:
+        """When the LLM returns a formatted value like '$750.00', normalization
+        happens before verification so HIGH certainty is preserved correctly."""
+        settings = _make_settings()
+        client = MagicMock()
+        client.messages.create.return_value = _mock_tool_response(
+            "extract_income_fields",
+            {"pay": {"value": "$750.00", "confidence": 0.95}, "date": None},
+        )
+        ocr = _make_ocr_result("Total Payment to Carrier: $750.00")
+        extractor = LlmExtractor(client=client, settings=settings)
+        result = extractor.extract(ocr, page_count=1)
+
+        pay_field = next(f for f in result.fields if f.name == "pay")
+        assert pay_field.certainty == Certainty.HIGH
+        # Raw value stored verbatim — normalization must not alter the field value.
+        assert pay_field.value == "$750.00"
+
+    def test_raw_formatted_pay_downgraded_when_not_found_in_ocr(self) -> None:
+        """A formatted pay value that doesn't match any OCR amount is downgraded."""
+        settings = _make_settings()
+        client = MagicMock()
+        client.messages.create.return_value = _mock_tool_response(
+            "extract_income_fields",
+            {"pay": {"value": "$1,234.56", "confidence": 0.95}, "date": None},
+        )
+        # OCR has a different amount — verification must fail and downgrade.
+        ocr = _make_ocr_result("Total Payment to Carrier: $12,345.60")
+        extractor = LlmExtractor(client=client, settings=settings)
+        result = extractor.extract(ocr, page_count=1)
+
+        pay_field = next(f for f in result.fields if f.name == "pay")
+        assert pay_field.certainty == Certainty.REVIEW
+        assert pay_field.value == "$1,234.56"

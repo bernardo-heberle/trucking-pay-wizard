@@ -110,16 +110,17 @@ class TestParseToolResult:
         fields = self.schema.parse_tool_result(tool_input, source_document="test.pdf")
         assert fields[0].source_page is None
 
-    def test_dollar_sign_and_commas_stripped_from_pay(self) -> None:
+    def test_raw_pay_value_with_currency_symbol_preserved(self) -> None:
+        """The LLM now returns the raw formatted value; the schema must not normalize it."""
         tool_input = {
             "pay": {"value": "$1,500.00", "confidence": 0.95},
             "date": None,
         }
         fields = self.schema.parse_tool_result(tool_input, source_document="test.pdf")
-        assert fields[0].value == "1500.00"
+        assert fields[0].value == "$1,500.00"
 
     def test_dollar_sign_not_stripped_from_date(self) -> None:
-        """Stripping is pay-specific — dates must never be modified."""
+        """Date values are always returned verbatim — no modification of any kind."""
         tool_input = {
             "pay": None,
             "date": {"value": "$invalid", "confidence": 0.5},
@@ -127,18 +128,20 @@ class TestParseToolResult:
         fields = self.schema.parse_tool_result(tool_input, source_document="test.pdf")
         assert fields[0].value == "$invalid"
 
-    def test_pay_without_dollar_sign_normalized_to_two_decimals(self) -> None:
+    def test_pay_without_formatting_preserved_as_is(self) -> None:
+        """A plain numeric string from the LLM is stored without normalization."""
         tool_input = {
             "pay": {"value": "820", "confidence": 0.95},
             "date": None,
         }
         fields = self.schema.parse_tool_result(tool_input, source_document="test.pdf")
-        assert fields[0].value == "820.00"
+        assert fields[0].value == "820"
 
-    def test_pay_value_description_excludes_currency_symbol(self) -> None:
+    def test_pay_value_description_includes_currency_symbol(self) -> None:
+        """The tool description now asks for the value as it appears, so '$' must be present."""
         defn = self.schema.tool_definition()
         pay_value_desc = defn["input_schema"]["properties"]["pay"]["properties"]["value"]["description"]
-        assert "$" not in pay_value_desc
+        assert "$" in pay_value_desc
 
     def test_unparseable_pay_value_caps_certainty_at_review(self) -> None:
         """When the LLM returns a non-numeric pay string, certainty is capped at REVIEW."""
@@ -160,13 +163,14 @@ class TestParseToolResult:
         fields = self.schema.parse_tool_result(tool_input, source_document="test.pdf")
         assert fields[0].certainty == Certainty.REVIEW
 
-    def test_pay_commas_stripped_without_dollar_sign(self) -> None:
+    def test_pay_commas_preserved_without_dollar_sign(self) -> None:
+        """A comma-formatted value from the LLM is stored verbatim for OCR matching."""
         tool_input = {
             "pay": {"value": "1,200.50", "confidence": 0.95},
             "date": None,
         }
         fields = self.schema.parse_tool_result(tool_input, source_document="test.pdf")
-        assert fields[0].value == "1200.50"
+        assert fields[0].value == "1,200.50"
 
     def test_plain_string_pay_accepted_as_review(self) -> None:
         """Haiku quirk: pay returned as a bare string rather than an object.
@@ -197,10 +201,10 @@ class TestParseToolResult:
         with pytest.raises(MalformedToolResponse):
             self.schema.parse_tool_result(tool_input, source_document="test.pdf")
 
-    def test_pay_prompt_rule_requires_plain_decimal(self) -> None:
+    def test_pay_prompt_rule_requests_raw_text(self) -> None:
+        """The prompt must instruct the LLM to return the value exactly as it appears."""
         prompt = self.schema.system_prompt()
-        assert "no commas" in prompt
-        assert "two decimal" in prompt
+        assert "exactly as it appears" in prompt
 
 
 class TestNormalizePayValue:

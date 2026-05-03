@@ -1,17 +1,19 @@
 from __future__ import annotations
 
 import datetime
+import re
 from pathlib import Path
 
 from loguru import logger
 from openpyxl import Workbook
-from openpyxl.styles import Alignment, Font, PatternFill, numbers
+from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.utils import get_column_letter
 
 from src.extract.models import Certainty, DocumentExtractionResult, EXPECTED_FIELDS
 from src.report.exceptions import ReportAssemblyError
 
 _CURRENCY_FORMAT = '$#,##0.00'
+_DATE_FORMAT = 'MM/DD/YYYY'
 _DATE_FORMATS = ("%m/%d/%Y", "%B %d, %Y", "%b %d, %Y")
 
 _FILL_GREEN = PatternFill(start_color="C6EFCE", end_color="C6EFCE", fill_type="solid")
@@ -76,12 +78,15 @@ def build_excel(
             extracted = field_map.get(field_name)
             raw_value = extracted.value if extracted else ""
             if field_name == "date" and raw_value:
-                raw_value = _normalize_date(raw_value)
+                parsed_dt = _parse_date_to_datetime(raw_value)
+                raw_value = parsed_dt if parsed_dt is not None else raw_value
             if "pay" in field_name.lower() and raw_value:
                 raw_value = _parse_pay_float(raw_value)
             cell = ws.cell(row=row_idx, column=4 + col_offset, value=raw_value)
             if "pay" in field_name.lower():
                 cell.number_format = _CURRENCY_FORMAT
+            if field_name == "date":
+                cell.number_format = _DATE_FORMAT
 
             if extracted:
                 cell.fill = _fill_for_certainty(extracted.certainty)
@@ -146,7 +151,7 @@ def _write_totals_row(
         if "pay" in field_name.lower():
             formula = f"=SUM({data_range})"
         elif field_name == "date":
-            formula = f"=COUNTA({data_range})"
+            formula = f"=MAX({data_range})-MIN({data_range})+1"
         else:
             continue
 
@@ -154,6 +159,8 @@ def _write_totals_row(
         cell.font = bold
         if "pay" in field_name.lower():
             cell.number_format = _CURRENCY_FORMAT
+        elif field_name == "date":
+            cell.number_format = '0'
 
 
 def _collect_field_names(results: list[DocumentExtractionResult]) -> list[str]:
@@ -168,29 +175,31 @@ def _collect_field_names(results: list[DocumentExtractionResult]) -> list[str]:
 def _parse_pay_float(value: str) -> float | str:
     """Convert a pay string to float for proper Excel numeric handling.
 
-    Returns the float on success so Excel treats the cell as a number and
-    SUM() formulas work correctly.  Returns the original string unchanged
-    when parsing fails so the cell still shows something reviewable.
+    Strips currency symbols, commas, and surrounding whitespace so that raw
+    LLM values like ``'$1,500.00'`` parse correctly.  Returns the float on
+    success so Excel treats the cell as a number and SUM() formulas work.
+    Returns the original string unchanged when parsing fails so the cell
+    still shows something reviewable.
     """
     try:
-        return float(value.replace(",", ""))
+        return float(re.sub(r"[$,\s]", "", value))
     except (ValueError, AttributeError):
         return value
 
 
-def _normalize_date(value: str) -> str:
-    """Return *value* formatted as ``MM/DD/YYYY``.
+def _parse_date_to_datetime(value: str) -> datetime.datetime | None:
+    """Parse a raw date string to a ``datetime.datetime`` for Excel.
 
-    Handles the raw date formats produced by extraction:
-    ``MM/DD/YYYY``, ``Month D, YYYY``, and abbreviated ``Mon D, YYYY``.
-    Returns the original string unchanged if none of the formats match.
+    Writing a ``datetime`` object instead of a string lets Excel treat the
+    cell as a native date serial, which is required for MAX/MIN formulas in
+    the totals row.  Returns ``None`` when none of the known formats match.
     """
     for fmt in _DATE_FORMATS:
         try:
-            return datetime.datetime.strptime(value.strip(), fmt).strftime("%m/%d/%Y")
+            return datetime.datetime.strptime(value.strip(), fmt)
         except ValueError:
             continue
-    return value
+    return None
 
 
 def _write_header_row(ws, headers: list[str]) -> None:

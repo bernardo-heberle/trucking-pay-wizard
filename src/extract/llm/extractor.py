@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import dataclasses
 import random
+import re
 import time
 
 import anthropic
@@ -12,8 +13,8 @@ from src.extract.exceptions import ExtractionError, MalformedToolResponse
 from src.extract.llm.client import build_anthropic_client
 from src.extract.llm.sanitizer import sanitize_text
 from src.extract.llm.schemas.base import ExtractionSchema
-from src.extract.llm.schemas.income import IncomeDocumentSchema
-from src.extract.models import Certainty, DocumentExtractionResult, ExtractedField
+from src.extract.llm.schemas.income import IncomeDocumentSchema, _normalize_pay_value
+from src.extract.models import Certainty, DocumentExtractionResult, ExtractedField, SourceSpan
 from src.extract.pay_verifier import verify_pay_against_ocr
 from src.ocr.models import OcrResult
 
@@ -133,6 +134,7 @@ class LlmExtractor:
                 )
 
             else:
+                fields = self._resolve_source_locations(fields, ocr_result)
                 fields = self._verify_pay_fields(fields, sanitized_text, source_name)
                 logger.info(
                     "LLM extraction complete for '{}' — {} field(s) found",
@@ -174,6 +176,58 @@ class LlmExtractor:
             extraction_error=last_error,
         )
 
+    def _resolve_source_locations(
+        self,
+        fields: list[ExtractedField],
+        ocr_result: OcrResult,
+    ) -> list[ExtractedField]:
+        """Populate source_spans and source_page for each field by searching OCR text.
+
+        Searches ``ocr_result.full_text`` for the exact raw value the LLM
+        returned, resolves the match position to bounding-box spans via
+        ``OcrResult.find_lines_for_span``, and attaches the resulting
+        ``SourceSpan`` objects to the field.  Fields whose value is not
+        found in the OCR text are returned unchanged (no spans) — staff
+        will need to locate and mark them manually in the PDF.
+        """
+        resolved: list[ExtractedField] = []
+        full_text = ocr_result.full_text
+
+        for field in fields:
+            if not field.value:
+                resolved.append(field)
+                continue
+
+            pattern = re.compile(re.escape(field.value), re.IGNORECASE)
+            match = pattern.search(full_text)
+
+            if match is None:
+                logger.debug(
+                    "Source location not found in OCR text for field '{}' value {!r}",
+                    field.name,
+                    field.value,
+                )
+                resolved.append(field)
+                continue
+
+            lines = ocr_result.find_lines_for_span(match.start(), match.end())
+            spans = [
+                SourceSpan(page_number=line.page_number, bounding_box=line.bounding_box)
+                for line in lines
+            ]
+            first_page = lines[0].page_number if lines else None
+            resolved.append(
+                dataclasses.replace(field, source_page=first_page, source_spans=spans)
+            )
+            logger.debug(
+                "Resolved source location for field '{}': page {}, {} span(s)",
+                field.name,
+                first_page,
+                len(spans),
+            )
+
+        return resolved
+
     def _verify_pay_fields(
         self,
         fields: list[ExtractedField],
@@ -184,6 +238,8 @@ class LlmExtractor:
 
         For each pay field the LLM reported with HIGH certainty, confirm
         that the numeric value appears somewhere in the sanitized OCR text.
+        The raw LLM value is normalized to a plain decimal before comparison
+        so that formatted strings like ``'$1,500.00'`` match correctly.
         When no match is found the field is downgraded to REVIEW so staff
         know to check it manually.  Fields already at REVIEW or NOT_FOUND
         are left unchanged.
@@ -194,7 +250,14 @@ class LlmExtractor:
                 verified.append(field)
                 continue
 
-            matched, reason = verify_pay_against_ocr(field.value, sanitized_text)
+            normalized = _normalize_pay_value(field.value)
+            if normalized is None:
+                # Unparseable value — already capped at REVIEW by the schema,
+                # but guard here too for safety.
+                verified.append(field)
+                continue
+
+            matched, reason = verify_pay_against_ocr(normalized, sanitized_text)
             if matched:
                 logger.debug(
                     "Pay verification passed for '{}': {}",

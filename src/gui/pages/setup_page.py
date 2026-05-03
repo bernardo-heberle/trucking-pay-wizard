@@ -1,9 +1,13 @@
 from __future__ import annotations
 
+import hashlib
+import os
+import shutil
 from pathlib import Path
 
 from loguru import logger
-from PySide6.QtCore import QObject, QThread, Signal, Slot
+from PySide6.QtCore import QObject, QThread, Qt, Signal, Slot
+from PySide6.QtGui import QDragEnterEvent, QDropEvent
 from PySide6.QtWidgets import (
     QFileDialog,
     QHBoxLayout,
@@ -16,8 +20,20 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from src.gui._errors import friendly_message
 from src.gui._widgets import TruckProgressWidget, add_corner_sparkles
 from src.ingest import collect_source_files
+
+_SUPPORTED_SUFFIXES = frozenset({".pdf", ".png", ".jpg", ".jpeg", ".tif", ".tiff"})
+
+
+def _file_hash(path: Path) -> str:
+    """Return an MD5 hex digest for quick same-content checking."""
+    h = hashlib.md5()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(65536), b""):
+            h.update(chunk)
+    return h.hexdigest()
 
 
 def _extraction_version() -> str:
@@ -113,7 +129,9 @@ class _PipelineWorker(QObject):
             self.finished.emit(str(pdf_path), str(excel_path))
 
         except Exception as exc:
-            self.error.emit(str(exc))
+            from src.gui._errors import friendly_message
+            logger.exception("Pipeline error: {}", exc)
+            self.error.emit(friendly_message(exc))
 
 
 class SetupPage(QWidget):
@@ -124,6 +142,7 @@ class SetupPage(QWidget):
         self._thread: QThread | None = None
         self._worker: _PipelineWorker | None = None
         self._build_ui()
+        self.setAcceptDrops(True)
 
     def _build_ui(self) -> None:
         root = QVBoxLayout(self)
@@ -143,13 +162,28 @@ class SetupPage(QWidget):
         browse_btn.setMinimumWidth(90)
         browse_btn.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
         browse_btn.clicked.connect(self._browse_folder)
+
+        self._open_explorer_btn = QPushButton("Open in Explorer")
+        self._open_explorer_btn.setMinimumWidth(110)
+        self._open_explorer_btn.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
+        self._open_explorer_btn.setEnabled(False)
+        self._open_explorer_btn.clicked.connect(self._open_in_explorer)
+
         folder_row.addWidget(self._folder_edit)
         folder_row.addWidget(browse_btn)
+        folder_row.addWidget(self._open_explorer_btn)
         root.addLayout(folder_row)
 
         self._doc_count_label = QLabel("No folder selected.")
         self._doc_count_label.setStyleSheet("color: gray;")
         root.addWidget(self._doc_count_label)
+
+        drag_hint = QLabel(
+            "<small><i>You can also drag and drop documents directly onto this window.</i></small>"
+        )
+        drag_hint.setTextFormat(Qt.TextFormat.RichText)
+        drag_hint.setStyleSheet("color: #9ca3af;")
+        root.addWidget(drag_hint)
 
         root.addSpacing(12)
 
@@ -211,9 +245,11 @@ class SetupPage(QWidget):
         folder = QFileDialog.getExistingDirectory(self, "Select documents folder")
         if not folder:
             return
+        self._set_folder(Path(folder))
 
-        path = Path(folder)
+    def _set_folder(self, path: Path) -> None:
         self._folder_edit.setText(str(path))
+        self._open_explorer_btn.setEnabled(True)
 
         try:
             files = collect_source_files(path)
@@ -236,6 +272,78 @@ class SetupPage(QWidget):
             )
             self._doc_count_label.setStyleSheet("color: green;")
             self._run_btn.setEnabled(True)
+
+    def _open_in_explorer(self) -> None:
+        folder_text = self._folder_edit.text()
+        if folder_text:
+            os.startfile(folder_text)
+
+    # ── Drag and drop ─────────────────────────────────────────────────────────
+
+    def dragEnterEvent(self, event: QDragEnterEvent) -> None:  # type: ignore[override]
+        if event.mimeData().hasUrls():
+            supported = any(
+                Path(url.toLocalFile()).suffix.lower() in _SUPPORTED_SUFFIXES
+                for url in event.mimeData().urls()
+                if url.isLocalFile()
+            )
+            if supported:
+                event.acceptProposedAction()
+                return
+        event.ignore()
+
+    def dropEvent(self, event: QDropEvent) -> None:  # type: ignore[override]
+        urls = [
+            Path(url.toLocalFile())
+            for url in event.mimeData().urls()
+            if url.isLocalFile()
+            and Path(url.toLocalFile()).suffix.lower() in _SUPPORTED_SUFFIXES
+        ]
+        if not urls:
+            return
+
+        folder_text = self._folder_edit.text().strip()
+        if not folder_text:
+            QMessageBox.information(
+                self,
+                "Select a folder first",
+                "Please select a documents folder before dropping files.",
+            )
+            return
+
+        target_folder = Path(folder_text)
+        copied, skipped, conflicts = 0, 0, []
+
+        for src in urls:
+            dest = target_folder / src.name
+            if dest.exists():
+                if _file_hash(src) == _file_hash(dest):
+                    skipped += 1
+                    continue
+                conflicts.append(src.name)
+                continue
+            shutil.copy2(src, dest)
+            copied += 1
+
+        if conflicts:
+            names = "\n".join(f"  • {n}" for n in conflicts)
+            QMessageBox.warning(
+                self,
+                "File conflict",
+                f"The following files already exist in the folder with different "
+                f"content and were not copied:\n\n{names}\n\n"
+                "Rename or remove the existing copies if you want to replace them.",
+            )
+
+        msg_parts = []
+        if copied:
+            msg_parts.append(f"{copied} file{'s' if copied != 1 else ''} added")
+        if skipped:
+            msg_parts.append(f"{skipped} already present (skipped)")
+        if msg_parts:
+            self._set_status(", ".join(msg_parts) + ".", "gray")
+
+        self._set_folder(target_folder)
 
     # ── Output label ─────────────────────────────────────────────────────────
 
@@ -315,7 +423,7 @@ class SetupPage(QWidget):
     @Slot(str)
     def _on_error(self, message: str) -> None:
         self._truck_progress.setVisible(False)
-        self._set_status(f"Something went wrong: {message}", "red")
+        self._set_status(message, "red")
         self._run_btn.setEnabled(True)
 
     def _set_status(self, text: str, color: str) -> None:

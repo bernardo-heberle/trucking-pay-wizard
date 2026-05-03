@@ -19,6 +19,9 @@ rapidfuzz>=3.6
 # Desktop GUI
 PySide6>=6.7
 
+# Credential storage
+keyring>=24.0
+
 # Progress & logging
 tqdm>=4.66
 loguru>=0.7

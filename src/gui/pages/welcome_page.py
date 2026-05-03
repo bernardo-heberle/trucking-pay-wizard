@@ -13,6 +13,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from src.__version__ import __version__
 from src.gui._widgets import add_corner_sparkles, ui_scale
 
 _TITLE_PT = 18.0
@@ -104,6 +105,11 @@ class WelcomePage(QWidget):
         root.addStretch()
 
         btn_row = QHBoxLayout()
+        # Version label in bottom-left, muted
+        version_lbl = QLabel(f"v{__version__}")
+        version_lbl.setStyleSheet("color: #9ca3af; font-size: 10px;")
+        btn_row.addWidget(version_lbl)
+
         btn_row.addStretch()
         next_btn = QPushButton("Get Started \u2192")
         next_btn.setMinimumWidth(120)

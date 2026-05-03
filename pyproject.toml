@@ -21,7 +21,8 @@ markers = [
 branch = true
 source = ["src"]
 omit = [
-    "src/gui/*",       # exercised via manual smoke testing
+    "src/gui/*",           # exercised via manual smoke testing
+    "src/logging_config.py",  # loguru sink configuration — no testable logic
 ]
 
 [tool.coverage.report]

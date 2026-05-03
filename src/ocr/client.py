@@ -1,36 +1,28 @@
-import os
-
 from azure.ai.documentintelligence import DocumentIntelligenceClient
 from azure.core.credentials import AzureKeyCredential
-from dotenv import load_dotenv
 
+from src import credentials as _creds
 from src.ocr.exceptions import OcrError
-
-_ENDPOINT_VAR = "AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT"
-_KEY_VAR = "AZURE_DOCUMENT_INTELLIGENCE_KEY"
 
 
 def build_client() -> DocumentIntelligenceClient:
-    """Read Azure credentials from the environment and return a configured client.
-
-    Calls `load_dotenv()` so a `.env` file in the working directory is picked up
-    automatically.
+    """Read Azure credentials from the credential store and return a configured client.
 
     Raises:
-        OcrError: Either credential environment variable is missing or empty.
+        OcrError: Either credential is missing from both keyring and environment.
     """
-    load_dotenv()
-
-    endpoint = os.getenv(_ENDPOINT_VAR)
-    key = os.getenv(_KEY_VAR)
+    endpoint = _creds.get_azure_endpoint()
+    key = _creds.get_azure_key()
 
     if not endpoint:
         raise OcrError(
-            f"Azure endpoint not found. Set {_ENDPOINT_VAR!r} in your .env file."
+            "Azure endpoint not found. "
+            "Set it via the credentials screen or AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT in .env."
         )
     if not key:
         raise OcrError(
-            f"Azure key not found. Set {_KEY_VAR!r} in your .env file."
+            "Azure key not found. "
+            "Set it via the credentials screen or AZURE_DOCUMENT_INTELLIGENCE_KEY in .env."
         )
 
     return DocumentIntelligenceClient(

@@ -7,6 +7,9 @@ from decimal import Decimal
 
 from hypothesis import given, settings as h_settings, strategies as st
 
+import pytest
+
+from src.extract.exceptions import MalformedToolResponse
 from src.extract.llm.schemas.income import IncomeDocumentSchema, _normalize_pay_value
 from src.extract.models import Certainty
 
@@ -164,6 +167,35 @@ class TestParseToolResult:
         }
         fields = self.schema.parse_tool_result(tool_input, source_document="test.pdf")
         assert fields[0].value == "1200.50"
+
+    def test_plain_string_pay_accepted_as_review(self) -> None:
+        """Haiku quirk: pay returned as a bare string rather than an object.
+        Policy: no model confidence score → confidence=0.0, certainty=REVIEW."""
+        tool_input = {"pay": "1850.00", "date": None}
+        fields = self.schema.parse_tool_result(tool_input, source_document="test.pdf")
+        assert len(fields) == 1
+        pay = fields[0]
+        assert pay.name == "pay"
+        assert pay.value == "1850.00"
+        assert pay.confidence == 0.0
+        assert pay.certainty == Certainty.REVIEW
+
+    def test_plain_string_date_accepted_as_review(self) -> None:
+        """Same Haiku quirk for the date field."""
+        tool_input = {"pay": None, "date": "04/15/2024"}
+        fields = self.schema.parse_tool_result(tool_input, source_document="test.pdf")
+        assert len(fields) == 1
+        date = fields[0]
+        assert date.name == "date"
+        assert date.value == "04/15/2024"
+        assert date.confidence == 0.0
+        assert date.certainty == Certainty.REVIEW
+
+    def test_unexpected_type_raises_malformed(self) -> None:
+        """A number or list for a field is not recoverable — must raise."""
+        tool_input = {"pay": 1850.0, "date": None}
+        with pytest.raises(MalformedToolResponse):
+            self.schema.parse_tool_result(tool_input, source_document="test.pdf")
 
     def test_pay_prompt_rule_requires_plain_decimal(self) -> None:
         prompt = self.schema.system_prompt()

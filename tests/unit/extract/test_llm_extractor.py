@@ -335,14 +335,18 @@ class TestRetryBehavior:
         mock_sleep.assert_not_called()
 
     def test_malformed_field_type_retried_then_fails(self, mock_sleep) -> None:
-        """When Claude returns a plain string for a field instead of the required
-        object, the extractor retries all attempts and reports not-found."""
+        """When Claude returns an unrecoverable type (bare number) for a field,
+        the extractor retries all attempts and reports not-found.
+
+        Note: plain strings are now accepted leniently as REVIEW-grade values,
+        so this test uses a bare float to trigger the retry path.
+        """
         settings = _make_settings()
         client = MagicMock()
-        # Claude returns "1850.00" (string) instead of {"value": "1850.00", "confidence": 0.9}
+        # A bare number is not recoverable — not a string, not an object.
         client.messages.create.return_value = _mock_tool_response(
             "extract_income_fields",
-            {"pay": "1850.00", "date": None},
+            {"pay": 1850.0, "date": None},
         )
 
         extractor = LlmExtractor(client=client, settings=settings)
@@ -353,12 +357,12 @@ class TestRetryBehavior:
         assert client.messages.create.call_count == _MAX_ATTEMPTS
 
     def test_malformed_field_type_retried_then_succeeds(self, mock_sleep) -> None:
-        """After a malformed response, the extractor retries and succeeds on the next call."""
+        """After an unrecoverable type response, the extractor retries and succeeds."""
         settings = _make_settings()
         client = MagicMock()
         malformed = _mock_tool_response(
             "extract_income_fields",
-            {"pay": "1850.00", "date": None},  # string instead of object
+            {"pay": 1850.0, "date": None},  # bare float — triggers retry
         )
         good = _mock_tool_response(
             "extract_income_fields",
@@ -373,6 +377,25 @@ class TestRetryBehavior:
         assert len(result.fields) == 1
         assert result.fields[0].value == "1850.00"
         assert client.messages.create.call_count == 2
+
+    def test_plain_string_field_accepted_without_retry(self, mock_sleep) -> None:
+        """A plain string for pay is accepted leniently as a REVIEW-grade field,
+        no retry needed — the document is not dropped."""
+        settings = _make_settings()
+        client = MagicMock()
+        client.messages.create.return_value = _mock_tool_response(
+            "extract_income_fields",
+            {"pay": "1850.00", "date": None},
+        )
+
+        extractor = LlmExtractor(client=client, settings=settings)
+        result = extractor.extract(_make_ocr_result(), page_count=1)
+
+        assert result.extraction_error is None
+        assert len(result.fields) == 1
+        assert result.fields[0].value == "1850.00"
+        assert client.messages.create.call_count == 1
+        mock_sleep.assert_not_called()
 
     def test_no_tool_use_retried_then_succeeds(self, mock_sleep) -> None:
         """A missing tool_use block on the first attempt is retried."""

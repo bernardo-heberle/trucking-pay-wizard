@@ -15,66 +15,55 @@ _TOOL_SCHEMA: dict[str, Any] = {
     "name": _TOOL_NAME,
     "description": (
         "Extract financial fields from a trucking income document.  "
-        "Always return the full object structure for every field — never a "
-        "plain string or number.  Set value to null when a field is not found."
+        "Return each field with a confidence score between 0.0 and 1.0."
     ),
     "input_schema": {
         "type": "object",
         "properties": {
             "pay": {
-                # Always an object — value is null when not found.
-                # Using a type union here risks the model returning a plain
-                # string instead of the required object structure.
-                "type": "object",
+                "type": ["object", "null"],
                 "description": (
                     "Total payment to carrier — the dollar amount the "
-                    "carrier receives for the load.  Always return this "
-                    "as an object with 'value' and 'confidence' keys."
+                    "carrier receives for the load."
                 ),
                 "properties": {
                     "value": {
-                        "type": ["string", "null"],
+                        "type": "string",
                         "description": (
                             "Plain decimal number — no currency symbol, no commas, "
-                            "always two decimal places (e.g. '1500.00', '820.00', '1200.50'). "
-                            "null when not found."
+                            "always two decimal places (e.g. '1500.00', '820.00', '1200.50')."
                         ),
                     },
                     "confidence": {
                         "type": "number",
-                        "description": "Confidence 0.0-1.0 that this value is correct. Use 0.0 when value is null.",
+                        "description": "Confidence 0.0-1.0 that this value is correct.",
                     },
                 },
                 "required": ["value", "confidence"],
-                "additionalProperties": False,
             },
             "date": {
-                "type": "object",
+                "type": ["object", "null"],
                 "description": (
                     "Pickup or earliest date for the load — the date the "
-                    "truck was or will be picked up.  Always return this "
-                    "as an object with 'value' and 'confidence' keys."
+                    "truck was or will be picked up."
                 ),
                 "properties": {
                     "value": {
-                        "type": ["string", "null"],
+                        "type": "string",
                         "description": (
                             "Raw date string as it appears in the document "
-                            "(e.g. '03/11/2024', 'March 13, 2024'). "
-                            "null when not found."
+                            "(e.g. '03/11/2024', 'March 13, 2024')."
                         ),
                     },
                     "confidence": {
                         "type": "number",
-                        "description": "Confidence 0.0-1.0 that this value is correct. Use 0.0 when value is null.",
+                        "description": "Confidence 0.0-1.0 that this value is correct.",
                     },
                 },
                 "required": ["value", "confidence"],
-                "additionalProperties": False,
             },
         },
         "required": ["pay", "date"],
-        "additionalProperties": False,
     },
 }
 
@@ -92,11 +81,8 @@ always two decimal places (e.g. '1500.00', '820.00', '1200.50').
 - For date: return the date string exactly as it appears in the document text.
 - If a field is clearly present, return it with high confidence (>= 0.9).
 - If you are uncertain or the value is ambiguous, lower your confidence score.
-- Do NOT fabricate values. Only extract what is explicitly stated.
-
-Output format — always use this exact JSON structure, never a plain string:
-  Found:     {"value": "1500.00", "confidence": 0.95}
-  Not found: {"value": null, "confidence": 0.0}"""
+- If a field is not present in the document, return null for that field.
+- Do NOT fabricate values. Only extract what is explicitly stated."""
 
 
 def _normalize_pay_value(raw: str) -> str | None:
@@ -138,23 +124,31 @@ class IncomeDocumentSchema(ExtractionSchema):
         for field_name in ("pay", "date"):
             entry = tool_input.get(field_name)
             if entry is None:
-                # Field omitted entirely — treated as not found.
                 continue
 
-            if not isinstance(entry, dict):
+            if isinstance(entry, dict):
+                raw_value = entry.get("value", "") or ""
+                confidence = float(entry.get("confidence", 0.0))
+                certainty = _confidence_to_certainty(confidence)
+            elif isinstance(entry, str):
+                # Haiku occasionally collapses the field to a plain string instead
+                # of the required {"value": "...", "confidence": ...} object.
+                # The model reported no confidence score, so we store 0.0.
+                # Certainty is set to REVIEW as an explicit business policy:
+                # a structurally-degraded response always needs human verification.
+                raw_value = entry
+                confidence = 0.0
+                certainty = Certainty.REVIEW
+            else:
+                # Unexpected type (number, list, bool …) — not recoverable without
+                # a fresh model call.
                 raise MalformedToolResponse(
                     f"Field '{field_name}' has unexpected type {type(entry).__name__!r} "
-                    f"(expected object with 'value' and 'confidence'). "
-                    f"Raw value: {entry!r}"
+                    f"(expected object or string). Raw value: {entry!r}"
                 )
-
-            raw_value = entry.get("value") or ""  # null value → empty string → not found
-            confidence = float(entry.get("confidence", 0.0))
 
             if not raw_value:
                 continue
-
-            certainty = _confidence_to_certainty(confidence)
 
             if field_name == "pay":
                 normalized = _normalize_pay_value(raw_value)

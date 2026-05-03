@@ -80,7 +80,7 @@ The tool reads settings from a `.env` file in the project root (see `.env.exampl
 | `AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT` | Always | Azure OCR endpoint |
 | `AZURE_DOCUMENT_INTELLIGENCE_KEY` | Always | Azure OCR API key |
 | `ANTHROPIC_API_KEY` | Always | Anthropic API key for Claude |
-| `LLM_MODEL` | No | Override the default Claude model (`claude-haiku-4-5`) |
+| `LLM_MODEL` | No | Claude model for extraction. Default: `claude-sonnet-4-5` (recommended). Use `claude-haiku-4-5` for ~3.5x lower cost at the expense of higher date-omission rates on dense documents. |
 
 ---
 

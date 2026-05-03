@@ -22,7 +22,7 @@ class Settings:
     confidence_review_threshold: float
 
 
-_DEFAULT_MODEL = "claude-haiku-4-5"
+_DEFAULT_MODEL = "claude-sonnet-4-5"
 _DEFAULT_HIGH_THRESHOLD = 0.9
 _DEFAULT_REVIEW_THRESHOLD = 0.6
 

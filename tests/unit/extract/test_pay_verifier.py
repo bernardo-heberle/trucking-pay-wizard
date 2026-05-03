@@ -157,6 +157,79 @@ class TestWrongFieldPresenceLimit:
         assert matched is True
 
 
+class TestAnchorOffset:
+    """Tests for the anchor_offset parameter that restricts search to a local window."""
+
+    def _build_ocr(self, lines: list[str]) -> str:
+        """Join lines with newlines to simulate multi-line OCR text."""
+        return "\n".join(lines)
+
+    def test_no_anchor_finds_value_anywhere(self) -> None:
+        """Without anchor_offset, the verifier searches the full text."""
+        ocr = self._build_ocr([
+            "Pickup Date: 03/05/2024",
+            "Load 1 pay: $1,250.00",
+            "Pickup Date: 03/12/2024",
+            "Load 2 pay: $2,400.00",
+        ])
+        matched, reason = verify_pay_against_ocr("2400.00", ocr)
+        assert matched is True
+        assert "Matched" in reason
+
+    def test_anchor_restricts_search_to_local_line(self) -> None:
+        """With anchor_offset on the '03/05/2024' line, only that line is searched first.
+
+        The first load's date '03/05/2024' sits at offset 13 in the text.
+        The first load's pay is '$1,250.00' on the next line.
+        The second load's pay '$2,400.00' is several lines away.
+        With an anchor pinned to line 1, '$1,250.00' (nearby) should match first.
+        """
+        line0 = "Pickup Date: 03/05/2024"
+        line1 = "Load 1 pay: $1,250.00"
+        ocr = self._build_ocr([line0, line1, "Pickup Date: 03/12/2024", "Load 2 pay: $2,400.00"])
+
+        # Anchor at offset within line0 — the verifier should find $1,250.00 nearby.
+        anchor = 5  # inside "Pickup Date: 03/05/2024"
+        matched_local, reason_local = verify_pay_against_ocr("1250.00", ocr, anchor_offset=anchor)
+        assert matched_local is True
+        assert "Matched" in reason_local
+
+    def test_anchor_falls_back_to_global_when_value_not_local(self) -> None:
+        """When the value is not on the anchor's line, the global search finds it."""
+        line0 = "Pickup Date: 03/05/2024"
+        line1 = "Load 1 pay: $999.00"
+        line2 = "Pickup Date: 03/12/2024"
+        line3 = "Load 2 pay: $2,400.00"
+        ocr = self._build_ocr([line0, line1, line2, line3])
+
+        # Anchor on line2 (03/12/2024 date), searching for $2,400.00 which is on line3.
+        anchor = len(line0) + 1 + len(line1) + 1 + 5  # within line2
+        matched, reason = verify_pay_against_ocr("2400.00", ocr, anchor_offset=anchor)
+        assert matched is True
+        assert "Matched" in reason
+
+    def test_anchor_none_same_as_no_anchor(self) -> None:
+        """Passing anchor_offset=None is identical to omitting the argument."""
+        ocr = "Total: $500.00"
+        result_explicit_none = verify_pay_against_ocr("500.00", ocr, anchor_offset=None)
+        result_no_arg = verify_pay_against_ocr("500.00", ocr)
+        assert result_explicit_none == result_no_arg
+
+    def test_anchor_beyond_text_length_falls_back_to_global(self) -> None:
+        """An anchor_offset past the end of the text falls back gracefully."""
+        ocr = "Payment: $750.00"
+        matched, reason = verify_pay_against_ocr("750.00", ocr, anchor_offset=9999)
+        assert matched is True
+        assert "Matched" in reason
+
+    def test_wrong_pay_near_anchor_not_matched(self) -> None:
+        """A value not in the text at all should still return False with anchor_offset set."""
+        ocr = "Pickup Date: 03/05/2024\nLoad pay: $1,250.00"
+        anchor = 5
+        matched, _ = verify_pay_against_ocr("9999.00", ocr, anchor_offset=anchor)
+        assert matched is False
+
+
 class TestVerifyPayProperties:
     """Property-based tests for verify_pay_against_ocr.
 

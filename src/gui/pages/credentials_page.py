@@ -11,7 +11,7 @@ from __future__ import annotations
 import concurrent.futures
 
 from loguru import logger
-from PySide6.QtCore import QObject, QThread, Signal, Slot
+from PySide6.QtCore import QObject, Qt, QThread, Signal, Slot
 from PySide6.QtWidgets import (
     QGroupBox,
     QHBoxLayout,
@@ -182,7 +182,7 @@ class CredentialsPage(QWidget):
             "Azure: portal.azure.com \u2192 your Document Intelligence resource \u2192 Keys and Endpoint.</i></small>"
         )
         howto.setWordWrap(True)
-        howto.setTextFormat(1)  # RichText
+        howto.setTextFormat(Qt.TextFormat.RichText)
         manual_layout.addWidget(howto)
 
         root.addWidget(manual_group)

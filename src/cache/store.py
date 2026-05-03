@@ -1,12 +1,17 @@
 from __future__ import annotations
 
-import dataclasses
 import json
 from pathlib import Path
 
 from loguru import logger
 
-from src.extract.models import Certainty, DocumentExtractionResult, ExtractedField, SourceSpan
+from src.extract.models import (
+    Certainty,
+    DocumentExtractionResult,
+    ExtractedField,
+    ExtractedLoad,
+    SourceSpan,
+)
 from src.ocr.models import BoundingBox
 
 _CERTAINTY_LOOKUP: dict[str, Certainty] = {c.value: c for c in Certainty}
@@ -84,15 +89,78 @@ def cache_put(
             tmp_file.unlink(missing_ok=True)
 
 
+def _serialize_field(field: ExtractedField | None) -> dict | None:
+    """Serialize an ``ExtractedField`` to a JSON-serialisable dict, or None."""
+    if field is None:
+        return None
+    return {
+        "name": field.name,
+        "value": field.value,
+        "source_document": field.source_document,
+        "source_page": field.source_page,
+        "confidence": field.confidence,
+        "certainty": field.certainty.value if field.certainty is not None else None,
+        "source_spans": [
+            {
+                "page_number": span.page_number,
+                "bounding_box": {
+                    "x": span.bounding_box.x,
+                    "y": span.bounding_box.y,
+                    "width": span.bounding_box.width,
+                    "height": span.bounding_box.height,
+                },
+            }
+            for span in field.source_spans
+        ],
+    }
+
+
+def _deserialize_field(data: dict | None) -> ExtractedField | None:
+    """Reconstruct an ``ExtractedField`` from a deserialised dict, or None."""
+    if data is None:
+        return None
+    return ExtractedField(
+        name=data["name"],
+        value=data["value"],
+        source_document=data["source_document"],
+        source_page=data["source_page"],
+        confidence=data.get("confidence"),
+        certainty=_CERTAINTY_LOOKUP.get(data.get("certainty", ""), None),
+        source_spans=[
+            SourceSpan(
+                page_number=s["page_number"],
+                bounding_box=BoundingBox(
+                    x=s["bounding_box"]["x"],
+                    y=s["bounding_box"]["y"],
+                    width=s["bounding_box"]["width"],
+                    height=s["bounding_box"]["height"],
+                ),
+            )
+            for s in data.get("source_spans", [])
+        ],
+    )
+
+
 def _serialize(result: DocumentExtractionResult) -> dict:
     """Convert *result* to a JSON-serialisable dict.
 
-    ``Path`` values are converted to strings; all other fields are plain
-    Python primitives via ``dataclasses.asdict()``.
+    ``Path`` values are converted to strings.  Loads are stored as a list
+    of ``{index, pay, date}`` objects, each containing the full field dict.
     """
-    raw = dataclasses.asdict(result)
-    raw["source_path"] = str(result.source_path)
-    return raw
+    return {
+        "source_path": str(result.source_path),
+        "content_hash": result.content_hash,
+        "page_count": result.page_count,
+        "extraction_error": result.extraction_error,
+        "loads": [
+            {
+                "index": load.index,
+                "pay": _serialize_field(load.pay),
+                "date": _serialize_field(load.date),
+            }
+            for load in result.loads
+        ],
+    }
 
 
 def _deserialize(data: dict, source_path: Path) -> DocumentExtractionResult:
@@ -101,34 +169,19 @@ def _deserialize(data: dict, source_path: Path) -> DocumentExtractionResult:
     *source_path* overrides the stored path so that the result is valid even
     if the working folder has been moved since the cache was written.
     """
-    fields = [
-        ExtractedField(
-            name=f["name"],
-            value=f["value"],
-            source_document=f["source_document"],
-            source_page=f["source_page"],
-            confidence=f.get("confidence"),
-            certainty=_CERTAINTY_LOOKUP.get(f.get("certainty", ""), None),
-            source_spans=[
-                SourceSpan(
-                    page_number=s["page_number"],
-                    bounding_box=BoundingBox(
-                        x=s["bounding_box"]["x"],
-                        y=s["bounding_box"]["y"],
-                        width=s["bounding_box"]["width"],
-                        height=s["bounding_box"]["height"],
-                    ),
-                )
-                for s in f.get("source_spans", [])
-            ],
+    loads = [
+        ExtractedLoad(
+            index=entry.get("index", i + 1),
+            pay=_deserialize_field(entry.get("pay")),
+            date=_deserialize_field(entry.get("date")),
         )
-        for f in data.get("fields", [])
+        for i, entry in enumerate(data.get("loads", []))
     ]
 
     return DocumentExtractionResult(
         source_path=source_path,
         content_hash=data["content_hash"],
-        fields=fields,
+        loads=loads,
         page_count=data.get("page_count", 0),
         extraction_error=data.get("extraction_error"),
     )

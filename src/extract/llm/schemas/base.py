@@ -5,7 +5,7 @@ import json
 from abc import ABC, abstractmethod
 from typing import Any
 
-from src.extract.models import ExtractedField
+from src.extract.models import ExtractedLoad
 
 
 class ExtractionSchema(ABC):
@@ -14,8 +14,8 @@ class ExtractionSchema(ABC):
     Subclasses define *what* fields to extract by providing:
       - a tool definition for Claude's ``tool_use`` (structured output)
       - a system prompt giving the LLM extraction context
-      - a parser that converts the LLM's JSON response into ``ExtractedField``
-        objects with confidence scores
+      - a parser that converts the LLM's JSON response into ``ExtractedLoad``
+        objects with per-field confidence scores
 
     To support a new document type, create a new subclass — the
     ``LlmExtractor`` does not need to change.
@@ -63,10 +63,12 @@ class ExtractionSchema(ABC):
         self,
         tool_input: dict[str, Any],
         source_document: str,
-    ) -> list[ExtractedField]:
-        """Convert the LLM's tool-call input into ``ExtractedField`` objects.
+    ) -> list[ExtractedLoad]:
+        """Convert the LLM's tool-call input into ``ExtractedLoad`` objects.
 
         *tool_input* is the parsed JSON the model returned as the tool's
         ``input`` block.  *source_document* is the filename for provenance.
+        Each load carries its own ``pay`` and ``date`` ``ExtractedField``
+        with confidence scores.
         """
         ...

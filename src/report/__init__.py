@@ -67,13 +67,19 @@ def _sort_by_date(
 
 
 def _date_sort_key(result: DocumentExtractionResult) -> datetime.date:
-    """Extract a comparable date from *result*, or ``date.max`` if absent."""
-    for field in result.fields:
-        if field.name == "date":
-            parsed = _parse_date(field.value)
+    """Extract the earliest comparable date from *result*, or ``date.max`` if absent.
+
+    For multi-load documents the document is sorted by the earliest load date
+    so it appears at the correct chronological position in the combined output.
+    """
+    earliest: datetime.date | None = None
+    for load in result.loads:
+        if load.date is not None and load.date.value:
+            parsed = _parse_date(load.date.value)
             if parsed is not None:
-                return parsed
-    return _MAX_DATE
+                if earliest is None or parsed < earliest:
+                    earliest = parsed
+    return earliest if earliest is not None else _MAX_DATE
 
 
 def _parse_date(value: str) -> datetime.date | None:

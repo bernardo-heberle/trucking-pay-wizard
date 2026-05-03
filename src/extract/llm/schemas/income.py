@@ -5,7 +5,7 @@ from decimal import Decimal, InvalidOperation
 from typing import Any
 
 from src.extract.exceptions import MalformedToolResponse
-from src.extract.models import Certainty, ExtractedField
+from src.extract.models import Certainty, ExtractedField, ExtractedLoad
 
 from .base import ExtractionSchema
 
@@ -15,56 +15,71 @@ _TOOL_SCHEMA: dict[str, Any] = {
     "name": _TOOL_NAME,
     "description": (
         "Extract financial fields from a trucking income document.  "
-        "Return each field with a confidence score between 0.0 and 1.0."
+        "Return one entry per distinct load with its pay and pickup date."
     ),
     "input_schema": {
         "type": "object",
         "properties": {
-            "pay": {
-                "type": ["object", "null"],
+            "loads": {
+                "type": "array",
+                "minItems": 1,
                 "description": (
-                    "Total payment to carrier — the dollar amount the "
-                    "carrier receives for the load."
+                    "One entry per distinct load on the document. "
+                    "Single-load documents return a one-element array."
                 ),
-                "properties": {
-                    "value": {
-                        "type": "string",
-                        "description": (
-                            "The dollar amount exactly as it appears in the document, "
-                            "including any currency symbols, commas, or formatting "
-                            "(e.g. '$1,500.00', '$820.00', '1 200,50')."
-                        ),
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "pay": {
+                            "type": ["object", "null"],
+                            "description": (
+                                "Total payment to carrier for this load — the dollar "
+                                "amount the carrier receives."
+                            ),
+                            "properties": {
+                                "value": {
+                                    "type": "string",
+                                    "description": (
+                                        "The dollar amount exactly as it appears in the "
+                                        "document, including any currency symbols, commas, "
+                                        "or formatting (e.g. '$1,500.00', '$820.00', "
+                                        "'1 200,50')."
+                                    ),
+                                },
+                                "confidence": {
+                                    "type": "number",
+                                    "description": "Confidence 0.0-1.0 that this value is correct.",
+                                },
+                            },
+                            "required": ["value", "confidence"],
+                        },
+                        "date": {
+                            "type": ["object", "null"],
+                            "description": (
+                                "Pickup or earliest date for this load — the date the "
+                                "truck was or will be picked up."
+                            ),
+                            "properties": {
+                                "value": {
+                                    "type": "string",
+                                    "description": (
+                                        "Raw date string as it appears in the document "
+                                        "(e.g. '03/11/2024', 'March 13, 2024')."
+                                    ),
+                                },
+                                "confidence": {
+                                    "type": "number",
+                                    "description": "Confidence 0.0-1.0 that this value is correct.",
+                                },
+                            },
+                            "required": ["value", "confidence"],
+                        },
                     },
-                    "confidence": {
-                        "type": "number",
-                        "description": "Confidence 0.0-1.0 that this value is correct.",
-                    },
+                    "required": ["pay", "date"],
                 },
-                "required": ["value", "confidence"],
-            },
-            "date": {
-                "type": ["object", "null"],
-                "description": (
-                    "Pickup or earliest date for the load — the date the "
-                    "truck was or will be picked up."
-                ),
-                "properties": {
-                    "value": {
-                        "type": "string",
-                        "description": (
-                            "Raw date string as it appears in the document "
-                            "(e.g. '03/11/2024', 'March 13, 2024')."
-                        ),
-                    },
-                    "confidence": {
-                        "type": "number",
-                        "description": "Confidence 0.0-1.0 that this value is correct.",
-                    },
-                },
-                "required": ["value", "confidence"],
             },
         },
-        "required": ["pay", "date"],
+        "required": ["loads"],
     },
 }
 
@@ -73,8 +88,10 @@ You are a precise document data extractor for trucking income documents.
 
 Your task:
 - Extract the **total payment to carrier** (the dollar amount the carrier \
-receives for the load).
-- Extract the **pickup date** (or the earliest date associated with the load).
+receives) and **pickup date** for each load on the document.
+- Some documents list a single load; many settlement statements list several. \
+Return one entry per distinct load with its own pay and pickup date. If the \
+document has only one load, return a single-element array.
 
 Rules:
 - For pay: return the dollar amount exactly as it appears in the document, \
@@ -83,8 +100,9 @@ including any currency symbols, commas, or formatting (e.g. '$1,500.00', \
 - For date: return the date string exactly as it appears in the document text.
 - If a field is clearly present, return it with high confidence (>= 0.9).
 - If you are uncertain or the value is ambiguous, lower your confidence score.
-- If a field is not present in the document, return null for that field.
-- Do NOT fabricate values. Only extract what is explicitly stated."""
+- If a field is not present for a load, return null for that field.
+- Do NOT fabricate values. Only extract what is explicitly stated.
+- Do NOT merge multiple loads into one — each distinct load is its own entry."""
 
 
 def _normalize_pay_value(raw: str) -> str | None:
@@ -101,6 +119,61 @@ def _normalize_pay_value(raw: str) -> str | None:
     if amount < 0:
         return None
     return str(amount.quantize(Decimal("0.01")))
+
+
+def _parse_field_entry(
+    entry: Any,
+    field_name: str,
+    source_document: str,
+) -> ExtractedField | None:
+    """Parse a single field entry from within a load object.
+
+    Returns an ``ExtractedField`` on success, ``None`` when the entry is
+    null or has an empty value.  Raises ``MalformedToolResponse`` when the
+    entry is an unexpected type (number, list, bool …).
+    """
+    if entry is None:
+        return None
+
+    if isinstance(entry, dict):
+        raw_value = entry.get("value", "") or ""
+        confidence = float(entry.get("confidence", 0.0))
+        certainty = _confidence_to_certainty(confidence)
+    elif isinstance(entry, str):
+        # Haiku occasionally collapses the field to a plain string instead
+        # of the required {"value": "...", "confidence": ...} object.
+        # The model reported no confidence score, so we store 0.0.
+        # Certainty is set to REVIEW as an explicit business policy:
+        # a structurally-degraded response always needs human verification.
+        raw_value = entry
+        confidence = 0.0
+        certainty = Certainty.REVIEW
+    else:
+        raise MalformedToolResponse(
+            f"Field '{field_name}' has unexpected type {type(entry).__name__!r} "
+            f"(expected object or string). Raw value: {entry!r}"
+        )
+
+    if not raw_value:
+        return None
+
+    if field_name == "pay":
+        # Keep the raw value as returned by the LLM so it can be matched back
+        # to the exact OCR text for PDF highlighting.  Only cap certainty when
+        # the string contains no parseable number at all — a completely
+        # unrecognisable value needs review.
+        if _normalize_pay_value(raw_value) is None:
+            if certainty == Certainty.HIGH:
+                certainty = Certainty.REVIEW
+
+    return ExtractedField(
+        name=field_name,
+        value=raw_value,
+        source_document=source_document,
+        source_page=None,
+        confidence=confidence,
+        certainty=certainty,
+    )
 
 
 class IncomeDocumentSchema(ExtractionSchema):
@@ -120,59 +193,42 @@ class IncomeDocumentSchema(ExtractionSchema):
         self,
         tool_input: dict[str, Any],
         source_document: str,
-    ) -> list[ExtractedField]:
-        fields: list[ExtractedField] = []
+    ) -> list[ExtractedLoad]:
+        raw_loads = tool_input.get("loads")
 
-        for field_name in ("pay", "date"):
-            entry = tool_input.get(field_name)
-            if entry is None:
-                continue
+        # Graceful handling: if the model returns the old flat shape
+        # ({"pay": ..., "date": ...}) instead of {"loads": [...]}, wrap it.
+        if raw_loads is None and ("pay" in tool_input or "date" in tool_input):
+            raw_loads = [{"pay": tool_input.get("pay"), "date": tool_input.get("date")}]
 
-            if isinstance(entry, dict):
-                raw_value = entry.get("value", "") or ""
-                confidence = float(entry.get("confidence", 0.0))
-                certainty = _confidence_to_certainty(confidence)
-            elif isinstance(entry, str):
-                # Haiku occasionally collapses the field to a plain string instead
-                # of the required {"value": "...", "confidence": ...} object.
-                # The model reported no confidence score, so we store 0.0.
-                # Certainty is set to REVIEW as an explicit business policy:
-                # a structurally-degraded response always needs human verification.
-                raw_value = entry
-                confidence = 0.0
-                certainty = Certainty.REVIEW
-            else:
-                # Unexpected type (number, list, bool …) — not recoverable without
-                # a fresh model call.
-                raise MalformedToolResponse(
-                    f"Field '{field_name}' has unexpected type {type(entry).__name__!r} "
-                    f"(expected object or string). Raw value: {entry!r}"
-                )
-
-            if not raw_value:
-                continue
-
-            if field_name == "pay":
-                # Keep the raw value as returned by the LLM so it can be
-                # matched back to the exact OCR text for PDF highlighting.
-                # Only cap certainty when the string contains no parseable
-                # number at all — a completely unrecognisable value needs review.
-                if _normalize_pay_value(raw_value) is None:
-                    if certainty == Certainty.HIGH:
-                        certainty = Certainty.REVIEW
-
-            fields.append(
-                ExtractedField(
-                    name=field_name,
-                    value=raw_value,
-                    source_document=source_document,
-                    source_page=None,
-                    confidence=confidence,
-                    certainty=certainty,
-                )
+        if not isinstance(raw_loads, list) or len(raw_loads) == 0:
+            raise MalformedToolResponse(
+                f"Expected 'loads' to be a non-empty list; got: {raw_loads!r}"
             )
 
-        return fields
+        loads: list[ExtractedLoad] = []
+        for i, load_entry in enumerate(raw_loads, start=1):
+            if not isinstance(load_entry, dict):
+                raise MalformedToolResponse(
+                    f"Load entry {i} has unexpected type "
+                    f"{type(load_entry).__name__!r} (expected object). "
+                    f"Raw value: {load_entry!r}"
+                )
+
+            pay_field = _parse_field_entry(
+                load_entry.get("pay"),
+                field_name="pay",
+                source_document=source_document,
+            )
+            date_field = _parse_field_entry(
+                load_entry.get("date"),
+                field_name="date",
+                source_document=source_document,
+            )
+
+            loads.append(ExtractedLoad(index=i, pay=pay_field, date=date_field))
+
+        return loads
 
 
 def _confidence_to_certainty(confidence: float) -> Certainty:

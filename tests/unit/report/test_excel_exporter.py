@@ -71,19 +71,27 @@ class TestExcelStructure:
         assert ws.cell(row=2, column=2).value == 5
 
 
-class TestDynamicColumns:
+class TestFixedColumnLayout:
+    """The new exporter uses a fixed column set: Document | PDF Page | Certainty | Date | Pay | Notes."""
 
-    def test_extra_field_gets_column(self, synthetic_source_pdf: Path, tmp_path: Path) -> None:
-        """A field name not in the default set still gets its own column."""
+    def test_notes_column_present(self, synthetic_source_pdf: Path, tmp_path: Path) -> None:
+        result = make_extraction_result(synthetic_source_pdf)
+        out = tmp_path / "out.xlsx"
+        build_excel([result], out, {synthetic_source_pdf.name: 2})
+
+        wb = openpyxl.load_workbook(str(out))
+        ws = wb.active
+        headers = [ws.cell(row=1, column=c).value for c in range(1, ws.max_column + 1)]
+        assert "Notes" in headers
+
+    def test_no_date_field_leaves_date_cell_empty(
+        self, synthetic_source_pdf: Path, tmp_path: Path
+    ) -> None:
+        """A load with date=None must produce an empty Date cell (not raise)."""
         result = make_extraction_result(
             synthetic_source_pdf,
             fields=[
-                ExtractedField(
-                    name="net_pay",
-                    value="600.00",
-                    source_document=synthetic_source_pdf.name,
-                    source_page=1,
-                ),
+                ExtractedField(name="pay", value="100", source_document="a.pdf", source_page=1),
             ],
         )
         out = tmp_path / "out.xlsx"
@@ -91,41 +99,47 @@ class TestDynamicColumns:
 
         wb = openpyxl.load_workbook(str(out))
         ws = wb.active
-        headers = [ws.cell(row=1, column=c).value for c in range(1, ws.max_column + 1)]
-        assert "Net Pay" in headers
+        header_map = {ws.cell(row=1, column=c).value: c for c in range(1, ws.max_column + 1)}
+        assert ws.cell(row=2, column=header_map["Date"]).value is None
 
-    def test_varying_field_names_across_documents(
-        self, synthetic_source_pdf: Path, synthetic_source_pdf_b: Path, tmp_path: Path
+    def test_multiple_loads_produce_multiple_rows(
+        self, synthetic_source_pdf: Path, tmp_path: Path
     ) -> None:
-        r1 = make_extraction_result(
-            synthetic_source_pdf,
-            content_hash="h1",
-            fields=[
-                ExtractedField(name="pay", value="100", source_document="a.pdf", source_page=1),
-            ],
-        )
-        r2 = make_extraction_result(
-            synthetic_source_pdf_b,
-            content_hash="h2",
-            page_count=2,
-            fields=[
-                ExtractedField(name="date", value="01/01/2024", source_document="b.pdf", source_page=1),
-            ],
-        )
-        offsets = {synthetic_source_pdf.name: 2, synthetic_source_pdf_b.name: 3}
+        """A three-load document must produce three data rows."""
+        from src.extract.models import ExtractedLoad
+        from tests.unit.report.conftest import make_load
+
+        loads = [
+            make_load(synthetic_source_pdf, index=i, pay_value=f"{i * 100}.00", date_value=f"0{i}/01/2024")
+            for i in range(1, 4)
+        ]
+        result = make_extraction_result(synthetic_source_pdf, loads=loads)
         out = tmp_path / "out.xlsx"
-        build_excel([r1, r2], out, offsets)
+        build_excel([result], out, {synthetic_source_pdf.name: 2})
 
         wb = openpyxl.load_workbook(str(out))
         ws = wb.active
-        headers = [ws.cell(row=1, column=c).value for c in range(1, ws.max_column + 1)]
-        assert "Pay" in headers
-        assert "Date" in headers
+        # 1 header + 3 data rows + 1 totals = 5
+        assert ws.max_row == 5
 
-        header_map = {ws.cell(row=1, column=c).value: c for c in range(1, ws.max_column + 1)}
-        dd_col = header_map["Date"]
-        # r1 has no date field — its Date cell must be empty (None in openpyxl).
-        assert ws.cell(row=2, column=dd_col).value is None
+    def test_document_name_repeated_for_all_loads(
+        self, synthetic_source_pdf: Path, tmp_path: Path
+    ) -> None:
+        """All load rows for the same document must repeat the document name."""
+        from tests.unit.report.conftest import make_load
+
+        loads = [
+            make_load(synthetic_source_pdf, index=i, pay_value=f"{500 + i * 100}.00")
+            for i in range(1, 3)
+        ]
+        result = make_extraction_result(synthetic_source_pdf, loads=loads)
+        out = tmp_path / "out.xlsx"
+        build_excel([result], out, {synthetic_source_pdf.name: 2})
+
+        wb = openpyxl.load_workbook(str(out))
+        ws = wb.active
+        assert ws.cell(row=2, column=1).value == synthetic_source_pdf.name
+        assert ws.cell(row=3, column=1).value == synthetic_source_pdf.name
 
 
 class TestDateNormalization:

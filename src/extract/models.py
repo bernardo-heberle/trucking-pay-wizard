@@ -6,8 +6,6 @@ from pathlib import Path
 
 from src.ocr.models import BoundingBox
 
-EXPECTED_FIELDS: list[str] = ["pay", "date"]
-
 
 class Certainty(str, Enum):
     """How reliable an extracted value is.
@@ -48,10 +46,46 @@ class ExtractedField:
 
 
 @dataclass
+class ExtractedLoad:
+    """A single load extracted from a document — pay and date as a paired unit.
+
+    A document may carry N loads (e.g. a settlement statement listing multiple
+    trips).  Single-load documents are represented as a one-element list.
+    Both ``pay`` and ``date`` may be ``None`` when the LLM could not extract
+    that field for this load.
+    """
+
+    index: int                    # 1-based position within the document
+    pay: ExtractedField | None
+    date: ExtractedField | None
+
+    def certainty(self) -> Certainty:
+        """Return the worst certainty across pay and date for this load.
+
+        Returns ``NOT_FOUND`` when either field is absent or has ``None``
+        certainty.  Returns ``REVIEW`` when both are present but one is
+        REVIEW.  Returns ``HIGH`` only when both are present and HIGH.
+        """
+        worst = Certainty.HIGH
+        for fld in (self.pay, self.date):
+            if fld is None:
+                return Certainty.NOT_FOUND
+            cert = fld.certainty
+            if cert is None or cert == Certainty.NOT_FOUND:
+                return Certainty.NOT_FOUND
+            if cert == Certainty.REVIEW:
+                worst = Certainty.REVIEW
+        return worst
+
+
+@dataclass
 class DocumentExtractionResult:
     """Extraction output for a single document — consumed by the report stage.
 
-    When extraction fails after all retries are exhausted, ``fields`` is empty
+    Each document may carry one or more loads (``ExtractedLoad`` objects).
+    Single-load documents have ``len(loads) == 1``.
+
+    When extraction fails after all retries are exhausted, ``loads`` is empty
     and ``extraction_error`` carries a human-readable description of the
     failure.  Callers must check ``extraction_error`` before caching — failed
     results are not cached so the document is retried on the next pipeline run.
@@ -59,29 +93,25 @@ class DocumentExtractionResult:
 
     source_path: Path
     content_hash: str
-    fields: list[ExtractedField] = field(default_factory=list)
+    loads: list[ExtractedLoad] = field(default_factory=list)
     page_count: int = 0
     extraction_error: str | None = None
 
-    def overall_certainty(self, expected_fields: list[str]) -> Certainty:
-        """Return the worst certainty across *expected_fields*.
+    def overall_certainty(self) -> Certainty:
+        """Return the worst certainty across all loads.
 
-        If any expected field is missing entirely, returns ``NOT_FOUND``.
-        If all are present but any has ``REVIEW``, returns ``REVIEW``.
-        Otherwise returns ``HIGH``.
+        Returns ``NOT_FOUND`` when ``loads`` is empty or any load has
+        ``NOT_FOUND`` certainty.  Returns ``REVIEW`` when all loads are
+        present but any has ``REVIEW``.  Otherwise returns ``HIGH``.
         """
-        field_map = {f.name: f for f in self.fields}
-
-        for name in expected_fields:
-            if name not in field_map:
-                return Certainty.NOT_FOUND
+        if not self.loads:
+            return Certainty.NOT_FOUND
 
         worst = Certainty.HIGH
-        for name in expected_fields:
-            cert = field_map[name].certainty
-            if cert is None or cert == Certainty.NOT_FOUND:
+        for load in self.loads:
+            load_cert = load.certainty()
+            if load_cert == Certainty.NOT_FOUND:
                 return Certainty.NOT_FOUND
-            if cert == Certainty.REVIEW:
+            if load_cert == Certainty.REVIEW:
                 worst = Certainty.REVIEW
-
         return worst

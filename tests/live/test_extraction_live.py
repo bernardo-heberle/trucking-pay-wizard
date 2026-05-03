@@ -32,14 +32,18 @@ class TestSettlementExtraction:
         ocr = load_ocr_fixture("settlement_ocr.json")
         result = anthropic_extractor.extract(ocr, page_count=1)
 
-        pay = next(f for f in result.fields if f.name == "pay")
+        assert len(result.loads) >= 1
+        pay = result.loads[0].pay
+        assert pay is not None
         assert pay.value == "750.00"
 
     def test_date_value(self, anthropic_extractor) -> None:
         ocr = load_ocr_fixture("settlement_ocr.json")
         result = anthropic_extractor.extract(ocr, page_count=1)
 
-        date = next(f for f in result.fields if f.name == "date")
+        assert len(result.loads) >= 1
+        date = result.loads[0].date
+        assert date is not None
         assert "03/12/2024" in date.value
 
     def test_pay_certainty_is_high(self, anthropic_extractor) -> None:
@@ -47,7 +51,9 @@ class TestSettlementExtraction:
         ocr = load_ocr_fixture("settlement_ocr.json")
         result = anthropic_extractor.extract(ocr, page_count=1)
 
-        pay = next(f for f in result.fields if f.name == "pay")
+        assert len(result.loads) >= 1
+        pay = result.loads[0].pay
+        assert pay is not None
         assert pay.certainty == Certainty.HIGH
 
 
@@ -58,14 +64,18 @@ class TestPaySummaryExtraction:
         ocr = load_ocr_fixture("pay_summary_ocr.json")
         result = anthropic_extractor.extract(ocr, page_count=1)
 
-        pay = next(f for f in result.fields if f.name == "pay")
+        assert len(result.loads) >= 1
+        pay = result.loads[0].pay
+        assert pay is not None
         assert pay.value == "820.00"
 
     def test_date_value(self, anthropic_extractor) -> None:
         ocr = load_ocr_fixture("pay_summary_ocr.json")
         result = anthropic_extractor.extract(ocr, page_count=1)
 
-        date = next(f for f in result.fields if f.name == "date")
+        assert len(result.loads) >= 1
+        date = result.loads[0].date
+        assert date is not None
         assert "March 20, 2024" in date.value or "03/20/2024" in date.value
 
 
@@ -82,34 +92,38 @@ class TestCentralDispatchExtraction:
     real documents.
     """
 
-    def test_extracts_both_fields(self, anthropic_extractor) -> None:
+    def test_extracts_at_least_one_load(self, anthropic_extractor) -> None:
         ocr = load_ocr_fixture("central_dispatch_settlement.json")
 
         result = anthropic_extractor.extract(ocr, page_count=1)
 
         assert result.extraction_error is None
-        names = {f.name for f in result.fields}
-        assert names == {"pay", "date"}, f"Expected pay+date, got: {names}"
+        assert len(result.loads) >= 1
+        assert result.loads[0].pay is not None, "Expected a pay field in load 0"
+        assert result.loads[0].date is not None, "Expected a date field in load 0"
 
     def test_pay_value(self, anthropic_extractor) -> None:
         ocr = load_ocr_fixture("central_dispatch_settlement.json")
         result = anthropic_extractor.extract(ocr, page_count=1)
 
-        pay = next(f for f in result.fields if f.name == "pay")
+        pay = result.loads[0].pay
+        assert pay is not None
         assert pay.value == "1850.00"
 
     def test_date_value(self, anthropic_extractor) -> None:
         ocr = load_ocr_fixture("central_dispatch_settlement.json")
         result = anthropic_extractor.extract(ocr, page_count=1)
 
-        date = next(f for f in result.fields if f.name == "date")
+        date = result.loads[0].date
+        assert date is not None
         assert "04/15/2024" in date.value
 
     def test_pay_certainty_is_high(self, anthropic_extractor) -> None:
         ocr = load_ocr_fixture("central_dispatch_settlement.json")
         result = anthropic_extractor.extract(ocr, page_count=1)
 
-        pay = next(f for f in result.fields if f.name == "pay")
+        pay = result.loads[0].pay
+        assert pay is not None
         assert pay.certainty == Certainty.HIGH
 
 
@@ -120,27 +134,30 @@ class TestV2DispatchExtraction:
     Date is "April 8, 2024 (Mon)" under "Pickup Date".
     """
 
-    def test_extracts_both_fields(self, anthropic_extractor) -> None:
+    def test_extracts_at_least_one_load(self, anthropic_extractor) -> None:
         ocr = load_ocr_fixture("v2_dispatch_load.json")
 
         result = anthropic_extractor.extract(ocr, page_count=2)
 
         assert result.extraction_error is None
-        names = {f.name for f in result.fields}
-        assert names == {"pay", "date"}, f"Expected pay+date, got: {names}"
+        assert len(result.loads) >= 1
+        assert result.loads[0].pay is not None
+        assert result.loads[0].date is not None
 
     def test_pay_value(self, anthropic_extractor) -> None:
         ocr = load_ocr_fixture("v2_dispatch_load.json")
         result = anthropic_extractor.extract(ocr, page_count=2)
 
-        pay = next(f for f in result.fields if f.name == "pay")
+        pay = result.loads[0].pay
+        assert pay is not None
         assert pay.value == "920.00"
 
     def test_date_value(self, anthropic_extractor) -> None:
         ocr = load_ocr_fixture("v2_dispatch_load.json")
         result = anthropic_extractor.extract(ocr, page_count=2)
 
-        date = next(f for f in result.fields if f.name == "date")
+        date = result.loads[0].date
+        assert date is not None
         assert "April 8, 2024" in date.value or "04/08/2024" in date.value
 
 
@@ -151,27 +168,30 @@ class TestSuperDispatchExtraction:
     appear on page 1 among many similar-looking fields.
     """
 
-    def test_extracts_both_fields(self, anthropic_extractor) -> None:
+    def test_extracts_at_least_one_load(self, anthropic_extractor) -> None:
         ocr = load_ocr_fixture("super_dispatch_backlotcars.json")
 
         result = anthropic_extractor.extract(ocr, page_count=3)
 
         assert result.extraction_error is None
-        names = {f.name for f in result.fields}
-        assert names == {"pay", "date"}, f"Expected pay+date, got: {names}"
+        assert len(result.loads) >= 1
+        assert result.loads[0].pay is not None
+        assert result.loads[0].date is not None
 
     def test_pay_value(self, anthropic_extractor) -> None:
         ocr = load_ocr_fixture("super_dispatch_backlotcars.json")
         result = anthropic_extractor.extract(ocr, page_count=3)
 
-        pay = next(f for f in result.fields if f.name == "pay")
+        pay = result.loads[0].pay
+        assert pay is not None
         assert pay.value == "1350.00"
 
     def test_date_value(self, anthropic_extractor) -> None:
         ocr = load_ocr_fixture("super_dispatch_backlotcars.json")
         result = anthropic_extractor.extract(ocr, page_count=3)
 
-        date = next(f for f in result.fields if f.name == "date")
+        date = result.loads[0].date
+        assert date is not None
         assert "04/22/2024" in date.value
 
 
@@ -182,20 +202,22 @@ class TestMultiVehicleExtraction:
     ($4,500.00) don't confuse the extractor.
     """
 
-    def test_extracts_both_fields(self, anthropic_extractor) -> None:
+    def test_extracts_at_least_one_load(self, anthropic_extractor) -> None:
         ocr = load_ocr_fixture("multi_vehicle_central_dispatch.json")
 
         result = anthropic_extractor.extract(ocr, page_count=2)
 
         assert result.extraction_error is None
-        names = {f.name for f in result.fields}
-        assert names == {"pay", "date"}, f"Expected pay+date, got: {names}"
+        assert len(result.loads) >= 1
+        assert result.loads[0].pay is not None
+        assert result.loads[0].date is not None
 
     def test_pay_value(self, anthropic_extractor) -> None:
         ocr = load_ocr_fixture("multi_vehicle_central_dispatch.json")
         result = anthropic_extractor.extract(ocr, page_count=2)
 
-        pay = next(f for f in result.fields if f.name == "pay")
+        pay = result.loads[0].pay
+        assert pay is not None
         assert pay.value == "4500.00"
 
     @pytest.mark.parametrize("date_variant", ["05/06/2024"])
@@ -203,5 +225,6 @@ class TestMultiVehicleExtraction:
         ocr = load_ocr_fixture("multi_vehicle_central_dispatch.json")
         result = anthropic_extractor.extract(ocr, page_count=2)
 
-        date = next(f for f in result.fields if f.name == "date")
+        date = result.loads[0].date
+        assert date is not None
         assert date_variant in date.value

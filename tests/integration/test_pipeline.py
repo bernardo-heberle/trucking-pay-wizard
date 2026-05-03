@@ -19,7 +19,7 @@ import pytest
 
 from src.config import Settings
 from src.extract.llm.extractor import LlmExtractor
-from src.extract.models import Certainty, ExtractedField
+from src.extract.models import Certainty, DocumentExtractionResult, ExtractedField, ExtractedLoad, SourceSpan
 from src.ingest import ingest_document
 from src.ocr.models import BoundingBox, OcrLine, OcrPage, OcrResult
 from src.report import build_report
@@ -69,37 +69,35 @@ def _build_mock_ocr_result(source_path: Path, content_hash: str) -> OcrResult:
 
 def _make_extraction_result(source_path: Path, content_hash: str, page_count: int):
     """Build a canned DocumentExtractionResult as if returned by LlmExtractor."""
-    from src.extract.models import DocumentExtractionResult, SourceSpan
+    pay = ExtractedField(
+        name="pay",
+        value="1,200.50",
+        source_document=source_path.name,
+        source_page=1,
+        source_spans=[SourceSpan(
+            page_number=1,
+            bounding_box=BoundingBox(x=1.0, y=2.0, width=4.0, height=0.25),
+        )],
+        certainty=Certainty.HIGH,
+        confidence=0.97,
+    )
+    date = ExtractedField(
+        name="date",
+        value="05/15/2024",
+        source_document=source_path.name,
+        source_page=1,
+        source_spans=[SourceSpan(
+            page_number=1,
+            bounding_box=BoundingBox(x=1.0, y=3.5, width=3.5, height=0.25),
+        )],
+        certainty=Certainty.HIGH,
+        confidence=0.95,
+    )
     return DocumentExtractionResult(
         source_path=source_path,
         content_hash=content_hash,
         page_count=page_count,
-        fields=[
-            ExtractedField(
-                name="pay",
-                value="1,200.50",
-                source_document=source_path.name,
-                source_page=1,
-                source_spans=[SourceSpan(
-                    page_number=1,
-                    bounding_box=BoundingBox(x=1.0, y=2.0, width=4.0, height=0.25),
-                )],
-                certainty=Certainty.HIGH,
-                confidence=0.97,
-            ),
-            ExtractedField(
-                name="date",
-                value="05/15/2024",
-                source_document=source_path.name,
-                source_page=1,
-                source_spans=[SourceSpan(
-                    page_number=1,
-                    bounding_box=BoundingBox(x=1.0, y=3.5, width=3.5, height=0.25),
-                )],
-                certainty=Certainty.HIGH,
-                confidence=0.95,
-            ),
-        ],
+        loads=[ExtractedLoad(index=1, pay=pay, date=date)],
     )
 
 
@@ -127,15 +125,15 @@ class TestFullPipeline:
         mock_extractor.extract.return_value = canned
 
         extraction = mock_extractor.extract(ocr_result, page_count=ingested.page_count)
-        field_names = {f.name for f in extraction.fields}
-        assert "pay" in field_names
-        assert "date" in field_names
+        assert len(extraction.loads) == 1
 
-        pay = next(f for f in extraction.fields if f.name == "pay")
+        pay = extraction.loads[0].pay
+        assert pay is not None
         assert pay.value == "1,200.50"
         assert pay.certainty == Certainty.HIGH
 
-        date = next(f for f in extraction.fields if f.name == "date")
+        date = extraction.loads[0].date
+        assert date is not None
         assert date.value == "05/15/2024"
         assert date.certainty == Certainty.HIGH
 
@@ -146,12 +144,12 @@ class TestFullPipeline:
         assert pdf_path.exists()
         assert excel_path.exists()
 
-        # Verify PDF page count: 1 index + 1 source page
+        # Verify PDF page count: source pages only (no index page)
         combined = fitz.open(str(pdf_path))
-        assert len(combined) == 1 + ingested.page_count
+        assert len(combined) == ingested.page_count
 
         # Verify highlight annotations on source page(s)
-        source_page = combined[1]
+        source_page = combined[0]
         annots = list(source_page.annots() or [])
         assert len(annots) >= 1
         combined.close()
@@ -164,56 +162,53 @@ class TestFullPipeline:
         assert ws.cell(row=2, column=header_map["Pay"]).value == pytest.approx(1200.50)
         # Date is stored as a datetime object so Excel MAX/MIN formulas work.
         assert ws.cell(row=2, column=header_map["Date"]).value == datetime.datetime(2024, 5, 15)
-        assert ws.cell(row=2, column=header_map["PDF Page"]).value == 2
+        assert ws.cell(row=2, column=header_map["PDF Page"]).value == 1
 
         assert "Certainty" in header_map
         assert ws.cell(row=2, column=header_map["Certainty"]).value == "High"
 
     def test_multiple_documents(self, tmp_path: Path) -> None:
         """Verify the pipeline handles multiple documents correctly."""
-        from src.extract.models import DocumentExtractionResult, SourceSpan
-
         extractions = []
 
-        for idx, (pay, date) in enumerate([("500.00", "01/01/2024"), ("900.00", "06/30/2024")]):
+        for idx, (pay_val, date_val) in enumerate([("500.00", "01/01/2024"), ("900.00", "06/30/2024")]):
             src = tmp_path / f"doc_{idx}.pdf"
             _make_synthetic_pdf(src, [
                 ("Settlement", 72),
-                (f"Total Payment to Carrier: ${pay}", 200),
-                (f"Pickup Exactly: {date}", 320),
+                (f"Total Payment to Carrier: ${pay_val}", 200),
+                (f"Pickup Exactly: {date_val}", 320),
             ])
 
             ingested = ingest_document(src)
+            pay_field = ExtractedField(
+                name="pay",
+                value=pay_val,
+                source_document=src.name,
+                source_page=1,
+                source_spans=[SourceSpan(
+                    page_number=1,
+                    bounding_box=BoundingBox(x=1.0, y=2.0, width=4.0, height=0.25),
+                )],
+                certainty=Certainty.HIGH,
+                confidence=0.95,
+            )
+            date_field = ExtractedField(
+                name="date",
+                value=date_val,
+                source_document=src.name,
+                source_page=1,
+                source_spans=[SourceSpan(
+                    page_number=1,
+                    bounding_box=BoundingBox(x=1.0, y=3.5, width=3.5, height=0.25),
+                )],
+                certainty=Certainty.HIGH,
+                confidence=0.95,
+            )
             canned = DocumentExtractionResult(
                 source_path=src,
                 content_hash=ingested.content_hash,
                 page_count=1,
-                fields=[
-                    ExtractedField(
-                        name="pay",
-                        value=pay,
-                        source_document=src.name,
-                        source_page=1,
-                        source_spans=[SourceSpan(
-                            page_number=1,
-                            bounding_box=BoundingBox(x=1.0, y=2.0, width=4.0, height=0.25),
-                        )],
-                        certainty=Certainty.HIGH,
-                        confidence=0.95,
-                    ),
-                    ExtractedField(
-                        name="date",
-                        value=date,
-                        source_document=src.name,
-                        source_page=1,
-                        source_spans=[SourceSpan(
-                            page_number=1,
-                            bounding_box=BoundingBox(x=1.0, y=3.5, width=3.5, height=0.25),
-                        )],
-                        certainty=Certainty.HIGH,
-                        confidence=0.95,
-                    ),
-                ],
+                loads=[ExtractedLoad(index=1, pay=pay_field, date=date_field)],
             )
             extractions.append(canned)
 
@@ -221,7 +216,7 @@ class TestFullPipeline:
         pdf_path, excel_path = build_report(extractions, output_dir)
 
         combined = fitz.open(str(pdf_path))
-        assert len(combined) == 3  # 1 index + 2 source pages
+        assert len(combined) == 2  # 2 source pages, no index
         combined.close()
 
         wb = openpyxl.load_workbook(str(excel_path))
@@ -313,17 +308,18 @@ class TestRealLlmExtractorWithMockedClient:
         extractor = LlmExtractor(client=mock_client, settings=settings)
         result = extractor.extract(ocr, page_count=ingested.page_count)
 
-        # Schema parsing produced correctly named fields.
+        # Schema parsing produced correctly structured loads.
         assert result.extraction_error is None
-        field_names = {f.name for f in result.fields}
-        assert field_names == {"pay", "date"}
+        assert len(result.loads) == 1
 
-        pay = next(f for f in result.fields if f.name == "pay")
+        pay = result.loads[0].pay
+        assert pay is not None
         assert pay.value == "750.00"
         # OCR text contains "$750.00" — verification must pass and keep HIGH.
         assert pay.certainty == Certainty.HIGH
 
-        date = next(f for f in result.fields if f.name == "date")
+        date = result.loads[0].date
+        assert date is not None
         assert date.value == "03/12/2024"
         assert date.certainty == Certainty.HIGH
 
@@ -366,7 +362,9 @@ class TestRealLlmExtractorWithMockedClient:
         result = extractor.extract(ocr, page_count=ingested.page_count)
 
         assert result.extraction_error is None
-        pay = next(f for f in result.fields if f.name == "pay")
+        assert len(result.loads) == 1
+        pay = result.loads[0].pay
+        assert pay is not None
         assert pay.value == "9999.00"
         # Value not found in OCR → must be downgraded from HIGH to REVIEW.
         assert pay.certainty == Certainty.REVIEW
@@ -417,7 +415,9 @@ class TestRealLlmExtractorWithMockedClient:
         extractor = LlmExtractor(client=mock_client, settings=settings)
         result = extractor.extract(ocr, page_count=1)
 
-        pay = next(f for f in result.fields if f.name == "pay")
+        assert len(result.loads) == 1
+        pay = result.loads[0].pay
+        assert pay is not None
         # Raw value is preserved verbatim — normalization is deferred to Excel export.
         assert pay.value == "$1,500.00"
         # OCR text contains "$1,500.00" — verification must pass and keep HIGH.

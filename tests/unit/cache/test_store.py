@@ -8,7 +8,13 @@ from pathlib import Path
 import pytest
 
 from src.cache.store import _cache_filename, cache_get, cache_put
-from src.extract.models import DocumentExtractionResult, ExtractedField, SourceSpan
+from src.extract.models import (
+    Certainty,
+    DocumentExtractionResult,
+    ExtractedField,
+    ExtractedLoad,
+    SourceSpan,
+)
 from src.ocr.models import BoundingBox
 
 
@@ -16,40 +22,72 @@ _HASH_A = "a" * 64
 _HASH_B = "b" * 64
 
 
+def _make_field(
+    name: str,
+    value: str,
+    source_path: Path,
+    *,
+    page: int = 1,
+    y: float = 4.5,
+) -> ExtractedField:
+    return ExtractedField(
+        name=name,
+        value=value,
+        source_document=source_path.name,
+        source_page=page,
+        source_spans=[
+            SourceSpan(
+                page_number=page,
+                bounding_box=BoundingBox(x=1.0, y=y, width=4.0, height=0.25),
+            )
+        ],
+    )
+
+
 def _make_result(
     source_path: Path,
     content_hash: str = _HASH_A,
     page_count: int = 1,
 ) -> DocumentExtractionResult:
-    """Build a realistic DocumentExtractionResult for testing."""
+    """Build a realistic DocumentExtractionResult (single load) for testing."""
     return DocumentExtractionResult(
         source_path=source_path,
         content_hash=content_hash,
         page_count=page_count,
-        fields=[
-            ExtractedField(
-                name="pay",
-                value="750.00",
-                source_document=source_path.name,
-                source_page=1,
-                source_spans=[
-                    SourceSpan(
-                        page_number=1,
-                        bounding_box=BoundingBox(x=1.0, y=4.5, width=4.0, height=0.25),
-                    )
-                ],
+        loads=[
+            ExtractedLoad(
+                index=1,
+                pay=_make_field("pay", "750.00", source_path, y=4.5),
+                date=_make_field("date", "03/12/2024", source_path, y=6.0),
+            )
+        ],
+    )
+
+
+def _make_multi_load_result(
+    source_path: Path,
+    content_hash: str = _HASH_A,
+) -> DocumentExtractionResult:
+    """Three-load result for round-trip and serialisation tests."""
+    return DocumentExtractionResult(
+        source_path=source_path,
+        content_hash=content_hash,
+        page_count=1,
+        loads=[
+            ExtractedLoad(
+                index=1,
+                pay=_make_field("pay", "1250.00", source_path, y=1.0),
+                date=_make_field("date", "03/05/2024", source_path, y=1.5),
             ),
-            ExtractedField(
-                name="date",
-                value="03/12/2024",
-                source_document=source_path.name,
-                source_page=1,
-                source_spans=[
-                    SourceSpan(
-                        page_number=1,
-                        bounding_box=BoundingBox(x=1.0, y=6.0, width=3.5, height=0.25),
-                    )
-                ],
+            ExtractedLoad(
+                index=2,
+                pay=_make_field("pay", "2400.00", source_path, y=3.0),
+                date=_make_field("date", "03/12/2024", source_path, y=3.5),
+            ),
+            ExtractedLoad(
+                index=3,
+                pay=_make_field("pay", "875.50", source_path, y=5.0),
+                date=_make_field("date", "03/19/2024", source_path, y=5.5),
             ),
         ],
     )
@@ -78,9 +116,6 @@ class TestCacheGet:
 
         loaded = cache_get(tmp_path, _HASH_A)
         assert loaded is not None
-        # source_path in cache file is stale; cache_get returns the stored path
-        # — callers are responsible for supplying the live path when needed.
-        # Here we verify the path IS the one stored (not some other corruption).
         assert loaded.source_path == original_path
 
 
@@ -96,16 +131,12 @@ class TestCachePut:
     def test_put_is_idempotent(self, tmp_path: Path) -> None:
         result = _make_result(tmp_path / "doc.pdf", content_hash=_HASH_A)
         cache_put(tmp_path, result)
-        cache_put(tmp_path, result)  # second write must not raise
+        cache_put(tmp_path, result)
 
-        cache_file = tmp_path / ".cache" / f"{_HASH_A}_llm.json"
-        assert cache_file.exists()
-
-        # A mutant that truncates on the second write would drop fields —
-        # verify the full payload is still readable after two writes.
         loaded = cache_get(tmp_path, _HASH_A)
         assert loaded is not None
-        assert len(loaded.fields) == 2
+        # Idempotent write must not drop loads.
+        assert len(loaded.loads) == 1
 
     def test_no_tmp_file_left_behind(self, tmp_path: Path) -> None:
         result = _make_result(tmp_path / "doc.pdf", content_hash=_HASH_A)
@@ -117,7 +148,7 @@ class TestCachePut:
 
 class TestRoundTrip:
 
-    def test_roundtrip_preserves_all_fields(self, tmp_path: Path) -> None:
+    def test_single_load_roundtrip_preserves_all_fields(self, tmp_path: Path) -> None:
         source = tmp_path / "settlement.pdf"
         original = _make_result(source, content_hash=_HASH_A, page_count=2)
         cache_put(tmp_path, original)
@@ -126,35 +157,110 @@ class TestRoundTrip:
         assert loaded is not None
         assert loaded.content_hash == original.content_hash
         assert loaded.page_count == original.page_count
-        assert len(loaded.fields) == len(original.fields)
+        assert len(loaded.loads) == 1
 
-        for orig_field, loaded_field in zip(original.fields, loaded.fields):
-            assert loaded_field.name == orig_field.name
-            assert loaded_field.value == orig_field.value
-            assert loaded_field.source_document == orig_field.source_document
-            assert loaded_field.source_page == orig_field.source_page
-            assert len(loaded_field.source_spans) == len(orig_field.source_spans)
+        orig_load = original.loads[0]
+        loaded_load = loaded.loads[0]
+        assert loaded_load.index == orig_load.index
 
-            for orig_span, loaded_span in zip(orig_field.source_spans, loaded_field.source_spans):
-                assert loaded_span.page_number == orig_span.page_number
-                assert loaded_span.bounding_box.x == orig_span.bounding_box.x
-                assert loaded_span.bounding_box.y == orig_span.bounding_box.y
-                assert loaded_span.bounding_box.width == orig_span.bounding_box.width
-                assert loaded_span.bounding_box.height == orig_span.bounding_box.height
+        # Pay field
+        assert loaded_load.pay is not None
+        assert loaded_load.pay.value == orig_load.pay.value
+        assert loaded_load.pay.source_document == orig_load.pay.source_document
+        assert loaded_load.pay.source_page == orig_load.pay.source_page
+        assert len(loaded_load.pay.source_spans) == 1
+        assert loaded_load.pay.source_spans[0].page_number == orig_load.pay.source_spans[0].page_number
+        assert loaded_load.pay.source_spans[0].bounding_box.x == orig_load.pay.source_spans[0].bounding_box.x
+        assert loaded_load.pay.source_spans[0].bounding_box.y == pytest.approx(orig_load.pay.source_spans[0].bounding_box.y)
 
-    def test_cache_file_is_valid_json(self, tmp_path: Path) -> None:
+        # Date field
+        assert loaded_load.date is not None
+        assert loaded_load.date.value == orig_load.date.value
+
+    def test_three_load_roundtrip_preserves_all_loads(self, tmp_path: Path) -> None:
+        source = tmp_path / "multi_load.pdf"
+        original = _make_multi_load_result(source, content_hash=_HASH_A)
+        cache_put(tmp_path, original)
+        loaded = cache_get(tmp_path, _HASH_A)
+
+        assert loaded is not None
+        assert len(loaded.loads) == 3
+
+        # Pin every value — a mutation that drops a load or swaps pay/date must fail.
+        assert loaded.loads[0].index == 1
+        assert loaded.loads[0].pay.value == "1250.00"
+        assert loaded.loads[0].date.value == "03/05/2024"
+
+        assert loaded.loads[1].index == 2
+        assert loaded.loads[1].pay.value == "2400.00"
+        assert loaded.loads[1].date.value == "03/12/2024"
+
+        assert loaded.loads[2].index == 3
+        assert loaded.loads[2].pay.value == "875.50"
+        assert loaded.loads[2].date.value == "03/19/2024"
+
+    def test_cache_file_serialises_loads_not_fields(self, tmp_path: Path) -> None:
+        """The raw JSON must contain a 'loads' key, not a legacy 'fields' key."""
         result = _make_result(tmp_path / "doc.pdf", content_hash=_HASH_A)
         cache_put(tmp_path, result)
 
         cache_file = tmp_path / ".cache" / f"{_HASH_A}_llm.json"
         data = json.loads(cache_file.read_text(encoding="utf-8"))
+        assert "loads" in data
+        assert "fields" not in data
         assert data["content_hash"] == _HASH_A
-        assert "fields" in data
         assert "page_count" in data
+
+    def test_load_with_null_pay_roundtrips_correctly(self, tmp_path: Path) -> None:
+        """A load where pay is None must round-trip without error."""
+        source = tmp_path / "no_pay.pdf"
+        result = DocumentExtractionResult(
+            source_path=source,
+            content_hash=_HASH_A,
+            page_count=1,
+            loads=[
+                ExtractedLoad(
+                    index=1,
+                    pay=None,
+                    date=_make_field("date", "01/01/2024", source),
+                )
+            ],
+        )
+        cache_put(tmp_path, result)
+        loaded = cache_get(tmp_path, _HASH_A)
+
+        assert loaded is not None
+        assert len(loaded.loads) == 1
+        assert loaded.loads[0].pay is None
+        assert loaded.loads[0].date is not None
+        assert loaded.loads[0].date.value == "01/01/2024"
+
+    def test_certainty_roundtrips_correctly(self, tmp_path: Path) -> None:
+        """Certainty enum values must survive JSON serialisation."""
+        source = tmp_path / "cert.pdf"
+        pay = _make_field("pay", "500.00", source)
+        pay = ExtractedField(
+            name="pay", value="500.00", source_document=source.name,
+            source_page=1, certainty=Certainty.REVIEW,
+        )
+        date = ExtractedField(
+            name="date", value="05/01/2024", source_document=source.name,
+            source_page=1, certainty=Certainty.HIGH,
+        )
+        result = DocumentExtractionResult(
+            source_path=source,
+            content_hash=_HASH_A,
+            page_count=1,
+            loads=[ExtractedLoad(index=1, pay=pay, date=date)],
+        )
+        cache_put(tmp_path, result)
+        loaded = cache_get(tmp_path, _HASH_A)
+
+        assert loaded.loads[0].pay.certainty == Certainty.REVIEW
+        assert loaded.loads[0].date.certainty == Certainty.HIGH
 
 
 class TestCacheVersioning:
-    """Verify that the version parameter correctly partitions cache entries."""
 
     def test_filename_without_version(self) -> None:
         assert _cache_filename("abc123") == "abc123_llm.json"
@@ -163,19 +269,11 @@ class TestCacheVersioning:
         assert _cache_filename("abc123", "v1fp") == "abc123_llm_v1fp.json"
 
     def test_filename_exact_separator_is_underscore_not_hyphen(self) -> None:
-        """A swap of '_' to '-' in the format string must be detectable.
-
-        The format is ``<hash>_llm[_<version>].json`` — underscores throughout.
-        A hyphen mutant would produce ``abc123-llm-v1fp.json``, which is a
-        different cache key and would silently cause cache misses.
-        """
         result = _cache_filename("abc123", "v1fp")
-        # Exact format: hash, underscore, mode, underscore, version, dot, json
         assert result == "abc123_llm_v1fp.json"
         assert "-" not in result
 
     def test_filename_without_version_exact_format(self) -> None:
-        """Pin the exact unversioned format to catch any separator mutation."""
         result = _cache_filename("deadbeef1234")
         assert result == "deadbeef1234_llm.json"
         assert "-" not in result
@@ -183,13 +281,11 @@ class TestCacheVersioning:
     def test_version_mismatch_is_cache_miss(self, tmp_path: Path) -> None:
         result = _make_result(tmp_path / "doc.pdf")
         cache_put(tmp_path, result, version="old_fingerprint")
-
         assert cache_get(tmp_path, _HASH_A, version="new_fingerprint") is None
 
     def test_version_match_is_cache_hit(self, tmp_path: Path) -> None:
         result = _make_result(tmp_path / "doc.pdf")
         cache_put(tmp_path, result, version="same_fp")
-
         loaded = cache_get(tmp_path, _HASH_A, version="same_fp")
         assert loaded is not None
         assert loaded.content_hash == _HASH_A
@@ -197,11 +293,9 @@ class TestCacheVersioning:
     def test_no_version_does_not_match_versioned(self, tmp_path: Path) -> None:
         result = _make_result(tmp_path / "doc.pdf")
         cache_put(tmp_path, result)
-
         assert cache_get(tmp_path, _HASH_A, version="some_fp") is None
 
     def test_versioned_does_not_match_no_version(self, tmp_path: Path) -> None:
         result = _make_result(tmp_path / "doc.pdf")
         cache_put(tmp_path, result, version="some_fp")
-
         assert cache_get(tmp_path, _HASH_A) is None

@@ -8,7 +8,7 @@ import fitz
 import openpyxl
 import pytest
 
-from src.extract.models import DocumentExtractionResult, ExtractedField, SourceSpan
+from src.extract.models import DocumentExtractionResult, ExtractedField, ExtractedLoad, SourceSpan
 from src.ocr.models import BoundingBox
 from src.report import build_report
 
@@ -19,25 +19,24 @@ def _make_result(
     pay_value: str = "500.00",
     content_hash: str = "a" * 64,
 ) -> DocumentExtractionResult:
-    fields = [
+    pay = ExtractedField(
+        name="pay", value=pay_value,
+        source_document=source_path.name, source_page=1,
+        source_spans=[SourceSpan(page_number=1, bounding_box=BoundingBox(x=1, y=1, width=2, height=0.25))],
+    )
+    date = (
         ExtractedField(
-            name="pay", value=pay_value,
+            name="date", value=date_value,
             source_document=source_path.name, source_page=1,
-            source_spans=[SourceSpan(page_number=1, bounding_box=BoundingBox(x=1, y=1, width=2, height=0.25))],
-        ),
-    ]
-    if date_value is not None:
-        fields.append(
-            ExtractedField(
-                name="date", value=date_value,
-                source_document=source_path.name, source_page=1,
-                source_spans=[SourceSpan(page_number=1, bounding_box=BoundingBox(x=1, y=2, width=2, height=0.25))],
-            ),
+            source_spans=[SourceSpan(page_number=1, bounding_box=BoundingBox(x=1, y=2, width=2, height=0.25))],
         )
+        if date_value is not None
+        else None
+    )
     return DocumentExtractionResult(
         source_path=source_path,
         content_hash=content_hash,
-        fields=fields,
+        loads=[ExtractedLoad(index=1, pay=pay, date=date)],
         page_count=1,
     )
 
@@ -71,8 +70,8 @@ class TestDateSortedReportOrder:
         assert row2_doc == "doc_early.pdf"
         assert row3_doc == "doc_late.pdf"
 
-    def test_pdf_index_in_chronological_order(self, tmp_path: Path) -> None:
-        """The PDF index page lists documents earliest-first."""
+    def test_pdf_source_pages_in_chronological_order(self, tmp_path: Path) -> None:
+        """Source pages appear earliest-first: the early doc's page precedes the late doc's page."""
         pdf_a = _make_source_pdf(tmp_path / "doc_late.pdf")
         pdf_b = _make_source_pdf(tmp_path / "doc_early.pdf")
 
@@ -83,12 +82,13 @@ class TestDateSortedReportOrder:
         pdf_path, _ = build_report([late, early], out_dir)
 
         doc = fitz.open(str(pdf_path))
-        index_text = doc[0].get_text()
+        # Each source PDF embeds its filename as text; verify page order.
+        page0_text = doc[0].get_text()
+        page1_text = doc[1].get_text()
         doc.close()
 
-        pos_early = index_text.index("doc_early.pdf")
-        pos_late = index_text.index("doc_late.pdf")
-        assert pos_early < pos_late
+        assert "doc_early.pdf" in page0_text
+        assert "doc_late.pdf" in page1_text
 
     def test_month_name_format_sorted_correctly(self, tmp_path: Path) -> None:
         """'Month D, YYYY' format sorts correctly against 'MM/DD/YYYY'."""

@@ -9,7 +9,7 @@ from openpyxl import Workbook
 from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.utils import get_column_letter
 
-from src.extract.models import Certainty, DocumentExtractionResult, EXPECTED_FIELDS
+from src.extract.models import Certainty, DocumentExtractionResult, ExtractedLoad
 from src.report.exceptions import ReportAssemblyError
 
 _CURRENCY_FORMAT = '$#,##0.00'
@@ -26,6 +26,17 @@ _CERTAINTY_FILLS: dict[Certainty, PatternFill] = {
     Certainty.NOT_FOUND: _FILL_RED,
 }
 
+# Fixed column indices (1-based).
+_COL_DOCUMENT = 1
+_COL_PDF_PAGE = 2
+_COL_CERTAINTY = 3
+_COL_DATE = 4
+_COL_PAY = 5
+_COL_NOTES = 6
+_N_FIXED_COLS = 6
+
+_HEADERS = ["Document", "PDF Page", "Certainty", "Date", "Pay", "Notes"]
+
 
 def _fill_for_certainty(certainty: Certainty | None) -> PatternFill:
     if certainty is None:
@@ -38,74 +49,90 @@ def build_excel(
     output_path: Path,
     page_offsets: dict[str, int],
 ) -> Path:
-    """Build an Excel spreadsheet with one row per document.
+    """Build an Excel spreadsheet with one row per load.
 
-    Columns: ``Document``, ``PDF Page``, ``Certainty``, then one column per
-    unique extracted field name (derived dynamically so new extraction fields
-    automatically get columns).  Data cells are color-filled by their
-    individual field certainty; the ``Certainty`` column shows the worst
-    certainty across all expected fields for the document.
+    Column layout: ``Document | PDF Page | Certainty | Date | Pay | Notes``.
+
+    Documents with multiple loads produce multiple consecutive rows with the
+    same document name repeated.  The TOTALS row uses ``=SUM(…)`` on the Pay
+    column and ``=MAX(…)-MIN(…)+1`` on the Date column so that Excel
+    auto-recalculates if staff correct any cell.
+
+    *page_offsets* maps ``source_path.name`` to the 1-indexed starting page
+    of that document in the combined PDF.  Per-load PDF Page is computed from
+    that base plus the load's own source page offset.
 
     Returns *output_path* on success.
 
     Raises:
         ReportAssemblyError: The workbook cannot be saved.
     """
-    field_names = _collect_field_names(results)
-
     wb = Workbook()
     ws = wb.active
     ws.title = "Extracted Data"
 
-    display_names = [name.replace("_", " ").title() for name in field_names]
-    headers = ["Document", "PDF Page", "Certainty"] + display_names + ["Notes"]
-    _write_header_row(ws, headers)
+    _write_header_row(ws, _HEADERS)
 
-    for row_idx, result in enumerate(results, start=2):
+    data_row = 2
+    for result in results:
         doc_name = result.source_path.name
-        pdf_page = page_offsets.get(doc_name, "")
+        doc_base_page = page_offsets.get(doc_name, "")
 
-        field_map = {f.name: f for f in result.fields}
-
-        ws.cell(row=row_idx, column=1, value=doc_name)
-        ws.cell(row=row_idx, column=2, value=pdf_page)
-
-        doc_certainty = result.overall_certainty(EXPECTED_FIELDS)
-        cert_cell = ws.cell(row=row_idx, column=3, value=doc_certainty.value)
-        cert_cell.fill = _fill_for_certainty(doc_certainty)
-
-        for col_offset, field_name in enumerate(field_names):
-            extracted = field_map.get(field_name)
-            raw_value = extracted.value if extracted else ""
-            if field_name == "date" and raw_value:
-                parsed_dt = _parse_date_to_datetime(raw_value)
-                raw_value = parsed_dt if parsed_dt is not None else raw_value
-            if "pay" in field_name.lower() and raw_value:
-                raw_value = _parse_pay_float(raw_value)
-            cell = ws.cell(row=row_idx, column=4 + col_offset, value=raw_value)
-            if "pay" in field_name.lower():
-                cell.number_format = _CURRENCY_FORMAT
-            if field_name == "date":
-                cell.number_format = _DATE_FORMAT
-
-            if extracted:
-                cell.fill = _fill_for_certainty(extracted.certainty)
-            else:
-                cell.fill = _fill_for_certainty(Certainty.NOT_FOUND)
-
-        notes_col = 4 + len(field_names)
-        notes_cell = ws.cell(
-            row=row_idx,
-            column=notes_col,
-            value=result.extraction_error or "",
-        )
         if result.extraction_error:
+            # Failed extractions get a single row with the error in Notes.
+            ws.cell(row=data_row, column=_COL_DOCUMENT, value=doc_name)
+            ws.cell(row=data_row, column=_COL_PDF_PAGE, value=doc_base_page or "")
+            cert_cell = ws.cell(row=data_row, column=_COL_CERTAINTY, value=Certainty.NOT_FOUND.value)
+            cert_cell.fill = _FILL_RED
+            notes_cell = ws.cell(row=data_row, column=_COL_NOTES, value=result.extraction_error)
             notes_cell.fill = _FILL_RED
+            data_row += 1
+            continue
 
-    totals_row = len(results) + 2  # header row + data rows + 1
-    _write_totals_row(ws, field_names, data_start_row=2, data_end_row=len(results) + 1, totals_row=totals_row)
+        for load in result.loads:
+            ws.cell(row=data_row, column=_COL_DOCUMENT, value=doc_name)
 
-    _auto_width(ws, len(headers))
+            # Per-load PDF page: base offset + (load's source_page - 1).
+            load_source_page = _load_source_page(load)
+            if isinstance(doc_base_page, int) and load_source_page is not None:
+                pdf_page = doc_base_page + (load_source_page - 1)
+            else:
+                pdf_page = doc_base_page or ""
+            ws.cell(row=data_row, column=_COL_PDF_PAGE, value=pdf_page)
+
+            load_cert = load.certainty()
+            cert_cell = ws.cell(row=data_row, column=_COL_CERTAINTY, value=load_cert.value)
+            cert_cell.fill = _fill_for_certainty(load_cert)
+
+            # Date cell
+            date_value: str | datetime.datetime | None = None
+            date_certainty: Certainty | None = None
+            if load.date is not None:
+                date_raw = load.date.value
+                date_certainty = load.date.certainty
+                parsed_dt = _parse_date_to_datetime(date_raw)
+                date_value = parsed_dt if parsed_dt is not None else date_raw
+            date_cell = ws.cell(row=data_row, column=_COL_DATE, value=date_value)
+            date_cell.number_format = _DATE_FORMAT
+            date_cell.fill = _fill_for_certainty(date_certainty) if date_value is not None else _FILL_RED
+
+            # Pay cell
+            pay_value: float | str | None = None
+            pay_certainty: Certainty | None = None
+            if load.pay is not None:
+                pay_certainty = load.pay.certainty
+                pay_value = _parse_pay_float(load.pay.value)
+            pay_cell = ws.cell(row=data_row, column=_COL_PAY, value=pay_value)
+            pay_cell.number_format = _CURRENCY_FORMAT
+            pay_cell.fill = _fill_for_certainty(pay_certainty) if pay_value is not None else _FILL_RED
+
+            data_row += 1
+
+    totals_row = data_row
+    data_end_row = data_row - 1
+    _write_totals_row(ws, data_start_row=2, data_end_row=data_end_row, totals_row=totals_row)
+
+    _auto_width(ws, _N_FIXED_COLS)
 
     try:
         wb.save(str(output_path))
@@ -114,62 +141,56 @@ def build_excel(
             f"Failed to save Excel file '{output_path}': {exc}"
         ) from exc
 
+    n_load_rows = data_end_row - 1  # excludes header
     logger.info(
-        "Excel report saved to '{}' — {} document row(s), {} field column(s), totals row added",
+        "Excel report saved to '{}' — {} load row(s) across {} document(s)",
         output_path.name,
+        n_load_rows,
         len(results),
-        len(field_names),
     )
     return output_path
 
 
+def _load_source_page(load: ExtractedLoad) -> int | None:
+    """Return the source page for *load*, preferring pay's page over date's."""
+    if load.pay is not None and load.pay.source_page is not None:
+        return load.pay.source_page
+    if load.date is not None and load.date.source_page is not None:
+        return load.date.source_page
+    return None
+
+
 def _write_totals_row(
     ws,
-    field_names: list[str],
     data_start_row: int,
     data_end_row: int,
     totals_row: int,
 ) -> None:
     """Write a summary Totals row using Excel formulas.
 
-    Pay columns get a SUM formula; the date column gets a COUNTA formula so
-    staff can see how many date entries are present.  All cells are bold.
-    Formulas rather than Python-computed values are used so the totals
-    auto-update if staff correct any cell in Adobe or Excel.
+    The Pay column gets a SUM formula and the Date column gets a MAX-MIN+1
+    formula so staff can see the calendar span of all loads.  All cells in the
+    totals row are bold.
     """
     bold = Font(bold=True)
 
-    label_cell = ws.cell(row=totals_row, column=1, value="TOTALS")
+    label_cell = ws.cell(row=totals_row, column=_COL_DOCUMENT, value="TOTALS")
     label_cell.font = bold
 
-    # Columns 2 (PDF Page) and 3 (Certainty) are intentionally left blank.
-    for col_offset, field_name in enumerate(field_names):
-        col = 4 + col_offset
-        col_letter = get_column_letter(col)
-        data_range = f"{col_letter}{data_start_row}:{col_letter}{data_end_row}"
+    pay_col_letter = get_column_letter(_COL_PAY)
+    pay_range = f"{pay_col_letter}{data_start_row}:{pay_col_letter}{data_end_row}"
+    pay_cell = ws.cell(row=totals_row, column=_COL_PAY, value=f"=SUM({pay_range})")
+    pay_cell.font = bold
+    pay_cell.number_format = _CURRENCY_FORMAT
 
-        if "pay" in field_name.lower():
-            formula = f"=SUM({data_range})"
-        elif field_name == "date":
-            formula = f"=MAX({data_range})-MIN({data_range})+1"
-        else:
-            continue
-
-        cell = ws.cell(row=totals_row, column=col, value=formula)
-        cell.font = bold
-        if "pay" in field_name.lower():
-            cell.number_format = _CURRENCY_FORMAT
-        elif field_name == "date":
-            cell.number_format = '0'
-
-
-def _collect_field_names(results: list[DocumentExtractionResult]) -> list[str]:
-    """Return a stable-ordered list of unique field names across all results."""
-    seen: dict[str, None] = {}
-    for result in results:
-        for field in result.fields:
-            seen.setdefault(field.name, None)
-    return list(seen)
+    date_col_letter = get_column_letter(_COL_DATE)
+    date_range = f"{date_col_letter}{data_start_row}:{date_col_letter}{data_end_row}"
+    date_cell = ws.cell(
+        row=totals_row, column=_COL_DATE,
+        value=f"=MAX({date_range})-MIN({date_range})+1",
+    )
+    date_cell.font = bold
+    date_cell.number_format = "0"
 
 
 def _parse_pay_float(value: str) -> float | str:

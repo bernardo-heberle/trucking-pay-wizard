@@ -14,7 +14,7 @@ from src.extract.llm.client import build_anthropic_client
 from src.extract.llm.sanitizer import sanitize_text
 from src.extract.llm.schemas.base import ExtractionSchema
 from src.extract.llm.schemas.income import IncomeDocumentSchema, _normalize_pay_value
-from src.extract.models import Certainty, DocumentExtractionResult, ExtractedField, SourceSpan
+from src.extract.models import Certainty, DocumentExtractionResult, ExtractedField, ExtractedLoad, SourceSpan
 from src.extract.pay_verifier import verify_pay_against_ocr
 from src.ocr.models import OcrResult
 
@@ -53,7 +53,7 @@ class LlmExtractor:
 
     The extractor sanitises OCR text (PII scrubbing), sends it to the
     configured model with a ``tool_use`` call matching the active schema,
-    and parses the structured response into ``ExtractedField`` objects.
+    and parses the structured response into ``ExtractedLoad`` objects.
 
     Failure handling
     ----------------
@@ -63,7 +63,7 @@ class LlmExtractor:
     and is also retried.
 
     If all attempts are exhausted, ``extract()`` returns a
-    ``DocumentExtractionResult`` with an empty ``fields`` list and
+    ``DocumentExtractionResult`` with an empty ``loads`` list and
     ``extraction_error`` set to a description of the last failure.  The failed
     result is intentionally not cached so the document is retried on the next
     pipeline run.
@@ -100,7 +100,7 @@ class LlmExtractor:
 
         for attempt in range(1, _MAX_ATTEMPTS + 1):
             try:
-                fields = self._call_llm(sanitized_text, source_name)
+                loads = self._call_llm(sanitized_text, source_name)
 
             except ExtractionError:
                 # Non-retryable configuration error — propagate immediately.
@@ -134,17 +134,17 @@ class LlmExtractor:
                 )
 
             else:
-                fields = self._resolve_source_locations(fields, ocr_result)
-                fields = self._verify_pay_fields(fields, sanitized_text, source_name)
+                loads = self._resolve_source_locations(loads, ocr_result)
+                loads = self._verify_pay_fields(loads, sanitized_text, source_name)
                 logger.info(
-                    "LLM extraction complete for '{}' — {} field(s) found",
+                    "LLM extraction complete for '{}' — {} load(s) found",
                     source_name,
-                    len(fields),
+                    len(loads),
                 )
                 return DocumentExtractionResult(
                     source_path=ocr_result.source_path,
                     content_hash=ocr_result.content_hash,
-                    fields=fields,
+                    loads=loads,
                     page_count=page_count,
                 )
 
@@ -171,112 +171,159 @@ class LlmExtractor:
         return DocumentExtractionResult(
             source_path=ocr_result.source_path,
             content_hash=ocr_result.content_hash,
-            fields=[],
+            loads=[],
             page_count=page_count,
             extraction_error=last_error,
         )
 
     def _resolve_source_locations(
         self,
-        fields: list[ExtractedField],
+        loads: list[ExtractedLoad],
         ocr_result: OcrResult,
-    ) -> list[ExtractedField]:
-        """Populate source_spans and source_page for each field by searching OCR text.
+    ) -> list[ExtractedLoad]:
+        """Populate source_spans and source_page for each field in every load.
 
-        Searches ``ocr_result.full_text`` for the exact raw value the LLM
-        returned, resolves the match position to bounding-box spans via
-        ``OcrResult.find_lines_for_span``, and attaches the resulting
-        ``SourceSpan`` objects to the field.  Fields whose value is not
-        found in the OCR text are returned unchanged (no spans) — staff
-        will need to locate and mark them manually in the PDF.
+        For each load, the date field is located first (it is the anchor).
+        The pay field match is then picked preferring the occurrence closest
+        to the date's character offset — ideally on the same OCR line —
+        rather than always using the global first match.  This prevents a pay
+        value that appears twice in the document from being paired with the
+        wrong load.
+
+        Fields whose value is not found in the OCR text are returned unchanged
+        (no spans) — staff will need to locate and mark them manually in the
+        PDF.
         """
-        resolved: list[ExtractedField] = []
         full_text = ocr_result.full_text
+        resolved_loads: list[ExtractedLoad] = []
 
-        for field in fields:
-            if not field.value:
-                resolved.append(field)
-                continue
-
-            pattern = re.compile(re.escape(field.value), re.IGNORECASE)
-            match = pattern.search(full_text)
-
-            if match is None:
-                logger.debug(
-                    "Source location not found in OCR text for field '{}' value {!r}",
-                    field.name,
-                    field.value,
+        for load in loads:
+            # Step 1: resolve the date field and record its character offset.
+            date_offset: int | None = None
+            resolved_date: ExtractedField | None = load.date
+            if load.date is not None and load.date.value:
+                resolved_date, date_offset = self._resolve_field_with_offset(
+                    load.date, full_text, ocr_result, anchor_offset=None
                 )
-                resolved.append(field)
-                continue
 
-            lines = ocr_result.find_lines_for_span(match.start(), match.end())
-            spans = [
-                SourceSpan(page_number=line.page_number, bounding_box=line.bounding_box)
-                for line in lines
-            ]
-            first_page = lines[0].page_number if lines else None
-            resolved.append(
-                dataclasses.replace(field, source_page=first_page, source_spans=spans)
+            # Step 2: resolve the pay field, anchored to the date's offset.
+            resolved_pay: ExtractedField | None = load.pay
+            if load.pay is not None and load.pay.value:
+                resolved_pay, _pay_offset = self._resolve_field_with_offset(
+                    load.pay, full_text, ocr_result, anchor_offset=date_offset
+                )
+
+            resolved_loads.append(
+                dataclasses.replace(load, pay=resolved_pay, date=resolved_date)
             )
+
+        return resolved_loads
+
+    def _resolve_field_with_offset(
+        self,
+        field: ExtractedField,
+        full_text: str,
+        ocr_result: OcrResult,
+        anchor_offset: int | None,
+    ) -> tuple[ExtractedField, int | None]:
+        """Find *field.value* in *full_text* and attach OCR provenance.
+
+        When *anchor_offset* is given the match closest to that offset is
+        preferred over the first match.  Returns ``(resolved_field,
+        match_char_offset)``, where *match_char_offset* is the start position
+        of the best match in *full_text*, or ``None`` when no match is found.
+        """
+        pattern = re.compile(re.escape(field.value), re.IGNORECASE)
+        matches = list(pattern.finditer(full_text))
+
+        if not matches:
             logger.debug(
-                "Resolved source location for field '{}': page {}, {} span(s)",
+                "Source location not found in OCR text for field '{}' value {!r}",
                 field.name,
-                first_page,
-                len(spans),
+                field.value,
             )
+            return field, None
 
-        return resolved
+        # Pick the match closest to the anchor offset (or the first if no anchor).
+        if anchor_offset is not None:
+            best_match = min(matches, key=lambda m: abs(m.start() - anchor_offset))
+        else:
+            best_match = matches[0]
+
+        lines = ocr_result.find_lines_for_span(best_match.start(), best_match.end())
+        spans = [
+            SourceSpan(page_number=line.page_number, bounding_box=line.bounding_box)
+            for line in lines
+        ]
+        first_page = lines[0].page_number if lines else None
+        resolved = dataclasses.replace(field, source_page=first_page, source_spans=spans)
+
+        logger.debug(
+            "Resolved source location for field '{}': page {}, {} span(s), offset {}",
+            field.name,
+            first_page,
+            len(spans),
+            best_match.start(),
+        )
+        return resolved, best_match.start()
 
     def _verify_pay_fields(
         self,
-        fields: list[ExtractedField],
+        loads: list[ExtractedLoad],
         sanitized_text: str,
         source_name: str,
-    ) -> list[ExtractedField]:
-        """Cross-reference HIGH-certainty pay fields against OCR text.
+    ) -> list[ExtractedLoad]:
+        """Cross-reference HIGH-certainty pay fields against OCR text per load.
 
-        For each pay field the LLM reported with HIGH certainty, confirm
-        that the numeric value appears somewhere in the sanitized OCR text.
-        The raw LLM value is normalized to a plain decimal before comparison
-        so that formatted strings like ``'$1,500.00'`` match correctly.
-        When no match is found the field is downgraded to REVIEW so staff
-        know to check it manually.  Fields already at REVIEW or NOT_FOUND
-        are left unchanged.
+        For each load's pay field reported with HIGH certainty, confirm that
+        the numeric value appears in the sanitized OCR text.  When the load's
+        date has been resolved to a character offset, the verifier restricts
+        its search to that line first, then falls back to a global search.
+        The raw LLM value is normalized to a plain decimal before comparison.
+        When no match is found the field is downgraded to REVIEW so staff know
+        to check it manually.
         """
-        verified: list[ExtractedField] = []
-        for field in fields:
-            if field.name != "pay" or field.certainty != Certainty.HIGH:
-                verified.append(field)
+        verified_loads: list[ExtractedLoad] = []
+        for load in loads:
+            pay = load.pay
+            if pay is None or pay.certainty != Certainty.HIGH:
+                verified_loads.append(load)
                 continue
 
-            normalized = _normalize_pay_value(field.value)
+            normalized = _normalize_pay_value(pay.value)
             if normalized is None:
-                # Unparseable value — already capped at REVIEW by the schema,
-                # but guard here too for safety.
-                verified.append(field)
+                verified_loads.append(load)
                 continue
 
-            matched, reason = verify_pay_against_ocr(normalized, sanitized_text)
+            # Use the date's resolved position as the locality anchor.
+            anchor_offset: int | None = None
+            if load.date is not None and load.date.source_spans:
+                # Approximate the char offset from the date's first span page.
+                # The verifier uses a line-level window via the text, not spans,
+                # so we need the character offset — re-locate the date text.
+                if load.date.value:
+                    date_match = re.search(
+                        re.escape(load.date.value), sanitized_text, re.IGNORECASE
+                    )
+                    if date_match:
+                        anchor_offset = date_match.start()
+
+            matched, reason = verify_pay_against_ocr(normalized, sanitized_text, anchor_offset)
             if matched:
-                logger.debug(
-                    "Pay verification passed for '{}': {}",
-                    source_name,
-                    reason,
-                )
-                verified.append(field)
+                logger.debug("Pay verification passed for '{}': {}", source_name, reason)
+                verified_loads.append(load)
             else:
                 logger.warning(
                     "Pay verification failed for '{}': {} — downgrading to REVIEW",
                     source_name,
                     reason,
                 )
-                verified.append(
-                    dataclasses.replace(field, certainty=Certainty.REVIEW)
-                )
-        return verified
+                downgraded_pay = dataclasses.replace(pay, certainty=Certainty.REVIEW)
+                verified_loads.append(dataclasses.replace(load, pay=downgraded_pay))
 
-    def _call_llm(self, text: str, source_document: str) -> list[ExtractedField]:
+        return verified_loads
+
+    def _call_llm(self, text: str, source_document: str) -> list[ExtractedLoad]:
         """Send *text* to Claude and parse the structured tool response.
 
         Raises ``_NoToolUseBlock`` if the response contains no ``tool_use``

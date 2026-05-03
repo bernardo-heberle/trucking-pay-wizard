@@ -14,7 +14,7 @@ from src.config import Settings
 from src.extract.exceptions import ExtractionError
 from src.extract.llm.extractor import LlmExtractor, _MAX_ATTEMPTS
 from src.extract.llm.schemas.income import IncomeDocumentSchema
-from src.extract.models import Certainty, ExtractedField
+from src.extract.models import Certainty, ExtractedLoad
 from src.ocr.models import BoundingBox, OcrLine, OcrPage, OcrResult
 
 
@@ -46,12 +46,7 @@ def _make_ocr_result(text: str = "Total Payment to Carrier: $750.00") -> OcrResu
 
 
 def _make_multi_line_ocr(lines_data: list[tuple[str, int]]) -> OcrResult:
-    """Build an OcrResult with multiple lines, one per (text, page_number) pair.
-
-    ``full_text`` offsets are computed automatically based on the ``full_text``
-    property (newlines within a page, double-newlines between pages).
-    """
-    # Compute the full_text first so we can derive char offsets.
+    """Build an OcrResult with multiple lines, one per (text, page_number) pair."""
     pages_dict: dict[int, list[str]] = {}
     for text, pg in lines_data:
         pages_dict.setdefault(pg, []).append(text)
@@ -95,12 +90,17 @@ def _mock_tool_response(tool_name: str, tool_input: dict) -> MagicMock:
     return response
 
 
+# Helper: build tool input in the new loads shape.
+def _loads_input(pay=None, date=None) -> dict:
+    """Return a ``{"loads": [{...}]}`` tool input dict."""
+    return {"loads": [{"pay": pay, "date": date}]}
+
+
 class TestResolveSourceLocations:
     """Unit tests for LlmExtractor._resolve_source_locations.
 
-    The method is tested via a real LlmExtractor with a mocked client so that
-    the full extract() pipeline exercises the resolver — matching the contract
-    verified in production: resolver runs, then verifier runs.
+    Tested via a real LlmExtractor with a mocked client so the full
+    extract() pipeline exercises the resolver.
     """
 
     def _extractor_with_response(self, tool_input: dict) -> tuple[LlmExtractor, MagicMock]:
@@ -114,39 +114,42 @@ class TestResolveSourceLocations:
     def test_source_spans_populated_when_value_found(self) -> None:
         """When the raw LLM value appears in OCR text, source_spans must be non-empty."""
         extractor, _ = self._extractor_with_response(
-            {"pay": {"value": "$750.00", "confidence": 0.95}, "date": None}
+            _loads_input(pay={"value": "$750.00", "confidence": 0.95})
         )
         ocr = _make_ocr_result("Carrier payment: $750.00")
         result = extractor.extract(ocr, page_count=1)
 
-        pay_field = next(f for f in result.fields if f.name == "pay")
-        assert len(pay_field.source_spans) == 1
-        assert pay_field.source_spans[0].page_number == 1
-        assert pay_field.source_page == 1
+        pay = result.loads[0].pay
+        assert pay is not None
+        assert len(pay.source_spans) == 1
+        assert pay.source_spans[0].page_number == 1
+        assert pay.source_page == 1
 
     def test_source_spans_empty_when_value_not_found(self) -> None:
         """When the raw value is absent from OCR text, source_spans stays empty."""
         extractor, _ = self._extractor_with_response(
-            {"pay": {"value": "$999.99", "confidence": 0.95}, "date": None}
+            _loads_input(pay={"value": "$999.99", "confidence": 0.95})
         )
         ocr = _make_ocr_result("Carrier payment: $750.00")
         result = extractor.extract(ocr, page_count=1)
 
-        pay_field = next(f for f in result.fields if f.name == "pay")
-        assert pay_field.source_spans == []
-        assert pay_field.source_page is None
+        pay = result.loads[0].pay
+        assert pay is not None
+        assert pay.source_spans == []
+        assert pay.source_page is None
 
     def test_source_spans_case_insensitive_match(self) -> None:
         """Matching is case-insensitive — useful for date strings."""
         extractor, _ = self._extractor_with_response(
-            {"pay": None, "date": {"value": "march 13, 2024", "confidence": 0.92}}
+            _loads_input(date={"value": "march 13, 2024", "confidence": 0.92})
         )
         ocr = _make_ocr_result("Pickup: March 13, 2024")
         result = extractor.extract(ocr, page_count=1)
 
-        date_field = next(f for f in result.fields if f.name == "date")
-        assert len(date_field.source_spans) == 1
-        assert date_field.source_page == 1
+        date = result.loads[0].date
+        assert date is not None
+        assert len(date.source_spans) == 1
+        assert date.source_page == 1
 
     def test_source_page_set_to_page_of_first_matching_line(self) -> None:
         """source_page must reflect which page the value was found on."""
@@ -155,25 +158,27 @@ class TestResolveSourceLocations:
             ("Carrier payment: $750.00", 2),
         ])
         extractor, _ = self._extractor_with_response(
-            {"pay": {"value": "$750.00", "confidence": 0.95}, "date": None}
+            _loads_input(pay={"value": "$750.00", "confidence": 0.95})
         )
         result = extractor.extract(ocr, page_count=2)
 
-        pay_field = next(f for f in result.fields if f.name == "pay")
-        assert pay_field.source_page == 2
-        assert pay_field.source_spans[0].page_number == 2
+        pay = result.loads[0].pay
+        assert pay is not None
+        assert pay.source_page == 2
+        assert pay.source_spans[0].page_number == 2
 
     def test_bounding_box_coordinates_preserved_from_ocr_line(self) -> None:
         """The SourceSpan bounding box must match the OcrLine's exact coordinates."""
         extractor, _ = self._extractor_with_response(
-            {"pay": {"value": "$750.00", "confidence": 0.95}, "date": None}
+            _loads_input(pay={"value": "$750.00", "confidence": 0.95})
         )
         ocr = _make_ocr_result("Carrier: $750.00")
         result = extractor.extract(ocr, page_count=1)
 
-        pay_field = next(f for f in result.fields if f.name == "pay")
-        assert len(pay_field.source_spans) == 1
-        bbox = pay_field.source_spans[0].bounding_box
+        pay = result.loads[0].pay
+        assert pay is not None
+        assert len(pay.source_spans) == 1
+        bbox = pay.source_spans[0].bounding_box
         assert bbox.x == pytest.approx(1.0)
         assert bbox.y == pytest.approx(1.0)
         assert bbox.width == pytest.approx(5.0)
@@ -187,7 +192,7 @@ class TestLlmExtractorExtract:
         client = MagicMock()
         client.messages.create.return_value = _mock_tool_response(
             "extract_income_fields",
-            {"pay": {"value": "750.00", "confidence": 0.95}, "date": None},
+            _loads_input(pay={"value": "750.00", "confidence": 0.95}),
         )
         extractor = LlmExtractor(client=client, settings=settings)
         result = extractor.extract(_make_ocr_result(), page_count=1)
@@ -195,36 +200,43 @@ class TestLlmExtractorExtract:
         assert result.source_path == Path("test_doc.pdf")
         assert result.content_hash == "abc123"
         assert result.page_count == 1
-        assert len(result.fields) == 1
-        assert result.fields[0].name == "pay"
-        assert result.fields[0].value == "750.00"
+        assert len(result.loads) == 1
+        assert result.loads[0].pay is not None
+        assert result.loads[0].pay.value == "750.00"
 
     def test_both_fields_extracted(self) -> None:
         settings = _make_settings()
         client = MagicMock()
         client.messages.create.return_value = _mock_tool_response(
             "extract_income_fields",
-            {
-                "pay": {"value": "750.00", "confidence": 0.95},
-                "date": {"value": "03/12/2024", "confidence": 0.92},
-            },
+            _loads_input(
+                pay={"value": "750.00", "confidence": 0.95},
+                date={"value": "03/12/2024", "confidence": 0.92},
+            ),
         )
         extractor = LlmExtractor(client=client, settings=settings)
         result = extractor.extract(_make_ocr_result(), page_count=2)
-        assert len(result.fields) == 2
-        names = {f.name for f in result.fields}
-        assert names == {"pay", "date"}
 
-    def test_empty_response_returns_no_fields(self) -> None:
+        assert len(result.loads) == 1
+        assert result.loads[0].pay is not None
+        assert result.loads[0].pay.value == "750.00"
+        assert result.loads[0].date is not None
+        assert result.loads[0].date.value == "03/12/2024"
+
+    def test_empty_response_returns_load_with_no_fields(self) -> None:
+        """A null-only response yields one load with both fields None."""
         settings = _make_settings()
         client = MagicMock()
         client.messages.create.return_value = _mock_tool_response(
             "extract_income_fields",
-            {"pay": None, "date": None},
+            _loads_input(pay=None, date=None),
         )
         extractor = LlmExtractor(client=client, settings=settings)
         result = extractor.extract(_make_ocr_result(), page_count=1)
-        assert result.fields == []
+
+        assert len(result.loads) == 1
+        assert result.loads[0].pay is None
+        assert result.loads[0].date is None
 
     @patch("src.extract.llm.extractor.time.sleep")
     def test_no_tool_use_block_returns_error_after_retries(self, mock_sleep) -> None:
@@ -237,7 +249,8 @@ class TestLlmExtractorExtract:
 
         extractor = LlmExtractor(client=client, settings=settings)
         result = extractor.extract(_make_ocr_result(), page_count=1)
-        assert result.fields == []
+
+        assert result.loads == []
         assert result.extraction_error is not None
         assert "tool_use" in result.extraction_error
         assert client.messages.create.call_count == _MAX_ATTEMPTS
@@ -247,7 +260,7 @@ class TestLlmExtractorExtract:
         client = MagicMock()
         client.messages.create.return_value = _mock_tool_response(
             "extract_income_fields",
-            {"pay": None, "date": None},
+            _loads_input(pay=None, date=None),
         )
         ocr = _make_ocr_result("SSN: 123-45-6789\nTotal: $500")
         extractor = LlmExtractor(client=client, settings=settings)
@@ -263,7 +276,7 @@ class TestLlmExtractorExtract:
         client = MagicMock()
         client.messages.create.return_value = _mock_tool_response(
             "extract_income_fields",
-            {"pay": None, "date": None},
+            _loads_input(),
         )
         extractor = LlmExtractor(client=client, settings=settings)
         extractor.extract(_make_ocr_result(), page_count=1)
@@ -278,7 +291,7 @@ class TestLlmExtractorExtract:
         client = MagicMock()
         client.messages.create.return_value = _mock_tool_response(
             "extract_income_fields",
-            {"pay": None, "date": None},
+            _loads_input(),
         )
         extractor = LlmExtractor(client=client, settings=settings)
         extractor.extract(_make_ocr_result(), page_count=1)
@@ -300,12 +313,10 @@ class TestLlmExtractorFromConfig:
 
         assert isinstance(extractor, LlmExtractor)
         mock_build.assert_called_once()
-        # The client injected must be the one build_anthropic_client returned.
         assert extractor._client is mock_client
 
 
 def _make_rate_limit_error() -> anthropic.RateLimitError:
-    """Build a realistic RateLimitError with a mock httpx response."""
     mock_response = httpx.Response(
         status_code=429,
         request=httpx.Request("POST", "https://api.anthropic.com/v1/messages"),
@@ -355,20 +366,16 @@ def _make_bad_request_error() -> anthropic.BadRequestError:
 
 @patch("src.extract.llm.extractor.time.sleep")
 class TestRetryBehavior:
-    """Verify the retry logic in LlmExtractor.extract().
-
-    All tests patch time.sleep so retries complete instantly.
-    """
+    """Verify the retry logic in LlmExtractor.extract()."""
 
     def test_retryable_error_then_success(self, mock_sleep) -> None:
-        """A transient failure followed by success returns a normal result."""
         settings = _make_settings()
         client = MagicMock()
         client.messages.create.side_effect = [
             _make_rate_limit_error(),
             _mock_tool_response(
                 "extract_income_fields",
-                {"pay": {"value": "750.00", "confidence": 0.95}, "date": None},
+                _loads_input(pay={"value": "750.00", "confidence": 0.95}),
             ),
         ]
 
@@ -376,13 +383,12 @@ class TestRetryBehavior:
         result = extractor.extract(_make_ocr_result(), page_count=1)
 
         assert result.extraction_error is None
-        assert len(result.fields) == 1
-        assert result.fields[0].value == "750.00"
+        assert len(result.loads) == 1
+        assert result.loads[0].pay.value == "750.00"
         assert client.messages.create.call_count == 2
         assert mock_sleep.call_count == 1
 
     def test_retryable_error_exhausts_all_attempts(self, mock_sleep) -> None:
-        """Repeated transient failures exhaust retries and return extraction_error."""
         settings = _make_settings()
         client = MagicMock()
         client.messages.create.side_effect = [
@@ -394,20 +400,18 @@ class TestRetryBehavior:
 
         assert result.extraction_error is not None
         assert "Rate limit" in result.extraction_error
-        assert result.fields == []
+        assert result.loads == []
         assert client.messages.create.call_count == _MAX_ATTEMPTS
-        # Backoff sleeps happen between attempts (not after the last).
         assert mock_sleep.call_count == _MAX_ATTEMPTS - 1
 
     def test_overloaded_error_is_retryable(self, mock_sleep) -> None:
-        """529 overloaded errors are retried, not raised immediately."""
         settings = _make_settings()
         client = MagicMock()
         client.messages.create.side_effect = [
             _make_overloaded_error(),
             _mock_tool_response(
                 "extract_income_fields",
-                {"pay": {"value": "500.00", "confidence": 0.90}, "date": None},
+                _loads_input(pay={"value": "500.00", "confidence": 0.90}),
             ),
         ]
 
@@ -415,17 +419,16 @@ class TestRetryBehavior:
         result = extractor.extract(_make_ocr_result(), page_count=1)
 
         assert result.extraction_error is None
-        assert len(result.fields) == 1
+        assert len(result.loads) == 1
 
     def test_connection_error_is_retryable(self, mock_sleep) -> None:
-        """Network failures are retried."""
         settings = _make_settings()
         client = MagicMock()
         client.messages.create.side_effect = [
             anthropic.APIConnectionError(request=httpx.Request("POST", "https://api.anthropic.com/v1/messages")),
             _mock_tool_response(
                 "extract_income_fields",
-                {"pay": {"value": "500.00", "confidence": 0.90}, "date": None},
+                _loads_input(pay={"value": "500.00", "confidence": 0.90}),
             ),
         ]
 
@@ -436,7 +439,6 @@ class TestRetryBehavior:
         assert client.messages.create.call_count == 2
 
     def test_auth_error_raises_immediately(self, mock_sleep) -> None:
-        """Authentication errors are not retried — they raise ExtractionError."""
         settings = _make_settings()
         client = MagicMock()
         client.messages.create.side_effect = _make_auth_error()
@@ -449,7 +451,6 @@ class TestRetryBehavior:
         mock_sleep.assert_not_called()
 
     def test_bad_request_raises_immediately(self, mock_sleep) -> None:
-        """400 errors are not retried — they raise ExtractionError."""
         settings = _make_settings()
         client = MagicMock()
         client.messages.create.side_effect = _make_bad_request_error()
@@ -462,38 +463,31 @@ class TestRetryBehavior:
         mock_sleep.assert_not_called()
 
     def test_malformed_field_type_retried_then_fails(self, mock_sleep) -> None:
-        """When Claude returns an unrecoverable type (bare number) for a field,
-        the extractor retries all attempts and reports not-found.
-
-        Note: plain strings are now accepted leniently as REVIEW-grade values,
-        so this test uses a bare float to trigger the retry path.
-        """
+        """A bare number for a field is unrecoverable — retried then fails."""
         settings = _make_settings()
         client = MagicMock()
-        # A bare number is not recoverable — not a string, not an object.
         client.messages.create.return_value = _mock_tool_response(
             "extract_income_fields",
-            {"pay": 1850.0, "date": None},
+            {"loads": [{"pay": 1850.0, "date": None}]},  # bare float triggers retry
         )
 
         extractor = LlmExtractor(client=client, settings=settings)
         result = extractor.extract(_make_ocr_result(), page_count=1)
 
-        assert result.fields == []
+        assert result.loads == []
         assert result.extraction_error is not None
         assert client.messages.create.call_count == _MAX_ATTEMPTS
 
     def test_malformed_field_type_retried_then_succeeds(self, mock_sleep) -> None:
-        """After an unrecoverable type response, the extractor retries and succeeds."""
         settings = _make_settings()
         client = MagicMock()
         malformed = _mock_tool_response(
             "extract_income_fields",
-            {"pay": 1850.0, "date": None},  # bare float — triggers retry
+            {"loads": [{"pay": 1850.0, "date": None}]},
         )
         good = _mock_tool_response(
             "extract_income_fields",
-            {"pay": {"value": "1850.00", "confidence": 0.95}, "date": None},
+            _loads_input(pay={"value": "1850.00", "confidence": 0.95}),
         )
         client.messages.create.side_effect = [malformed, good]
 
@@ -501,31 +495,29 @@ class TestRetryBehavior:
         result = extractor.extract(_make_ocr_result(), page_count=1)
 
         assert result.extraction_error is None
-        assert len(result.fields) == 1
-        assert result.fields[0].value == "1850.00"
+        assert len(result.loads) == 1
+        assert result.loads[0].pay.value == "1850.00"
         assert client.messages.create.call_count == 2
 
     def test_plain_string_field_accepted_without_retry(self, mock_sleep) -> None:
-        """A plain string for pay is accepted leniently as a REVIEW-grade field,
-        no retry needed — the document is not dropped."""
+        """A plain string for pay is accepted leniently as REVIEW — no retry."""
         settings = _make_settings()
         client = MagicMock()
         client.messages.create.return_value = _mock_tool_response(
             "extract_income_fields",
-            {"pay": "1850.00", "date": None},
+            {"loads": [{"pay": "1850.00", "date": None}]},
         )
 
         extractor = LlmExtractor(client=client, settings=settings)
         result = extractor.extract(_make_ocr_result(), page_count=1)
 
         assert result.extraction_error is None
-        assert len(result.fields) == 1
-        assert result.fields[0].value == "1850.00"
+        assert len(result.loads) == 1
+        assert result.loads[0].pay.value == "1850.00"
         assert client.messages.create.call_count == 1
         mock_sleep.assert_not_called()
 
     def test_no_tool_use_retried_then_succeeds(self, mock_sleep) -> None:
-        """A missing tool_use block on the first attempt is retried."""
         settings = _make_settings()
         client = MagicMock()
         text_only = MagicMock()
@@ -535,7 +527,7 @@ class TestRetryBehavior:
             text_only,
             _mock_tool_response(
                 "extract_income_fields",
-                {"pay": {"value": "750.00", "confidence": 0.95}, "date": None},
+                _loads_input(pay={"value": "750.00", "confidence": 0.95}),
             ),
         ]
 
@@ -543,7 +535,7 @@ class TestRetryBehavior:
         result = extractor.extract(_make_ocr_result(), page_count=1)
 
         assert result.extraction_error is None
-        assert len(result.fields) == 1
+        assert len(result.loads) == 1
         assert client.messages.create.call_count == 2
 
     def test_backoff_delays_increase(self, mock_sleep) -> None:
@@ -561,15 +553,13 @@ class TestRetryBehavior:
 
         delays = [c.args[0] for c in mock_sleep.call_args_list]
         assert len(delays) == _MAX_ATTEMPTS - 1
-        # With jitter = 0: delay = BASE * 2^(attempt-1) → 2.0, 4.0
         assert delays[0] == pytest.approx(2.0)
         assert delays[1] == pytest.approx(4.0)
-        # All delays must be capped at the maximum.
         from src.extract.llm.extractor import _MAX_DELAY_SECONDS
         assert all(d <= _MAX_DELAY_SECONDS for d in delays)
 
     def test_failed_result_preserves_metadata(self, mock_sleep) -> None:
-        """Even when extraction fails, source_path, content_hash, and page_count are set."""
+        """Even when extraction fails, source_path, content_hash, page_count are set."""
         settings = _make_settings()
         client = MagicMock()
         client.messages.create.side_effect = [
@@ -589,79 +579,67 @@ class TestPayOcrVerification:
     """Verify the post-extraction OCR cross-reference step in LlmExtractor."""
 
     def test_high_certainty_preserved_when_value_found_in_ocr(self) -> None:
-        """When the LLM's pay value matches an amount in OCR text, HIGH is kept."""
         settings = _make_settings()
         client = MagicMock()
         client.messages.create.return_value = _mock_tool_response(
             "extract_income_fields",
-            {"pay": {"value": "750.00", "confidence": 0.95}, "date": None},
+            _loads_input(pay={"value": "750.00", "confidence": 0.95}),
         )
         ocr = _make_ocr_result("Total Payment to Carrier: $750.00")
         extractor = LlmExtractor(client=client, settings=settings)
         result = extractor.extract(ocr, page_count=1)
 
-        pay_field = next(f for f in result.fields if f.name == "pay")
-        assert pay_field.certainty == Certainty.HIGH
-        assert pay_field.value == "750.00"
+        pay = result.loads[0].pay
+        assert pay.certainty == Certainty.HIGH
+        assert pay.value == "750.00"
 
     def test_high_certainty_downgraded_when_value_not_in_ocr(self) -> None:
         """Transposed/wrong LLM value is downgraded from HIGH to REVIEW."""
         settings = _make_settings()
         client = MagicMock()
-        # LLM returns 1234.56 but OCR has $12,345.60 (transposed digits).
         client.messages.create.return_value = _mock_tool_response(
             "extract_income_fields",
-            {"pay": {"value": "1234.56", "confidence": 0.95}, "date": None},
+            _loads_input(pay={"value": "1234.56", "confidence": 0.95}),
         )
         ocr = _make_ocr_result("Total Payment to Carrier: $12,345.60")
         extractor = LlmExtractor(client=client, settings=settings)
         result = extractor.extract(ocr, page_count=1)
 
-        pay_field = next(f for f in result.fields if f.name == "pay")
-        assert pay_field.certainty == Certainty.REVIEW
-        # Downgrade must not alter the extracted value itself.
-        assert pay_field.value == "1234.56"
+        pay = result.loads[0].pay
+        assert pay.certainty == Certainty.REVIEW
+        assert pay.value == "1234.56"
 
     def test_review_certainty_not_upgraded_when_value_found_in_ocr(self) -> None:
         """Verification never upgrades certainty — a REVIEW field stays REVIEW."""
         settings = _make_settings()
         client = MagicMock()
-        # Low confidence → REVIEW from thresholds.
         client.messages.create.return_value = _mock_tool_response(
             "extract_income_fields",
-            {"pay": {"value": "750.00", "confidence": 0.7}, "date": None},
+            _loads_input(pay={"value": "750.00", "confidence": 0.7}),
         )
         ocr = _make_ocr_result("Total Payment to Carrier: $750.00")
         extractor = LlmExtractor(client=client, settings=settings)
         result = extractor.extract(ocr, page_count=1)
 
-        pay_field = next(f for f in result.fields if f.name == "pay")
-        assert pay_field.certainty == Certainty.REVIEW
-        assert pay_field.value == "750.00"
+        pay = result.loads[0].pay
+        assert pay.certainty == Certainty.REVIEW
+        assert pay.value == "750.00"
 
     def test_not_found_certainty_pay_left_unchanged_when_value_absent(self) -> None:
-        """NOT_FOUND pay fields are never touched by _verify_pay_fields.
-
-        An off-by-one mutant changing `!= HIGH` to `== REVIEW` in the
-        verification guard would leave NOT_FOUND fields unguarded — this
-        test catches that.
-        """
+        """NOT_FOUND pay fields are never touched by _verify_pay_fields."""
         settings = _make_settings()
         client = MagicMock()
-        # Very low confidence → NOT_FOUND certainty.
         client.messages.create.return_value = _mock_tool_response(
             "extract_income_fields",
-            {"pay": {"value": "750.00", "confidence": 0.3}, "date": None},
+            _loads_input(pay={"value": "750.00", "confidence": 0.3}),
         )
-        # OCR text does NOT contain 750.00 — verifier would downgrade if it ran.
         ocr = _make_ocr_result("Total Payment to Carrier: $9,999.00")
         extractor = LlmExtractor(client=client, settings=settings)
         result = extractor.extract(ocr, page_count=1)
 
-        pay_field = next(f for f in result.fields if f.name == "pay")
-        # Certainty must remain NOT_FOUND — verification must not touch it.
-        assert pay_field.certainty == Certainty.NOT_FOUND
-        assert pay_field.value == "750.00"
+        pay = result.loads[0].pay
+        assert pay.certainty == Certainty.NOT_FOUND
+        assert pay.value == "750.00"
 
     def test_date_field_not_affected_by_ocr_verification(self) -> None:
         """Verification only targets pay fields; date certainty is never changed."""
@@ -669,50 +647,46 @@ class TestPayOcrVerification:
         client = MagicMock()
         client.messages.create.return_value = _mock_tool_response(
             "extract_income_fields",
-            {
-                "pay": {"value": "750.00", "confidence": 0.95},
-                "date": {"value": "03/12/2024", "confidence": 0.95},
-            },
+            _loads_input(
+                pay={"value": "750.00", "confidence": 0.95},
+                date={"value": "03/12/2024", "confidence": 0.95},
+            ),
         )
         ocr = _make_ocr_result("Carrier: $750.00  Date: 03/12/2024")
         extractor = LlmExtractor(client=client, settings=settings)
         result = extractor.extract(ocr, page_count=1)
 
-        date_field = next(f for f in result.fields if f.name == "date")
-        assert date_field.certainty == Certainty.HIGH
-        assert date_field.value == "03/12/2024"
+        date = result.loads[0].date
+        assert date.certainty == Certainty.HIGH
+        assert date.value == "03/12/2024"
 
     def test_raw_formatted_pay_stays_high_when_found_in_ocr(self) -> None:
-        """When the LLM returns a formatted value like '$750.00', normalization
-        happens before verification so HIGH certainty is preserved correctly."""
+        """When LLM returns '$750.00', normalization before verification keeps HIGH."""
         settings = _make_settings()
         client = MagicMock()
         client.messages.create.return_value = _mock_tool_response(
             "extract_income_fields",
-            {"pay": {"value": "$750.00", "confidence": 0.95}, "date": None},
+            _loads_input(pay={"value": "$750.00", "confidence": 0.95}),
         )
         ocr = _make_ocr_result("Total Payment to Carrier: $750.00")
         extractor = LlmExtractor(client=client, settings=settings)
         result = extractor.extract(ocr, page_count=1)
 
-        pay_field = next(f for f in result.fields if f.name == "pay")
-        assert pay_field.certainty == Certainty.HIGH
-        # Raw value stored verbatim — normalization must not alter the field value.
-        assert pay_field.value == "$750.00"
+        pay = result.loads[0].pay
+        assert pay.certainty == Certainty.HIGH
+        assert pay.value == "$750.00"
 
     def test_raw_formatted_pay_downgraded_when_not_found_in_ocr(self) -> None:
-        """A formatted pay value that doesn't match any OCR amount is downgraded."""
         settings = _make_settings()
         client = MagicMock()
         client.messages.create.return_value = _mock_tool_response(
             "extract_income_fields",
-            {"pay": {"value": "$1,234.56", "confidence": 0.95}, "date": None},
+            _loads_input(pay={"value": "$1,234.56", "confidence": 0.95}),
         )
-        # OCR has a different amount — verification must fail and downgrade.
         ocr = _make_ocr_result("Total Payment to Carrier: $12,345.60")
         extractor = LlmExtractor(client=client, settings=settings)
         result = extractor.extract(ocr, page_count=1)
 
-        pay_field = next(f for f in result.fields if f.name == "pay")
-        assert pay_field.certainty == Certainty.REVIEW
-        assert pay_field.value == "$1,234.56"
+        pay = result.loads[0].pay
+        assert pay.certainty == Certainty.REVIEW
+        assert pay.value == "$1,234.56"

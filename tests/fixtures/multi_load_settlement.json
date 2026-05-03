@@ -1,0 +1,458 @@
+{
+  "source_path": "MultiLoad_Settlement_2024Q1.pdf",
+  "content_hash": "11aa22bb33cc44dd55ee66ff11aa22bb33cc44dd55ee66ff11aa22bb33cc44dd",
+  "pages": [
+    {
+      "page_number": 1,
+      "width_inches": 8.5,
+      "height_inches": 11.0,
+      "line_count": 37
+    }
+  ],
+  "lines": [
+    {
+      "text": "SETTLEMENT STATEMENT",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 0.5,
+        "width": 1.6,
+        "height": 0.25
+      },
+      "char_start": 0,
+      "char_end": 20
+    },
+    {
+      "text": "Carrier: ACME Trucking LLC",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 0.76,
+        "width": 2.1,
+        "height": 0.25
+      },
+      "char_start": 21,
+      "char_end": 47
+    },
+    {
+      "text": "Payee: Joe Doe",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.01,
+        "width": 1.1,
+        "height": 0.25
+      },
+      "char_start": 48,
+      "char_end": 62
+    },
+    {
+      "text": "Period: 03/01/2024 - 03/31/2024",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.27,
+        "width": 2.5,
+        "height": 0.25
+      },
+      "char_start": 63,
+      "char_end": 94
+    },
+    {
+      "text": "MC Number: 9999999",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.53,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 95,
+      "char_end": 113
+    },
+    {
+      "text": "",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.78,
+        "width": 0.0,
+        "height": 0.25
+      },
+      "char_start": 114,
+      "char_end": 114
+    },
+    {
+      "text": "Load Detail",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.04,
+        "width": 0.9,
+        "height": 0.25
+      },
+      "char_start": 115,
+      "char_end": 126
+    },
+    {
+      "text": "Each load below is paid separately upon delivery confirmation.",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.3,
+        "width": 5.0,
+        "height": 0.25
+      },
+      "char_start": 127,
+      "char_end": 189
+    },
+    {
+      "text": "Settlement totals appear at the bottom of the statement.",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.55,
+        "width": 4.5,
+        "height": 0.25
+      },
+      "char_start": 190,
+      "char_end": 246
+    },
+    {
+      "text": "",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.81,
+        "width": 0.0,
+        "height": 0.25
+      },
+      "char_start": 247,
+      "char_end": 247
+    },
+    {
+      "text": "Load 1 of 3",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.07,
+        "width": 0.9,
+        "height": 0.25
+      },
+      "char_start": 248,
+      "char_end": 259
+    },
+    {
+      "text": "Pickup Date: 03/05/2024",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.32,
+        "width": 1.8,
+        "height": 0.25
+      },
+      "char_start": 260,
+      "char_end": 283
+    },
+    {
+      "text": "Origin: Cleveland, OH",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.58,
+        "width": 1.7,
+        "height": 0.25
+      },
+      "char_start": 284,
+      "char_end": 305
+    },
+    {
+      "text": "Destination: Pittsburgh, PA",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.84,
+        "width": 2.2,
+        "height": 0.25
+      },
+      "char_start": 306,
+      "char_end": 333
+    },
+    {
+      "text": "Reference: BOL-1001",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.09,
+        "width": 1.5,
+        "height": 0.25
+      },
+      "char_start": 334,
+      "char_end": 353
+    },
+    {
+      "text": "Total Payment to Carrier: $1,250.00",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.35,
+        "width": 2.8,
+        "height": 0.25
+      },
+      "char_start": 354,
+      "char_end": 389
+    },
+    {
+      "text": "",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.61,
+        "width": 0.0,
+        "height": 0.25
+      },
+      "char_start": 390,
+      "char_end": 390
+    },
+    {
+      "text": "Load 2 of 3",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.86,
+        "width": 0.9,
+        "height": 0.25
+      },
+      "char_start": 391,
+      "char_end": 402
+    },
+    {
+      "text": "Pickup Date: 03/12/2024",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.12,
+        "width": 1.8,
+        "height": 0.25
+      },
+      "char_start": 403,
+      "char_end": 426
+    },
+    {
+      "text": "Origin: Detroit, MI",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.38,
+        "width": 1.5,
+        "height": 0.25
+      },
+      "char_start": 427,
+      "char_end": 446
+    },
+    {
+      "text": "Destination: Buffalo, NY",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.64,
+        "width": 1.9,
+        "height": 0.25
+      },
+      "char_start": 447,
+      "char_end": 471
+    },
+    {
+      "text": "Reference: BOL-1002",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.89,
+        "width": 1.5,
+        "height": 0.25
+      },
+      "char_start": 472,
+      "char_end": 491
+    },
+    {
+      "text": "Total Payment to Carrier: $2,400.00",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.15,
+        "width": 2.8,
+        "height": 0.25
+      },
+      "char_start": 492,
+      "char_end": 527
+    },
+    {
+      "text": "",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.41,
+        "width": 0.0,
+        "height": 0.25
+      },
+      "char_start": 528,
+      "char_end": 528
+    },
+    {
+      "text": "Load 3 of 3",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.66,
+        "width": 0.9,
+        "height": 0.25
+      },
+      "char_start": 529,
+      "char_end": 540
+    },
+    {
+      "text": "Pickup Date: 03/19/2024",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.92,
+        "width": 1.8,
+        "height": 0.25
+      },
+      "char_start": 541,
+      "char_end": 564
+    },
+    {
+      "text": "Origin: Akron, OH",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.18,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 565,
+      "char_end": 582
+    },
+    {
+      "text": "Destination: Erie, PA",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.43,
+        "width": 1.7,
+        "height": 0.25
+      },
+      "char_start": 583,
+      "char_end": 604
+    },
+    {
+      "text": "Reference: BOL-1003",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.69,
+        "width": 1.5,
+        "height": 0.25
+      },
+      "char_start": 605,
+      "char_end": 624
+    },
+    {
+      "text": "Total Payment to Carrier: $875.50",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.95,
+        "width": 2.6,
+        "height": 0.25
+      },
+      "char_start": 625,
+      "char_end": 658
+    },
+    {
+      "text": "",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.2,
+        "width": 0.0,
+        "height": 0.25
+      },
+      "char_start": 659,
+      "char_end": 659
+    },
+    {
+      "text": "Settlement Totals",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.46,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 660,
+      "char_end": 677
+    },
+    {
+      "text": "Gross Pay: $4,525.50",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.72,
+        "width": 1.6,
+        "height": 0.25
+      },
+      "char_start": 678,
+      "char_end": 698
+    },
+    {
+      "text": "Deductions: $0.00",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.97,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 699,
+      "char_end": 716
+    },
+    {
+      "text": "Net Pay to Carrier: $4,525.50",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.23,
+        "width": 2.3,
+        "height": 0.25
+      },
+      "char_start": 717,
+      "char_end": 746
+    },
+    {
+      "text": "Payment terms: Net 30 / ACH",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.49,
+        "width": 2.2,
+        "height": 0.25
+      },
+      "char_start": 747,
+      "char_end": 774
+    },
+    {
+      "text": "Authority to transport vehicles is hereby assigned to ACME Trucking LLC.",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.74,
+        "width": 5.8,
+        "height": 0.25
+      },
+      "char_start": 775,
+      "char_end": 847
+    }
+  ]
+}

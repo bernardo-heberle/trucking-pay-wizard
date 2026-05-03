@@ -946,6 +946,138 @@ def _sparse_tms_print() -> dict:
     )
 
 
+def _multi_load_settlement() -> dict:
+    """Settlement statement listing three distinct loads.
+
+    Mirrors the case_2 production layout where one PDF aggregates several
+    weekly loads with their own date and pay value.  Layout deliberately
+    interleaves each load's date and pay on adjacent lines so the
+    date-anchored resolver can pick the correct pay per load even when
+    other dollar amounts (boilerplate fees, totals) are present nearby.
+
+    Expected (per ExtractedLoad):
+        loads[0]: date=03/05/2024, pay=$1,250.00
+        loads[1]: date=03/12/2024, pay=$2,400.00
+        loads[2]: date=03/19/2024, pay=$875.50
+    """
+    return _build_fixture(
+        source_path="MultiLoad_Settlement_2024Q1.pdf",
+        content_hash="11aa22bb33cc44dd55ee66ff11aa22bb33cc44dd55ee66ff11aa22bb33cc44dd",
+        pages={
+            1: [
+                "SETTLEMENT STATEMENT",
+                "Carrier: ACME Trucking LLC",
+                "Payee: Joe Doe",
+                "Period: 03/01/2024 - 03/31/2024",
+                "MC Number: 9999999",
+                "",
+                "Load Detail",
+                "Each load below is paid separately upon delivery confirmation.",
+                "Settlement totals appear at the bottom of the statement.",
+                "",
+                "Load 1 of 3",
+                "Pickup Date: 03/05/2024",
+                "Origin: Cleveland, OH",
+                "Destination: Pittsburgh, PA",
+                "Reference: BOL-1001",
+                "Total Payment to Carrier: $1,250.00",
+                "",
+                "Load 2 of 3",
+                "Pickup Date: 03/12/2024",
+                "Origin: Detroit, MI",
+                "Destination: Buffalo, NY",
+                "Reference: BOL-1002",
+                "Total Payment to Carrier: $2,400.00",
+                "",
+                "Load 3 of 3",
+                "Pickup Date: 03/19/2024",
+                "Origin: Akron, OH",
+                "Destination: Erie, PA",
+                "Reference: BOL-1003",
+                "Total Payment to Carrier: $875.50",
+                "",
+                "Settlement Totals",
+                "Gross Pay: $4,525.50",
+                "Deductions: $0.00",
+                "Net Pay to Carrier: $4,525.50",
+                "Payment terms: Net 30 / ACH",
+                "Authority to transport vehicles is hereby assigned to ACME Trucking LLC.",
+            ],
+        },
+    )
+
+
+def _multi_load_duplicate_pay() -> dict:
+    """Two loads on different dates that happen to share the same pay value.
+
+    This is a regression fixture for the date-anchored source-location
+    resolver: a naive ``re.search`` would always pick the first occurrence
+    of ``$1,200.00`` for both loads.  The resolver must use each load's
+    sibling date as an anchor to land on the correct OCR span.
+
+    Expected:
+        loads[0]: date=04/02/2024, pay=$1,200.00 (first $1,200 in OCR)
+        loads[1]: date=04/16/2024, pay=$1,200.00 (second $1,200 in OCR)
+    """
+    return _build_fixture(
+        source_path="MultiLoad_DuplicatePay_April.pdf",
+        content_hash="22bb33cc44dd55ee66ff11aa22bb33cc44dd55ee66ff11aa22bb33cc44dd55ee",
+        pages={
+            1: [
+                "SETTLEMENT STATEMENT",
+                "Carrier: ACME Trucking LLC",
+                "Payee: Joe Doe",
+                "Period: 04/01/2024 - 04/30/2024",
+                "",
+                "Load 1",
+                "Pickup Date: 04/02/2024",
+                "Origin: Columbus, OH",
+                "Destination: Indianapolis, IN",
+                "Total Payment to Carrier: $1,200.00",
+                "",
+                "Load 2",
+                "Pickup Date: 04/16/2024",
+                "Origin: Cincinnati, OH",
+                "Destination: Louisville, KY",
+                "Total Payment to Carrier: $1,200.00",
+                "",
+                "Settlement Totals",
+                "Gross Pay: $2,400.00",
+                "Net Pay to Carrier: $2,400.00",
+            ],
+        },
+    )
+
+
+def _single_load_settlement() -> dict:
+    """A single-load settlement to confirm the new schema handles N=1.
+
+    The ``loads`` array must always be present; single-load documents
+    return a one-element array with no special branching.
+
+    Expected:
+        loads[0]: date=05/10/2024, pay=$985.00
+    """
+    return _build_fixture(
+        source_path="SingleLoad_Settlement.pdf",
+        content_hash="33cc44dd55ee66ff11aa22bb33cc44dd55ee66ff11aa22bb33cc44dd55ee66ff",
+        pages={
+            1: [
+                "Settlement Statement",
+                "Carrier: ACME Trucking LLC",
+                "Payee: Joe Doe",
+                "",
+                "Pickup Date: 05/10/2024",
+                "Origin: Toledo, OH",
+                "Destination: Lansing, MI",
+                "Reference: BOL-2001",
+                "Total Payment to Carrier: $985.00",
+                "Payment terms: Net 30",
+            ],
+        },
+    )
+
+
 _ALL_FIXTURES = {
     "central_dispatch_settlement.json": _central_dispatch_settlement,
     "v2_dispatch_load.json": _v2_dispatch_load,
@@ -957,6 +1089,10 @@ _ALL_FIXTURES = {
     "noisy_boilerplate_ocr.json": _noisy_boilerplate,
     "multi_date_formats_ocr.json": _multi_date_formats,
     "sparse_tms_print_ocr.json": _sparse_tms_print,
+    # Multi-load fixtures (one Excel row per load downstream)
+    "multi_load_settlement.json": _multi_load_settlement,
+    "multi_load_duplicate_pay.json": _multi_load_duplicate_pay,
+    "single_load_settlement.json": _single_load_settlement,
 }
 
 

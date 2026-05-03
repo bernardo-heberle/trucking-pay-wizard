@@ -31,7 +31,3 @@ exclude_lines = [
     "raise NotImplementedError",
 ]
 show_missing = true
-
-[tool.mutmut]
-paths_to_mutate = "src/extract/,src/cache/,src/report/excel_exporter.py"
-runner = "pytest -x -q"

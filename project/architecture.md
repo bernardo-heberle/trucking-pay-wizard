@@ -8,15 +8,7 @@ The system processes documents through a structured pipeline where each stage pe
 
 The tool is delivered as a standalone desktop application (executable) targeting **Windows**. All end users (downtime claims staff) are on Windows. Staff select or create a working folder, drop documents into it, run the pipeline, and review the generated output artifacts.
 
-This standalone model is the primary delivery path. Integration with IT-LAW remains a possibility depending on long-term need and feasibility, but the architecture does not assume it.
-
-```
-Standalone Desktop App  ←  current path
-        or
-IT-LAW Integration      ←  possible future path
-```
-
-To keep both options open, the processing pipeline is independent of the GUI. The GUI calls into the pipeline; the pipeline knows nothing about the GUI.
+The processing pipeline is independent of the GUI. The GUI calls into the pipeline; the pipeline knows nothing about the GUI. This separation keeps each layer independently testable and maintainable.
 
 The entire dependency stack (Python, PySide6, PyMuPDF, OpenCV, Azure SDK, Anthropic SDK) is cross-platform. All file and directory operations use `pathlib.Path` to avoid OS-specific path separators. The Windows `.exe` is produced by running PyInstaller on Windows.
 
@@ -42,9 +34,7 @@ This folder-based model keeps things simple: no database, no server, no session 
 
 # Processing Pipeline
 
-## Beta Pipeline
-
-For the beta, staff will only input real income documents. Document classification is not needed yet — every document is assumed to be a valid income document. The pipeline for beta:
+## Processing Pipeline
 
 ```
   Working Folder (source documents)
@@ -67,27 +57,6 @@ For the beta, staff will only input real income documents. Document classificati
 ```
 
 Only new or unprocessed documents run through the per-document stages. Report assembly always rebuilds from the full set of cached results.
-
-## Future Pipeline
-
-Classification can be inserted between OCR and Extraction without disrupting the rest of the pipeline:
-
-```
-  Working Folder (source documents)
-                 ↓
-       ┌─────────────────────────────────────────────┐
-       │   Per-Document (cacheable)                    │
-       │                                               │
-       │   Ingestion → OCR → Classification → Extract →│
-       │                                      Validate │
-       └──────────────────┬────────────────────────────┘
-                          ↓
-              Cache results in folder
-                          ↓
-                   Report Assembly
-```
-
-This allows the tool to reject irrelevant documents automatically once classification is ready.
 
 ---
 
@@ -130,18 +99,6 @@ OCR returns:
 - line structure
 - bounding boxes
 - table structure
-
----
-
-## Document Classification (future)
-
-Determines whether a document contains income information. Not active in the beta — all documents are assumed to be valid income documents. The pipeline is structured so classification can be inserted between OCR and Extraction later.
-
-Examples of future classifications:
-
-- settlement statement
-- pay summary
-- irrelevant document
 
 ---
 
@@ -216,8 +173,6 @@ Report assembly consumes all cached per-document results and produces two cross-
 - A page number column referencing the corresponding page in the combined PDF
 
 The two artifacts form a cross-referenced pair: staff review the spreadsheet and flip to the exact page in the PDF to verify any value. Report assembly always regenerates from the full set of cached results, so adding new documents and re-running produces an updated, complete report.
-
-In a future integration scenario, report assembly output could also feed directly into external systems.
 
 ---
 

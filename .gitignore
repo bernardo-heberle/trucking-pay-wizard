@@ -108,7 +108,6 @@ Pipfile.lock
 # =========================
 .coverage
 htmlcov/
-.mutmut-cache/
 
 # =========================
 # Misc

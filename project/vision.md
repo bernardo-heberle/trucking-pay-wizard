@@ -17,16 +17,7 @@ The immediate goal is a standalone desktop tool distributed as an executable. St
 
 To process additional documents, staff add them to the folder and re-run. Only new documents are processed; the output artifacts are regenerated from the full set.
 
-Whether this standalone tool becomes the long-term solution or eventually integrates into IT-LAW depends on organizational need and feasibility. The system is designed so either path remains viable.
-
-```
-Now:     Standalone desktop app → folder-based batch processing → staff beta testing
-Later:   Standalone app remains the product
-           or
-         Pipeline integrates into IT-LAW
-```
-
-The architecture keeps these options open by separating the processing pipeline from the interface layer.
+The standalone desktop application is the product. Staff use it directly — no server infrastructure, no installation complexity, no dependency on external systems.
 
 ---
 
@@ -59,7 +50,7 @@ Every extracted value must be traceable to a document location.
 
 ### Incremental Development
 
-The system improves gradually as additional documents are labeled and evaluated. Beta testing with staff drives this feedback loop.
+The system improves gradually as additional documents are labeled and evaluated. Staff feedback drives this loop.
 
 ### Deliverability
 
@@ -76,7 +67,5 @@ Future improvements may include:
 - schema registry — load extraction schemas from config files for non-developer customisation
 - document classification to automatically reject irrelevant documents
 - document template detection
-- integration with IT-LAW or case management systems
-- automatic document processing on upload (if integrated)
-- improved review interface based on beta feedback
+- improved review interface based on staff feedback
 - local model option for zero-data-egress environments

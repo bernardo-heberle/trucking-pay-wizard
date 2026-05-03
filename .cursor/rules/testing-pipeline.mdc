@@ -80,27 +80,6 @@ The verifier cross-references LLM-extracted values against OCR text. Test that:
 
 The known limitation (presence-only, not semantic role) is documented in `TestWrongFieldPresenceLimit` — maintain those tests.
 
-## Mutation Targets
-
-Run `mutmut` scoped to the paths below. Do not run it on every commit.
-
-**mutmut requires WSL on Windows** — it does not run on native Windows PowerShell. Use the WSL bash terminal (see `scripts/wsl-setup.sh`).
-
-```bash
-# WSL bash — scoped paths are configured in pyproject.toml [tool.mutmut]
-mutmut run
-```
-
-Targeted paths (from `pyproject.toml`):
-
-```
-src/extract/
-src/cache/
-src/report/excel_exporter.py
-```
-
-Target ≥ 90% mutation score on these paths.
-
 ## What Not to Do
 
 - Do not write tests just to increase coverage numbers.

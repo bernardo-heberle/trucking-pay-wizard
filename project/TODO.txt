@@ -1,4 +1,4 @@
 
 - Add a lot more test data.
 
-- Test the pipeline end-to-end with beta tester.
+- Test the pipeline end-to-end with staff.

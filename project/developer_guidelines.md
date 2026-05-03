@@ -26,8 +26,6 @@ Ship working increments. A rule-based extractor that handles 80% of documents to
 
 Avoid decisions that are hard to undo. Use interfaces and configuration to keep OCR providers, output formats, and extraction strategies swappable. Lean on dependency injection and configuration files, not hard-coded choices.
 
-The delivery model itself is a reversibility question — the standalone desktop app may remain the final product or the pipeline may integrate into IT-LAW. Keeping the GUI as a thin layer over the pipeline ensures either path stays open.
-
 ### Open/Closed
 
 Pipeline stages should be extendable without editing existing ones. The classification placeholder is a concrete example — when classification is ready, it slots between OCR and Extraction; neither of those stages changes. Write stages that consume a well-defined input and produce a well-defined output so new stages can be added around them.
@@ -43,7 +41,6 @@ src/
   gui/             # Desktop GUI (presentation only)
   ingest/          # Document loading, format conversion
   ocr/             # Azure Document Intelligence adapter
-  classification/  # Document type detection (placeholder — not active in beta)
   extract/         # Field extraction logic
     llm/           # Schema-driven LLM extraction (Anthropic API)
       schemas/     # Pluggable extraction schemas (one per document type)
@@ -57,8 +54,6 @@ tests/
 ```
 
 Each package maps to a pipeline stage or application layer. The `gui` package depends on the pipeline; the pipeline never imports from `gui`.
-
-`src/classification/` exists as a structural placeholder. The beta pipeline skips classification entirely — all documents are assumed to be valid income documents. The package is present so the pipeline can be extended with a classification stage later without reorganizing the project. Do not add classification logic until it is explicitly needed.
 
 `src/report/` is responsible for consuming cached per-document extraction results and producing the two output artifacts (combined PDF and CSV/Excel). Extraction produces data; report assembly consumes it. These concerns must stay separate.
 
@@ -209,10 +204,9 @@ Conventions:
 
 ## GUI Layer
 
-The GUI is a presentation layer. It should:
+The GUI is the product's interface layer. It should:
 
 - Call into the pipeline, never contain business logic itself.
-- Remain replaceable — if the pipeline integrates into IT-LAW, the GUI is discarded, not refactored.
 - Handle all user interaction: drag-and-drop, progress display, result review, export triggers.
 - Never be imported by pipeline code. The dependency arrow points one way: `gui → pipeline`.
 

@@ -1,5 +1,5 @@
 ---
-description: Project purpose, pipeline, session model, and beta scope for Trucking Pay Wizard
+description: Project purpose, pipeline, session model, and scope for Trucking Pay Wizard
 alwaysApply: true
 ---
 
@@ -7,7 +7,7 @@ alwaysApply: true
 
 A standalone desktop tool that processes trucking income documents for legal staff. Staff drop documents into a working folder, run the pipeline, and receive a combined PDF report and CSV spreadsheet with cross-referenced extracted values.
 
-## Pipeline (Beta)
+## Pipeline
 
 ```
 Ingestion → OCR → Extraction → Validation → Report Assembly
@@ -30,33 +30,18 @@ working-folder/
 
 The folder *is* the session — no database, no server.
 
-## Beta Scope
+## Scope
 
-**In scope:** folder-based batch processing, OCR, field extraction (gross pay, net pay, dates), validation, report assembly, desktop GUI, standalone executable packaging.
+**Active:** folder-based batch processing, OCR, field extraction (gross pay, net pay, dates), validation, report assembly, desktop GUI, standalone executable packaging.
 
-**Deferred:** document classification, IT-LAW integration, template detection.
-
-In the beta, every input document is assumed to be a valid income document — classification is not active.
+**Not yet active:** document classification, template detection. Every input document is assumed to be a valid income document.
 
 ## Delivery
 
-Ships as a standalone **Windows** executable. All end users (downtime claims staff) are on Windows. The GUI calls into the pipeline; the pipeline never imports from the GUI. This keeps both standalone and future IT-LAW integration paths open.
+Ships as a standalone **Windows** executable. All end users (downtime claims staff) are on Windows. The GUI calls into the pipeline; the pipeline never imports from the GUI.
 
 ## Developer Environment
 
-This is a hybrid Windows + WSL2 setup. The correct shell depends on the task:
-
-| Context | Shell | Notes |
-|---|---|---|
-| General development, pytest, GUI, packaging | **PowerShell** (Windows) | Default for all day-to-day work |
-| Mutation testing (`mutmut`) | **bash** (WSL2 / Ubuntu) | mutmut does not run on native Windows |
-
-**When generating terminal commands**, check which environment Cursor is connected to:
-- Native Windows terminal → use PowerShell syntax (`$env:VAR`, `.venv\Scripts\activate`, `New-Item`, `Copy-Item`)
-- WSL terminal → use bash syntax (`source .venv/bin/activate`, `export VAR=value`, `mkdir -p`)
-
-**Never emit PowerShell commands in a WSL terminal, or bash commands in a PowerShell terminal.**
+All development tasks — pytest, GUI, packaging — use **PowerShell (Windows)**. Always use PowerShell syntax: `$env:VAR`, `.venv\Scripts\activate`, `New-Item`, `Copy-Item`.
 
 Code uses `pathlib.Path` throughout so it stays platform-neutral, but builds and end-user deployment target Windows only.
-
-The WSL clone lives in `~/trucking-pay-wizard` (Linux home, not `/mnt/c/...`) for fast subprocess I/O during mutmut runs. The Windows clone is the primary development copy. Both stay in sync via git.

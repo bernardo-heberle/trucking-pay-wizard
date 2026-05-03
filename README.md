@@ -35,13 +35,13 @@ A standalone desktop application that:
 6. Generates a CSV/Excel spreadsheet cross-referenced to PDF page numbers
 7. Caches per-document results so re-runs only process new files
 
-The beta operates on income documents only — document classification is a future addition. The tool is distributed as a self-contained executable. No server infrastructure or installation process required.
+The tool is distributed as a self-contained executable. No server infrastructure or installation process required.
 
 ---
 
 # Delivery Model
 
-The application is currently a standalone desktop tool built for direct use by DTC staff. Integration with IT-LAW is a future possibility but not assumed. See `project/vision.md` for details on both paths.
+The application is a standalone desktop tool built for direct use by DTC staff.
 
 ---
 
@@ -49,7 +49,6 @@ The application is currently a standalone desktop tool built for direct use by D
 
 - Vision: `project/vision.md`
 - Architecture: `project/architecture.md`
-- Beta Plan: `project/beta_plan.md`
 - Setup Instructions: `project/setup.md`
 - Developer Guidelines: `project/developer_guidelines.md`
 
@@ -57,7 +56,7 @@ The application is currently a standalone desktop tool built for direct use by D
 
 # Current Status
 
-Beta prototype development.
+Active development.
 
 Current focus areas:
 
@@ -161,29 +160,6 @@ To view a line-by-line coverage report:
 .venv\Scripts\pytest --cov-report=html
 # Opens htmlcov/index.html in a browser
 ```
-
-## Mutation testing
-
-Mutation testing is configured in `pyproject.toml` and targets `src/extract/`, `src/cache/`, and `src/report/excel_exporter.py` — the financial-critical paths where a surviving mutant is a real defect risk.
-
-**Note:** `mutmut` requires WSL on Windows (native Windows support is not available in mutmut 3.x; tracked in [mutmut#397](https://github.com/boxed/mutmut/issues/397)). Run mutation tests from WSL or a Linux CI environment:
-
-```bash
-# WSL / Linux — initial run (slow: every mutant runs the full suite)
-mutmut run
-
-# Inspect results
-mutmut results
-
-# Inspect a specific surviving mutant
-mutmut show <id>
-```
-
-**Target scores:** ≥ 90% on `src/extract/**` and `src/cache/**`; ≥ 80% on all other targeted paths.
-
-When a mutant survives: read what changed, then write the test that would have caught it. Do not silence the operator. If a surviving mutant is genuinely equivalent (e.g. a change to a log-string only), mark the source line with `# pragma: no mutate` and add a comment explaining why.
-
-Mutation testing is **not** a pre-commit gate — it is too slow for that. Run it on a schedule or before merging to a protected branch.
 
 ---
 

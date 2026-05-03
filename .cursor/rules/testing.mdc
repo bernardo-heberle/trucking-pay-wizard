@@ -10,14 +10,13 @@ These rules apply to every test written in this codebase. They are adapted from 
 
 ## Core Principles
 
-### 1. Tests must kill mutants, not just execute lines
+### 1. Tests must verify behavior, not just execute lines
 
-A test that runs a line without verifying its behavior is theater. Small, semantically meaningful source changes — a `>` flipped to `>=`, a `+` flipped to `-`, a constant zeroed, a return value negated — must cause at least one test to fail. Surviving mutants indicate gaps even when line coverage is 100%.
+A test that runs a line without verifying its behavior is theater. Small, semantically meaningful source changes — a `>` flipped to `>=`, a `+` flipped to `-`, a constant zeroed, a return value negated — must cause at least one test to fail. High line coverage with weak oracles provides a false sense of security.
 
-- Target ≥ 90% mutation score on `src/extract/**` and `src/cache/**` — these control financial values staff rely on.
-- Target ≥ 80% mutation score on all other core logic.
-- When a mutant survives, add or strengthen an assertion. Never suppress the operator.
-- Do not wire `mutmut` into pre-commit. Run it on a schedule or pre-merge for protected branches.
+- Write assertions strong enough that any single operator mutation in the tested code would cause a failure.
+- When coverage passes but a subtle logic bug could slip through, add or strengthen an assertion.
+- `src/extract/**` and `src/cache/**` control financial values staff rely on — strong oracles here are non-negotiable.
 
 ### 2. Tests must be independent in their failure modes
 
@@ -157,21 +156,6 @@ def test_token_expiry_is_one_hour_from_now():
     assert token.expires_at == datetime(2026, 1, 15, 13, 0, 0)
 ```
 
-## Running Mutation Tests
-
-**mutmut must be run from WSL (bash), not native Windows PowerShell.** See `scripts/wsl-setup.sh` for one-time WSL environment setup.
-
-```bash
-# WSL / Linux — initial run (slow: every mutant runs the full suite)
-mutmut run
-
-# See survivors
-mutmut results
-mutmut show <id>   # inspect a specific surviving mutant
-```
-
-When a mutant survives: read what changed, write the test that would have caught it. Do not silence the operator.
-
 ## What to Tell the Agent
 
 Before submitting, verify:
@@ -179,6 +163,6 @@ Before submitting, verify:
 2. Every new test has a one-sentence answer to "what bug would this catch that no other test catches?"
 3. `pytest -p randomly` passes.
 4. Branch coverage on changed files is ≥ 95%.
-5. For `src/extract/**` and `src/cache/**`: mutation score must not regress. If `mutmut` is not run, explicitly note why and when it will be.
+5. For `src/extract/**` and `src/cache/**`: every assertion pins a specific value or call contract — not just types or non-None checks. These modules control financial values that legal staff rely on.
 
 Strong oracles are **non-negotiable** on `src/extract/**` and `src/cache/**`. These modules control financial values that legal staff rely on.

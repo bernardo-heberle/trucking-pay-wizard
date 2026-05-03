@@ -10,10 +10,6 @@ alwaysApply: false
 
 `gui → pipeline` only. Pipeline packages (`ingestion`, `ocr`, `extraction`, `validation`, `report`) must never import from `src/gui/`. The GUI is a thin presentation layer over the pipeline.
 
-## Classification Placeholder
-
-`src/classification/` is a structural placeholder. **Do not add logic to it until explicitly instructed.** The beta assumes all input documents are valid income documents — classification is skipped entirely. When classification is ready, it will slot between OCR and Extraction without changing either stage.
-
 ## Report vs. Extraction
 
 `src/report/` consumes cached extraction results and produces output artifacts. It must not perform field extraction. Extraction produces data; report assembly consumes it. Keep these concerns separate.

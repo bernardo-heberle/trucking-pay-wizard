@@ -11,6 +11,11 @@ Each document format exercises different layout challenges:
   - COD settlement: three competing dollar amounts
   - Multi-vehicle: 3 vehicles, high total, 2 pages
   - Revision history: old price=$0.00 in revision table
+
+pay.value carries the raw LLM string (e.g. "$1,850.00" or "$920").
+Assertions normalise it with _normalize_pay_value — the same
+canonicalisation used by the pay verifier and the Excel exporter —
+and compare against the pinned two-decimal canonical string.
 """
 
 from __future__ import annotations
@@ -19,6 +24,7 @@ from pathlib import Path
 
 import pytest
 
+from src.extract.llm.schemas.income import _normalize_pay_value
 from src.extract.models import Certainty
 from src.ingest import ingest_document
 from src.ocr.analyzer import analyze_document
@@ -49,9 +55,38 @@ def _run_pipeline(pdf: Path, azure_client, anthropic_extractor):
 
 
 def _field(result, name: str):
-    f = next((f for f in result.fields if f.name == name), None)
-    assert f is not None, f"Field '{name}' not found. Fields: {result.fields}"
-    return f
+    """Return the named field from loads[0].
+
+    All pipeline live test documents contain a single load, so loads[0]
+    is the whole result.  Fails with a descriptive message when the
+    loads list is empty or the requested field is None.
+    """
+    assert len(result.loads) >= 1, (
+        f"Expected at least one load, got 0. extraction_error={result.extraction_error!r}"
+    )
+    load = result.loads[0]
+    field = getattr(load, name, None)
+    assert field is not None, (
+        f"Field '{name}' is None on loads[0]. "
+        f"pay={load.pay!r}  date={load.date!r}"
+    )
+    return field
+
+
+def _assert_pay(result, canonical: str) -> None:
+    """Assert that loads[0].pay normalises to *canonical* (e.g. '1850.00').
+
+    pay.value carries the raw LLM string as it appeared on the document
+    (e.g. '$1,850.00', '$920').  _normalize_pay_value strips currency
+    symbols and commas and pads to two decimal places — matching what the
+    pay verifier and Excel exporter produce.  The pinned canonical string
+    is the same value that appears in the staff-facing spreadsheet.
+    """
+    pay = _field(result, "pay")
+    normalized = _normalize_pay_value(pay.value)
+    assert normalized == canonical, (
+        f"pay normalised to {normalized!r} (raw: {pay.value!r}), expected {canonical!r}"
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -65,7 +100,7 @@ class TestCentralDispatchPipeline:
     def test_extracts_pay(self, azure_client, anthropic_extractor, tmp_path) -> None:
         pdf = build_central_dispatch_pdf(tmp_path)
         result = _run_pipeline(pdf, azure_client, anthropic_extractor)
-        assert _field(result, "pay").value == "1850.00"
+        _assert_pay(result, "1850.00")
 
     def test_extracts_date(self, azure_client, anthropic_extractor, tmp_path) -> None:
         pdf = build_central_dispatch_pdf(tmp_path)
@@ -89,7 +124,7 @@ class TestV2DispatchPipeline:
     def test_extracts_pay(self, azure_client, anthropic_extractor, tmp_path) -> None:
         pdf = build_v2_dispatch_pdf(tmp_path)
         result = _run_pipeline(pdf, azure_client, anthropic_extractor)
-        assert _field(result, "pay").value == "920.00"
+        _assert_pay(result, "920.00")
 
     def test_extracts_date(self, azure_client, anthropic_extractor, tmp_path) -> None:
         pdf = build_v2_dispatch_pdf(tmp_path)
@@ -111,7 +146,7 @@ class TestSuperDispatchPipeline:
     def test_extracts_pay(self, azure_client, anthropic_extractor, tmp_path) -> None:
         pdf = build_super_dispatch_pdf(tmp_path)
         result = _run_pipeline(pdf, azure_client, anthropic_extractor)
-        assert _field(result, "pay").value == "1350.00"
+        _assert_pay(result, "1350.00")
 
     def test_extracts_date(self, azure_client, anthropic_extractor, tmp_path) -> None:
         pdf = build_super_dispatch_pdf(tmp_path)
@@ -133,8 +168,9 @@ class TestCodSettlementPipeline:
         pdf = build_cod_settlement_pdf(tmp_path)
         result = _run_pipeline(pdf, azure_client, anthropic_extractor)
         pay = _field(result, "pay")
-        assert pay.value == "1400.00", (
-            f"Expected carrier pay 1400.00, got {pay.value!r}. "
+        normalized = _normalize_pay_value(pay.value)
+        assert normalized == "1400.00", (
+            f"Expected carrier pay 1400.00, got {normalized!r} (raw: {pay.value!r}). "
             "Extractor may have grabbed the COD amount ($1,750) or the net ($350)."
         )
 
@@ -155,7 +191,7 @@ class TestMultiVehiclePipeline:
     def test_extracts_total_pay(self, azure_client, anthropic_extractor, tmp_path) -> None:
         pdf = build_multi_vehicle_pdf(tmp_path)
         result = _run_pipeline(pdf, azure_client, anthropic_extractor)
-        assert _field(result, "pay").value == "4500.00"
+        _assert_pay(result, "4500.00")
 
     def test_extracts_date(self, azure_client, anthropic_extractor, tmp_path) -> None:
         pdf = build_multi_vehicle_pdf(tmp_path)
@@ -177,8 +213,9 @@ class TestRevisionHistoryPipeline:
         pdf = build_revision_history_pdf(tmp_path)
         result = _run_pipeline(pdf, azure_client, anthropic_extractor)
         pay = _field(result, "pay")
-        assert pay.value == "750.00", (
-            f"Expected 750.00, got {pay.value!r}. "
+        normalized = _normalize_pay_value(pay.value)
+        assert normalized == "750.00", (
+            f"Expected 750.00, got {normalized!r} (raw: {pay.value!r}). "
             "Extractor may have grabbed the old revision value ($0.00)."
         )
 

@@ -1,11 +1,11 @@
-"""Fixtures for live API tests.
+"""Fixtures and configuration for live API tests.
 
 These tests make real network calls to Azure and Anthropic.  They are excluded
 from the default ``pytest`` run by the ``live_api`` marker.
 
 Run them explicitly::
 
-    pytest -m live_api --no-cov -v
+    pytest tests/live/ --no-cov -v
 
 ``--no-cov`` is recommended because the coverage minimum (85%) is calibrated
 for the full unit/integration suite, not this small set of smoke tests.
@@ -18,7 +18,12 @@ import os
 import pytest
 from dotenv import load_dotenv
 
+import tests.live._diagnostic_recorder as _rec_mod
+
 load_dotenv()
+
+# Register the diagnostic plugin — hooks run for every test in this session.
+pytest_plugins = ["tests.live._diagnostic_plugin"]
 
 pytestmark = pytest.mark.live_api
 
@@ -40,11 +45,18 @@ needs_azure = pytest.mark.skipif(
 
 @pytest.fixture(scope="session")
 def anthropic_extractor():
-    """Build a real ``LlmExtractor`` wired to the live Anthropic API."""
-    pytest.importorskip("anthropic")
-    from src.extract.llm.extractor import LlmExtractor
+    """Build a ``RecordingLlmExtractor`` wired to the live Anthropic API.
 
-    return LlmExtractor.from_config()
+    The recording extractor is behaviourally identical to ``LlmExtractor``
+    but populates ``extractor.last_record`` after every ``extract()`` call.
+    The diagnostic plugin reads this record after each test to write the
+    per-test JSON artifact.
+    """
+    pytest.importorskip("anthropic")
+    extractor = _rec_mod.RecordingLlmExtractor.from_config()
+    # Expose the instance at module level so the diagnostic plugin can find it.
+    _rec_mod._active_extractor = extractor
+    return extractor
 
 
 @pytest.fixture(scope="session")

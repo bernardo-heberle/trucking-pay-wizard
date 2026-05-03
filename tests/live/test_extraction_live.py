@@ -4,6 +4,11 @@ Validates that the prompt + schema + pay verifier produce correct results
 when wired to the real Claude model.  Uses fixture data from
 ``tests/fixtures/`` so expected values are stable.
 
+pay.value carries the raw LLM string as it appeared on the document
+(e.g. '$750.00', '$820').  Assertions normalise it with
+_normalize_pay_value — the same canonicalisation used by the pay verifier
+and the Excel exporter — and compare against a pinned two-decimal string.
+
 Fixture files and their expected extraction values:
 
     settlement_ocr.json               pay=750.00    date=03/12/2024
@@ -18,6 +23,7 @@ from __future__ import annotations
 
 import pytest
 
+from src.extract.llm.schemas.income import _normalize_pay_value
 from src.extract.models import Certainty
 from tests.conftest import load_ocr_fixture
 from tests.live.conftest import needs_anthropic
@@ -35,7 +41,9 @@ class TestSettlementExtraction:
         assert len(result.loads) >= 1
         pay = result.loads[0].pay
         assert pay is not None
-        assert pay.value == "750.00"
+        assert _normalize_pay_value(pay.value) == "750.00", (
+            f"Raw pay value from LLM: {pay.value!r}"
+        )
 
     def test_date_value(self, anthropic_extractor) -> None:
         ocr = load_ocr_fixture("settlement_ocr.json")
@@ -67,7 +75,9 @@ class TestPaySummaryExtraction:
         assert len(result.loads) >= 1
         pay = result.loads[0].pay
         assert pay is not None
-        assert pay.value == "820.00"
+        assert _normalize_pay_value(pay.value) == "820.00", (
+            f"Raw pay value from LLM: {pay.value!r}"
+        )
 
     def test_date_value(self, anthropic_extractor) -> None:
         ocr = load_ocr_fixture("pay_summary_ocr.json")
@@ -108,7 +118,9 @@ class TestCentralDispatchExtraction:
 
         pay = result.loads[0].pay
         assert pay is not None
-        assert pay.value == "1850.00"
+        assert _normalize_pay_value(pay.value) == "1850.00", (
+            f"Raw pay value from LLM: {pay.value!r}"
+        )
 
     def test_date_value(self, anthropic_extractor) -> None:
         ocr = load_ocr_fixture("central_dispatch_settlement.json")
@@ -150,7 +162,9 @@ class TestV2DispatchExtraction:
 
         pay = result.loads[0].pay
         assert pay is not None
-        assert pay.value == "920.00"
+        assert _normalize_pay_value(pay.value) == "920.00", (
+            f"Raw pay value from LLM: {pay.value!r}"
+        )
 
     def test_date_value(self, anthropic_extractor) -> None:
         ocr = load_ocr_fixture("v2_dispatch_load.json")
@@ -184,7 +198,9 @@ class TestSuperDispatchExtraction:
 
         pay = result.loads[0].pay
         assert pay is not None
-        assert pay.value == "1350.00"
+        assert _normalize_pay_value(pay.value) == "1350.00", (
+            f"Raw pay value from LLM: {pay.value!r}"
+        )
 
     def test_date_value(self, anthropic_extractor) -> None:
         ocr = load_ocr_fixture("super_dispatch_backlotcars.json")
@@ -218,7 +234,9 @@ class TestMultiVehicleExtraction:
 
         pay = result.loads[0].pay
         assert pay is not None
-        assert pay.value == "4500.00"
+        assert _normalize_pay_value(pay.value) == "4500.00", (
+            f"Raw pay value from LLM: {pay.value!r}"
+        )
 
     @pytest.mark.parametrize("date_variant", ["05/06/2024"])
     def test_date_value(self, anthropic_extractor, date_variant: str) -> None:

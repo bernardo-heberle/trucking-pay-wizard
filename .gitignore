@@ -109,6 +109,9 @@ Pipfile.lock
 .coverage
 htmlcov/
 
+# Live test diagnostic artifacts (per-run JSON + summary.md)
+tests/live/_diagnostics/
+
 # =========================
 # Misc
 # =========================

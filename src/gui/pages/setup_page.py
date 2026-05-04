@@ -1,13 +1,10 @@
 from __future__ import annotations
 
-import hashlib
 import os
-import shutil
 from pathlib import Path
 
 from loguru import logger
-from PySide6.QtCore import QObject, QThread, Qt, Signal, Slot
-from PySide6.QtGui import QDragEnterEvent, QDropEvent
+from PySide6.QtCore import QObject, QThread, Signal, Slot
 from PySide6.QtWidgets import (
     QFileDialog,
     QHBoxLayout,
@@ -23,17 +20,6 @@ from PySide6.QtWidgets import (
 from src.gui._errors import friendly_message
 from src.gui._widgets import TruckProgressWidget, add_corner_sparkles
 from src.ingest import collect_source_files
-
-_SUPPORTED_SUFFIXES = frozenset({".pdf", ".png", ".jpg", ".jpeg", ".tif", ".tiff"})
-
-
-def _file_hash(path: Path) -> str:
-    """Return an MD5 hex digest for quick same-content checking."""
-    h = hashlib.md5()
-    with open(path, "rb") as f:
-        for chunk in iter(lambda: f.read(65536), b""):
-            h.update(chunk)
-    return h.hexdigest()
 
 
 def _extraction_version() -> str:
@@ -142,7 +128,6 @@ class SetupPage(QWidget):
         self._thread: QThread | None = None
         self._worker: _PipelineWorker | None = None
         self._build_ui()
-        self.setAcceptDrops(True)
 
     def _build_ui(self) -> None:
         root = QVBoxLayout(self)
@@ -177,13 +162,6 @@ class SetupPage(QWidget):
         self._doc_count_label = QLabel("No folder selected.")
         self._doc_count_label.setStyleSheet("color: gray;")
         root.addWidget(self._doc_count_label)
-
-        drag_hint = QLabel(
-            "<small><i>You can also drag and drop documents directly onto this window.</i></small>"
-        )
-        drag_hint.setTextFormat(Qt.TextFormat.RichText)
-        drag_hint.setStyleSheet("color: #9ca3af;")
-        root.addWidget(drag_hint)
 
         root.addSpacing(12)
 
@@ -277,73 +255,6 @@ class SetupPage(QWidget):
         folder_text = self._folder_edit.text()
         if folder_text:
             os.startfile(folder_text)
-
-    # ── Drag and drop ─────────────────────────────────────────────────────────
-
-    def dragEnterEvent(self, event: QDragEnterEvent) -> None:  # type: ignore[override]
-        if event.mimeData().hasUrls():
-            supported = any(
-                Path(url.toLocalFile()).suffix.lower() in _SUPPORTED_SUFFIXES
-                for url in event.mimeData().urls()
-                if url.isLocalFile()
-            )
-            if supported:
-                event.acceptProposedAction()
-                return
-        event.ignore()
-
-    def dropEvent(self, event: QDropEvent) -> None:  # type: ignore[override]
-        urls = [
-            Path(url.toLocalFile())
-            for url in event.mimeData().urls()
-            if url.isLocalFile()
-            and Path(url.toLocalFile()).suffix.lower() in _SUPPORTED_SUFFIXES
-        ]
-        if not urls:
-            return
-
-        folder_text = self._folder_edit.text().strip()
-        if not folder_text:
-            QMessageBox.information(
-                self,
-                "Select a folder first",
-                "Please select a documents folder before dropping files.",
-            )
-            return
-
-        target_folder = Path(folder_text)
-        copied, skipped, conflicts = 0, 0, []
-
-        for src in urls:
-            dest = target_folder / src.name
-            if dest.exists():
-                if _file_hash(src) == _file_hash(dest):
-                    skipped += 1
-                    continue
-                conflicts.append(src.name)
-                continue
-            shutil.copy2(src, dest)
-            copied += 1
-
-        if conflicts:
-            names = "\n".join(f"  • {n}" for n in conflicts)
-            QMessageBox.warning(
-                self,
-                "File conflict",
-                f"The following files already exist in the folder with different "
-                f"content and were not copied:\n\n{names}\n\n"
-                "Rename or remove the existing copies if you want to replace them.",
-            )
-
-        msg_parts = []
-        if copied:
-            msg_parts.append(f"{copied} file{'s' if copied != 1 else ''} added")
-        if skipped:
-            msg_parts.append(f"{skipped} already present (skipped)")
-        if msg_parts:
-            self._set_status(", ".join(msg_parts) + ".", "gray")
-
-        self._set_folder(target_folder)
 
     # ── Output label ─────────────────────────────────────────────────────────
 

@@ -6,6 +6,7 @@ from pathlib import Path
 from loguru import logger
 
 from src.extract.models import DocumentExtractionResult
+from src.report._date_parsing import parse_extracted_date
 from src.report.excel_exporter import build_excel
 from src.report.exceptions import ReportAssemblyError
 from src.report.pdf_builder import build_pdf
@@ -75,26 +76,11 @@ def _date_sort_key(result: DocumentExtractionResult) -> datetime.date:
     earliest: datetime.date | None = None
     for load in result.loads:
         if load.date is not None and load.date.value:
-            parsed = _parse_date(load.date.value)
+            parsed = parse_extracted_date(load.date.value)
             if parsed is not None:
                 if earliest is None or parsed < earliest:
                     earliest = parsed
     return earliest if earliest is not None else _MAX_DATE
-
-
-def _parse_date(value: str) -> datetime.date | None:
-    """Parse the raw date string produced by extraction.
-
-    Handles:
-      - ``M/D/YYYY`` and ``MM/DD/YYYY`` (numeric, slash-separated)
-      - ``Month D, YYYY`` (e.g. ``March 13, 2024`` or ``Mar 11, 2024``)
-    """
-    for fmt in ("%m/%d/%Y", "%B %d, %Y", "%b %d, %Y"):
-        try:
-            return datetime.datetime.strptime(value.strip(), fmt).date()
-        except ValueError:
-            continue
-    return None
 
 
 __all__ = [

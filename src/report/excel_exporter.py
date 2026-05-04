@@ -10,11 +10,12 @@ from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.utils import get_column_letter
 
 from src.extract.models import Certainty, DocumentExtractionResult, ExtractedLoad
+from src.report._date_parsing import parse_extracted_date
 from src.report.exceptions import ReportAssemblyError
 
 _CURRENCY_FORMAT = '$#,##0.00'
 _DATE_FORMAT = 'MM/DD/YYYY'
-_DATE_FORMATS = ("%m/%d/%Y", "%B %d, %Y", "%b %d, %Y")
+_DAYS_FORMAT = '[=1]0" day";0" days"'
 
 _FILL_GREEN = PatternFill(start_color="C6EFCE", end_color="C6EFCE", fill_type="solid")
 _FILL_YELLOW = PatternFill(start_color="FFEB9C", end_color="FFEB9C", fill_type="solid")
@@ -58,6 +59,12 @@ def build_excel(
     column and ``=MAX(…)-MIN(…)+1`` on the Date column so that Excel
     auto-recalculates if staff correct any cell.
 
+    When a date string cannot be parsed it is not written to the Date cell;
+    instead the raw value appears in the Notes cell as
+    ``Unparseable date: "<value>"`` and the Date cell is coloured red.  This
+    keeps the Date column purely numeric so the MAX/MIN totals formula is
+    reliable.
+
     *page_offsets* maps ``source_path.name`` to the 1-indexed starting page
     of that document in the combined PDF.  Per-load PDF Page is computed from
     that base plus the load's own source page offset.
@@ -74,6 +81,7 @@ def build_excel(
     _write_header_row(ws, _HEADERS)
 
     data_row = 2
+    parseable_date_count = 0
     for result in results:
         doc_name = result.source_path.name
         doc_base_page = page_offsets.get(doc_name, "")
@@ -104,17 +112,30 @@ def build_excel(
             cert_cell = ws.cell(row=data_row, column=_COL_CERTAINTY, value=load_cert.value)
             cert_cell.fill = _fill_for_certainty(load_cert)
 
-            # Date cell
-            date_value: str | datetime.datetime | None = None
+            # Date cell — write datetime on success; blank + red fill + Notes on failure.
             date_certainty: Certainty | None = None
+            notes_parts: list[str] = []
             if load.date is not None:
                 date_raw = load.date.value
                 date_certainty = load.date.certainty
-                parsed_dt = _parse_date_to_datetime(date_raw)
-                date_value = parsed_dt if parsed_dt is not None else date_raw
+                parsed_date = parse_extracted_date(date_raw)
+                if parsed_date is not None:
+                    date_value: datetime.datetime | None = datetime.datetime(
+                        parsed_date.year, parsed_date.month, parsed_date.day
+                    )
+                    parseable_date_count += 1
+                else:
+                    date_value = None
+                    notes_parts.append(f'Unparseable date: "{date_raw}"')
+            else:
+                date_value = None
+
             date_cell = ws.cell(row=data_row, column=_COL_DATE, value=date_value)
             date_cell.number_format = _DATE_FORMAT
-            date_cell.fill = _fill_for_certainty(date_certainty) if date_value is not None else _FILL_RED
+            if date_value is not None:
+                date_cell.fill = _fill_for_certainty(date_certainty)
+            else:
+                date_cell.fill = _FILL_RED
 
             # Pay cell
             pay_value: float | str | None = None
@@ -126,11 +147,22 @@ def build_excel(
             pay_cell.number_format = _CURRENCY_FORMAT
             pay_cell.fill = _fill_for_certainty(pay_certainty) if pay_value is not None else _FILL_RED
 
+            # Notes cell — join any note fragments.
+            if notes_parts:
+                notes_cell = ws.cell(row=data_row, column=_COL_NOTES, value="; ".join(notes_parts))
+                notes_cell.fill = _FILL_RED
+
             data_row += 1
 
     totals_row = data_row
     data_end_row = data_row - 1
-    _write_totals_row(ws, data_start_row=2, data_end_row=data_end_row, totals_row=totals_row)
+    _write_totals_row(
+        ws,
+        data_start_row=2,
+        data_end_row=data_end_row,
+        totals_row=totals_row,
+        has_parseable_dates=parseable_date_count > 0,
+    )
 
     _auto_width(ws, _N_FIXED_COLS)
 
@@ -165,12 +197,14 @@ def _write_totals_row(
     data_start_row: int,
     data_end_row: int,
     totals_row: int,
+    has_parseable_dates: bool = True,
 ) -> None:
     """Write a summary Totals row using Excel formulas.
 
-    The Pay column gets a SUM formula and the Date column gets a MAX-MIN+1
-    formula so staff can see the calendar span of all loads.  All cells in the
-    totals row are bold.
+    The Pay column gets a SUM formula.  The Date column gets a MAX-MIN+1
+    formula when at least one data row has a parseable date; otherwise the
+    Date cell is left blank to avoid a misleading ``1 day`` from an all-empty
+    date range.  All cells in the totals row are bold.
     """
     bold = Font(bold=True)
 
@@ -184,13 +218,17 @@ def _write_totals_row(
     pay_cell.number_format = _CURRENCY_FORMAT
 
     date_col_letter = get_column_letter(_COL_DATE)
-    date_range = f"{date_col_letter}{data_start_row}:{date_col_letter}{data_end_row}"
-    date_cell = ws.cell(
-        row=totals_row, column=_COL_DATE,
-        value=f"=MAX({date_range})-MIN({date_range})+1",
-    )
-    date_cell.font = bold
-    date_cell.number_format = "0"
+    if has_parseable_dates:
+        date_range = f"{date_col_letter}{data_start_row}:{date_col_letter}{data_end_row}"
+        date_cell = ws.cell(
+            row=totals_row, column=_COL_DATE,
+            value=f"=MAX({date_range})-MIN({date_range})+1",
+        )
+        date_cell.font = bold
+        date_cell.number_format = _DAYS_FORMAT
+    else:
+        date_cell = ws.cell(row=totals_row, column=_COL_DATE, value=None)
+        date_cell.font = bold
 
 
 def _parse_pay_float(value: str) -> float | str:
@@ -206,21 +244,6 @@ def _parse_pay_float(value: str) -> float | str:
         return float(re.sub(r"[$,\s]", "", value))
     except (ValueError, AttributeError):
         return value
-
-
-def _parse_date_to_datetime(value: str) -> datetime.datetime | None:
-    """Parse a raw date string to a ``datetime.datetime`` for Excel.
-
-    Writing a ``datetime`` object instead of a string lets Excel treat the
-    cell as a native date serial, which is required for MAX/MIN formulas in
-    the totals row.  Returns ``None`` when none of the known formats match.
-    """
-    for fmt in _DATE_FORMATS:
-        try:
-            return datetime.datetime.strptime(value.strip(), fmt)
-        except ValueError:
-            continue
-    return None
 
 
 def _write_header_row(ws, headers: list[str]) -> None:

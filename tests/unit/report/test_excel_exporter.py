@@ -10,7 +10,13 @@ import pytest
 from openpyxl.utils import get_column_letter
 
 from src.extract.models import Certainty, DocumentExtractionResult, ExtractedField
-from src.report.excel_exporter import build_excel, _FILL_GREEN, _FILL_YELLOW, _FILL_RED
+from src.report.excel_exporter import (
+    build_excel,
+    _DAYS_FORMAT,
+    _FILL_GREEN,
+    _FILL_YELLOW,
+    _FILL_RED,
+)
 from tests.unit.report.conftest import make_extraction_result
 
 
@@ -211,16 +217,22 @@ class TestDateNormalization:
         date_col = header_map["Date"]
         assert ws.cell(row=2, column=date_col).value == datetime.datetime(2024, 5, 15)
 
-    def test_unparseable_date_kept_as_string(
+    def test_unparseable_date_blanks_cell_and_writes_to_notes(
         self, synthetic_source_pdf: Path, tmp_path: Path
     ) -> None:
-        """When no known format matches, the raw string is kept so the cell is reviewable."""
+        """Unparseable date: Date cell is None+red; raw value appears in Notes."""
         result = make_extraction_result(
             synthetic_source_pdf,
             fields=[
                 ExtractedField(
                     name="date", value="unknown date",
                     source_document=synthetic_source_pdf.name, source_page=1,
+                    certainty=Certainty.HIGH,
+                ),
+                ExtractedField(
+                    name="pay", value="500.00",
+                    source_document=synthetic_source_pdf.name, source_page=1,
+                    certainty=Certainty.HIGH,
                 ),
             ],
         )
@@ -230,8 +242,18 @@ class TestDateNormalization:
         wb = openpyxl.load_workbook(str(out))
         ws = wb.active
         header_map = {ws.cell(row=1, column=c).value: c for c in range(1, ws.max_column + 1)}
-        date_col = header_map["Date"]
-        assert ws.cell(row=2, column=date_col).value == "unknown date"
+
+        date_cell = ws.cell(row=2, column=header_map["Date"])
+        assert date_cell.value is None, (
+            f"Expected None in Date cell for unparseable input, got {date_cell.value!r}"
+        )
+        assert date_cell.fill.start_color.rgb == "00FFC7CE", (
+            "Expected red fill on unparseable Date cell"
+        )
+
+        notes_val = ws.cell(row=2, column=header_map["Notes"]).value
+        assert notes_val is not None, "Expected Notes cell to contain the raw date string"
+        assert 'Unparseable date: "unknown date"' in notes_val
 
 
 class TestCertaintyColumn:
@@ -365,15 +387,15 @@ class TestTotalsRow:
         expected_range = f"{date_col_letter}2:{date_col_letter}{totals_row - 1}"
         assert expected_range in date_cell_value
 
-    def test_date_totals_cell_has_integer_format(self, synthetic_source_pdf: Path, tmp_path: Path) -> None:
-        """The days total must display as a plain integer, not as a date serial."""
+    def test_date_totals_cell_has_days_format(self, synthetic_source_pdf: Path, tmp_path: Path) -> None:
+        """The days total must use the singular/plural-aware custom number format."""
         result = make_extraction_result(synthetic_source_pdf)
         wb = self._build(tmp_path, [result])
         ws = wb.active
         header_map = {ws.cell(row=1, column=c).value: c for c in range(1, ws.max_column + 1)}
         totals_row = ws.max_row
         fmt = ws.cell(row=totals_row, column=header_map["Date"]).number_format
-        assert fmt == "0"
+        assert fmt == _DAYS_FORMAT
 
     def test_non_formula_columns_blank_in_totals(self, synthetic_source_pdf: Path, tmp_path: Path) -> None:
         """Certainty, PDF Page, and Notes columns should be empty in the totals row."""
@@ -436,6 +458,63 @@ class TestTotalsRow:
         fmt = ws.cell(row=totals_row, column=header_map["Pay"]).number_format
         assert "$" in fmt
 
+    def test_total_days_cell_uses_singular_plural_format(
+        self, synthetic_source_pdf: Path, tmp_path: Path
+    ) -> None:
+        """Totals Date cell must use the conditional day/days format — not plain '0'."""
+        result = make_extraction_result(synthetic_source_pdf)
+        wb = self._build(tmp_path, [result])
+        ws = wb.active
+        header_map = {ws.cell(row=1, column=c).value: c for c in range(1, ws.max_column + 1)}
+        totals_row = ws.max_row
+        fmt = ws.cell(row=totals_row, column=header_map["Date"]).number_format
+        assert fmt == _DAYS_FORMAT
+
+    def test_total_days_cell_value_is_still_a_formula(
+        self, synthetic_source_pdf: Path, tmp_path: Path
+    ) -> None:
+        """The days total must be a live formula, not a string with '& \" days\"'."""
+        result = make_extraction_result(synthetic_source_pdf)
+        wb = self._build(tmp_path, [result])
+        ws = wb.active
+        header_map = {ws.cell(row=1, column=c).value: c for c in range(1, ws.max_column + 1)}
+        totals_row = ws.max_row
+        cell_value = ws.cell(row=totals_row, column=header_map["Date"]).value
+        assert isinstance(cell_value, str), f"Expected formula string, got {type(cell_value)}"
+        assert cell_value.upper().startswith("=MAX("), (
+            f"Expected MAX formula, got: {cell_value!r}"
+        )
+
+    def test_total_days_cell_blank_when_no_parseable_dates(
+        self, synthetic_source_pdf: Path, tmp_path: Path
+    ) -> None:
+        """When every load has an unparseable date the totals Date cell must be blank."""
+        result = make_extraction_result(
+            synthetic_source_pdf,
+            fields=[
+                ExtractedField(
+                    name="pay", value="500.00",
+                    source_document=synthetic_source_pdf.name, source_page=1,
+                    certainty=Certainty.HIGH,
+                ),
+                ExtractedField(
+                    name="date", value="garbage",
+                    source_document=synthetic_source_pdf.name, source_page=1,
+                    certainty=Certainty.HIGH,
+                ),
+            ],
+        )
+        wb = self._build(tmp_path, [result])
+        ws = wb.active
+        header_map = {ws.cell(row=1, column=c).value: c for c in range(1, ws.max_column + 1)}
+        totals_row = ws.max_row
+        date_totals_val = ws.cell(row=totals_row, column=header_map["Date"]).value
+        assert date_totals_val is None or date_totals_val == "", (
+            f"Expected blank totals Date cell when no parseable dates, got {date_totals_val!r}"
+        )
+        # Pay totals formula must still be present.
+        pay_totals_val = ws.cell(row=totals_row, column=header_map["Pay"]).value
+        assert isinstance(pay_totals_val, str) and pay_totals_val.upper().startswith("=SUM(")
 
     def test_missing_field_gets_red_fill(
         self, synthetic_source_pdf: Path, synthetic_source_pdf_b: Path, tmp_path: Path
@@ -586,3 +665,63 @@ class TestPayNumericCells:
         pay_val = ws.cell(row=2, column=header_map["Pay"]).value
 
         assert pay_val == pytest.approx(1200.50)
+
+
+class TestDateFormatNormalization:
+    """Dates from all newly-supported surface forms are written as datetime objects.
+
+    Each case represents a real pattern seen in OCR fixtures that the old
+    parser could not handle.  They must now produce a native Excel date so
+    the MAX/MIN totals formula is reliable.
+    """
+
+    @pytest.mark.parametrize(
+        "raw_date, expected_dt",
+        [
+            ("3/19/2024",                datetime.datetime(2024, 3, 19)),   # single-digit month
+            ("10/29/24",                 datetime.datetime(2024, 10, 29)),  # two-digit year
+            ("2024-03-13",               datetime.datetime(2024, 3, 13)),   # ISO
+            ("March 13, 2024 (Wed)",     datetime.datetime(2024, 3, 13)),   # trailing weekday
+            ("Mar 11, 2024 at 11:52 AM", datetime.datetime(2024, 3, 11)),   # trailing time
+        ],
+        ids=[
+            "single_digit_month",
+            "two_digit_year",
+            "iso_format",
+            "trailing_weekday",
+            "trailing_time",
+        ],
+    )
+    def test_dates_normalize_to_excel_datetime(
+        self,
+        raw_date: str,
+        expected_dt: datetime.datetime,
+        synthetic_source_pdf: Path,
+        tmp_path: Path,
+    ) -> None:
+        result = make_extraction_result(
+            synthetic_source_pdf,
+            fields=[
+                ExtractedField(
+                    name="date", value=raw_date,
+                    source_document=synthetic_source_pdf.name, source_page=1,
+                    certainty=Certainty.HIGH,
+                ),
+                ExtractedField(
+                    name="pay", value="500.00",
+                    source_document=synthetic_source_pdf.name, source_page=1,
+                    certainty=Certainty.HIGH,
+                ),
+            ],
+        )
+        out = tmp_path / "out.xlsx"
+        build_excel([result], out, {synthetic_source_pdf.name: 2})
+
+        wb = openpyxl.load_workbook(str(out))
+        ws = wb.active
+        header_map = {ws.cell(row=1, column=c).value: c for c in range(1, ws.max_column + 1)}
+        cell_value = ws.cell(row=2, column=header_map["Date"]).value
+
+        assert cell_value == expected_dt, (
+            f"Date '{raw_date}' -> expected {expected_dt}, got {cell_value!r}"
+        )

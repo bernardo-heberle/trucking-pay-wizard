@@ -19,7 +19,7 @@ from PySide6.QtWidgets import (
 
 from src.gui._errors import friendly_message
 from src.gui._widgets import TruckProgressWidget, add_corner_sparkles
-from src.ingest import collect_source_files
+from src.ingest import collect_source_files, hash_document
 
 
 def _extraction_version() -> str:
@@ -77,9 +77,9 @@ class _PipelineWorker(QObject):
             results = []
 
             for i, source_path in enumerate(source_files, 1):
-                ingested = ingest_document(source_path)
+                content_hash = hash_document(source_path)
                 extraction = cache_get(
-                    self._folder, ingested.content_hash,
+                    self._folder, content_hash,
                     version=version,
                 )
 
@@ -91,6 +91,7 @@ class _PipelineWorker(QObject):
                     self.progress.emit(
                         f"Document {i} of {n}: reading {source_path.name}…"
                     )
+                    ingested = ingest_document(source_path)
                     if ocr_client is None:
                         ocr_client = build_client()
                     ocr_result = analyze_document(ingested, ocr_client)

@@ -104,6 +104,25 @@ def ingest_document(source_path: Path, dpi: int = DEFAULT_DPI) -> IngestedDocume
     )
 
 
+def hash_document(source_path: Path) -> str:
+    """Return the SHA-256 content hash of *source_path* without rendering pages.
+
+    This is the cheap path used to check the cache before committing to full
+    ingestion. The returned hash is identical to ``IngestedDocument.content_hash``.
+
+    Raises:
+        UnsupportedFileTypeError: extension is not in SUPPORTED_EXTENSIONS.
+        FileNotFoundError: file does not exist.
+    """
+    source_path = Path(source_path)
+    if source_path.suffix.lower() not in SUPPORTED_EXTENSIONS:
+        raise UnsupportedFileTypeError(
+            f"'{source_path.name}' has unsupported extension "
+            f"'{source_path.suffix}'. Supported: {sorted(SUPPORTED_EXTENSIONS)}"
+        )
+    return hashlib.sha256(source_path.read_bytes()).hexdigest()
+
+
 def collect_source_files(folder: Path) -> list[Path]:
     """Return all supported document files in folder, sorted by name.
 

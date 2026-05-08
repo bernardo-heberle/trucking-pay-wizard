@@ -100,6 +100,7 @@ RELEASE CHECKLIST — v{VERSION}
 Prerequisites:
   [ ] Inno Setup 6 + ISPP installed (https://jrsoftware.org/isdl.php)
   [ ] .venv activated with all requirements installed
+  [ ] GitHub CLI installed and authenticated (https://cli.github.com — run gh auth login once)
 
 1. Build the installer:
      .\packaging\build.ps1
@@ -111,13 +112,21 @@ Prerequisites:
    - If first run: paste a setup code, verify keys save
    - Run a small document folder end-to-end
 
-3. Create the GitHub Release:
-   - Go to: https://github.com/bernardo-heberle/trucking-pay-wizard-releases/releases/new
-   - Tag: v{VERSION}
-   - Title: v{VERSION}
-   - Body: paste the relevant section from CHANGELOG.md (users see this in the update dialog)
-   - Attach: dist\TruckingPayWizardSetup.exe
-   - Publish
+3. Publish the GitHub Release (open a fresh PowerShell terminal).
+   The agent must produce the full ready-to-run command with the actual version
+   and the full CHANGELOG.md entry for that version embedded in --notes.
+   Example of what the agent should output (with real content substituted):
+
+     gh release create v{VERSION} "dist\TruckingPayWizardSetup.exe" `
+       --repo bernardo-heberle/trucking-pay-wizard-releases `
+       --title "v{VERSION}" `
+       --notes "### Added
+     - ...
+     ### Fixed
+     - ..."
+
+   The user pastes and runs this command as-is — no manual editing required.
+   Verify at: https://github.com/bernardo-heberle/trucking-pay-wizard-releases/releases
 
 4. Verify auto-update (for non-first releases):
    - Open an older installed version of the app

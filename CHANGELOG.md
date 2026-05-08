@@ -9,6 +9,13 @@ Entries are written for staff using the app — not for developers.
 
 ---
 
+## [0.1.1] — 2026-05-08
+
+### Fixed
+- Credential verification now correctly connects to Azure Document Intelligence.
+
+---
+
 ## [0.1.0] — 2026-05-08
 
 Initial release.

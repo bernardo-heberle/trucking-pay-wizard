@@ -134,7 +134,7 @@ def check_for_update(*, force: bool = False) -> UpdateInfo | None:
             try:
                 last_dt = datetime.fromisoformat(last_check)
                 delta = datetime.now(timezone.utc) - last_dt
-                if delta.total_seconds() < 86_400:
+                if delta.total_seconds() < 3_600:
                     logger.debug("Update check debounced (last check: {})", last_check)
                     return None
             except ValueError:

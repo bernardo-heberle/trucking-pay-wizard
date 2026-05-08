@@ -75,15 +75,15 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self._stack)
         self._build_menu()
 
+        self._update_thread: QThread | None = None
+        self._update_worker: _UpdateCheckWorker | None = None
+
         # Route to credentials page if keys are missing; otherwise welcome page.
         if _creds.credentials_present():
             self._stack.setCurrentIndex(_IDX_WELCOME)
             self._start_update_check()
         else:
             self._stack.setCurrentIndex(_IDX_CREDENTIALS)
-
-        self._update_thread: QThread | None = None
-        self._update_worker: _UpdateCheckWorker | None = None
 
     def _build_menu(self) -> None:
         from PySide6.QtGui import QAction

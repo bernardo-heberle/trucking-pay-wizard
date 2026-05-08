@@ -10,6 +10,8 @@ Entries are written for staff using the app — not for developers.
 ### Fixed
 - Fixed initialization-order bug that prevented auto-update checks from running on app startup.
 
+- Changed auto-update checks to re-run after an hour.
+
 ---
 
 ## [0.1.2] — 2026-05-08

@@ -5,6 +5,13 @@ Entries are written for staff using the app — not for developers.
 
 ---
 
+## [0.1.4] — 2026-05-08
+
+### Changed
+- Test release to verify auto-update functionality.
+
+---
+
 ## [0.1.3] — 2026-05-08
 
 ### Fixed

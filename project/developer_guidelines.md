@@ -265,6 +265,36 @@ The application ships as a standalone executable. Keep packaging concerns in min
 
 ---
 
+## Versioning and Changelog
+
+Version lives in `src/__version__.py`. Bump it in the same commit as the change — never as a separate cleanup step.
+
+**What to bump:**
+
+| Change | Version part |
+|--------|-------------|
+| Bug fix or wrong output corrected | `0.1.x` patch |
+| New feature or improved behaviour | `0.x.0` minor |
+| Breaks existing workflows or requires staff re-setup | `x.0.0` major |
+
+Refactoring, test changes, and documentation edits don't need a version bump.
+
+**CHANGELOG.md** (project root) gets a new entry with every bump. Write for the staff who use the app — plain English, no implementation details. Would a non-technical user notice or care? If yes, include it. If no, leave it out.
+
+```
+## [0.2.0] — 2026-06-01
+
+### Fixed
+- Some settlement documents were showing the wrong net pay amount.
+
+### Added
+- Super Dispatch backlot carrier statements are now supported.
+```
+
+The GitHub Release body is copied directly from the relevant changelog section — staff see it in the in-app update dialog.
+
+---
+
 ## When in Doubt
 
 1. Make it work.

@@ -41,7 +41,7 @@ can poll anonymously. The source repo stays private.
 
 When the user asks to release a new version, follow these steps:
 
-### Step 1 — Bump version (agent does this)
+### Step 1 — Bump version and update changelog (agent does this)
 
 Edit `src/__version__.py` and change `__version__` to the new version.
 Use semantic versioning: `MAJOR.MINOR.PATCH`.
@@ -49,6 +49,17 @@ Use semantic versioning: `MAJOR.MINOR.PATCH`.
 - Patch: bug fixes, minor improvements.
 - Minor: new features, UX changes.
 - Major: breaking changes (unlikely during beta).
+
+Then update `CHANGELOG.md` at the project root. Add a new section at the top:
+
+```markdown
+## [VERSION] — YYYY-MM-DD
+
+### Added / Fixed / Changed
+- Plain-English entries for anything staff would notice.
+```
+
+See `.cursor/rules/versioning.mdc` for what belongs in the changelog and how to phrase entries. Changelog content and version bump go in the **same commit**.
 
 ### Step 2 — Run tests (agent does this)
 
@@ -104,7 +115,7 @@ Prerequisites:
    - Go to: https://github.com/bernardo-heberle/trucking-pay-wizard-releases/releases/new
    - Tag: v{VERSION}
    - Title: v{VERSION}
-   - Body: paste the changelog (users see this in the update dialog)
+   - Body: paste the relevant section from CHANGELOG.md (users see this in the update dialog)
    - Attach: dist\TruckingPayWizardSetup.exe
    - Publish
 

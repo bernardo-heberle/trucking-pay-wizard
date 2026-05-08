@@ -1,0 +1,2 @@
+- Create a ground truth set for challenging multi-value documents.
+- Iterate through prompts until we get better results from challenging docs.

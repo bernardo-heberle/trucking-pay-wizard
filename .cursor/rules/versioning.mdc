@@ -1,0 +1,95 @@
+---
+description: Version bumping and changelog maintenance for Trucking Pay Wizard
+alwaysApply: true
+---
+
+# Versioning & Changelog
+
+## Version — where it lives
+
+Single source of truth: `src/__version__.py`.
+
+```python
+__version__ = "MAJOR.MINOR.PATCH"
+```
+
+Bump this file whenever the change ships (or is about to ship). Never leave it stale after meaningful changes.
+
+## Semantic versioning rules
+
+| Change type | Which part to bump | Examples |
+|-------------|-------------------|---------|
+| Bug fix, crash fix, wrong output corrected | **PATCH** `0.1.x` | Wrong pay total fixed, crash on empty folder fixed |
+| New user-visible feature or improved behaviour | **MINOR** `0.x.0` — resets PATCH to 0 | New document type supported, new output column added |
+| Breaks existing workflows or requires re-setup | **MAJOR** `x.0.0` — resets MINOR and PATCH | Setup code format changed, output file structure renamed |
+
+**Rules:**
+- Bump **in the same commit** as the change, never as a separate cleanup commit.
+- Internal refactoring, test changes, and documentation edits do **not** warrant a version bump.
+- Dependency upgrades alone do **not** warrant a bump unless they change user-visible behaviour.
+
+## Changelog — `CHANGELOG.md`
+
+Located at the project root. Updated in **every commit that bumps the version**.
+
+### What belongs in the changelog
+
+Write entries for changes that matter to **staff using the app** — the downtime claims team. Ask: *would a non-technical user notice or care about this?*
+
+✅ **Include:**
+- New document types or formats now supported
+- Changes to what data appears in the CSV/PDF report
+- Fixes to incorrect pay totals, missing fields, or wrong dates
+- Changes to the setup or credentials flow
+- Performance improvements staff would notice (e.g. "processes folders twice as fast")
+- Any change that affects how staff should use the app
+
+❌ **Exclude:**
+- Internal refactoring, code cleanup
+- Test additions or coverage improvements
+- Dependency version bumps
+- Logging changes
+- Developer tooling changes
+
+### Entry language
+
+Write for a non-technical reader. Use plain English.
+
+```
+# ✅ GOOD
+Fixed an issue where some settlement documents showed the wrong net pay amount.
+Added support for Super Dispatch backlot carrier statements.
+
+# ❌ BAD
+Refactored LLM extractor to use updated Pydantic v2 field validator API.
+Fixed off-by-one error in date parsing regex.
+```
+
+### Format
+
+```markdown
+## [VERSION] — YYYY-MM-DD
+
+### Added
+- ...
+
+### Fixed
+- ...
+
+### Changed
+- ...
+```
+
+Use only the headings that apply — omit empty ones. Keep entries in the `[Unreleased]` section while work is in progress; replace with the real version number at release time.
+
+## Agent workflow
+
+When making a code change that warrants a version bump:
+
+1. Edit `src/__version__.py` with the new version.
+2. Add a new entry to `CHANGELOG.md` under `## [VERSION] — YYYY-MM-DD`.
+3. Include both files in the same commit as the code change.
+
+When making an internal change (refactor, tests, docs) that does **not** warrant a bump, do not touch `src/__version__.py` or `CHANGELOG.md`.
+
+If unsure whether a change warrants a bump, err on the side of bumping PATCH.

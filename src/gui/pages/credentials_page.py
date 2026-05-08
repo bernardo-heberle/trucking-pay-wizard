@@ -60,15 +60,15 @@ def _test_anthropic(api_key: str) -> str | None:
 def _test_azure(endpoint: str, key: str) -> str | None:
     """Return None on success, error description on failure."""
     try:
-        from azure.ai.documentintelligence import DocumentIntelligenceClient
+        from azure.ai.documentintelligence import DocumentIntelligenceAdministrationClient
         from azure.core.credentials import AzureKeyCredential
         from azure.core.exceptions import ClientAuthenticationError, HttpResponseError
 
-        client = DocumentIntelligenceClient(
+        client = DocumentIntelligenceAdministrationClient(
             endpoint=endpoint, credential=AzureKeyCredential(key)
         )
-        # list_operations() is a lightweight read-only call with no billing.
-        list(client.list_operations())
+        # get_resource_details() is a lightweight read-only call with no billing.
+        client.get_resource_details()
         return None
     except Exception as exc:
         msg = str(exc)

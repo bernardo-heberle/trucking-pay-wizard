@@ -19,6 +19,7 @@ from src.ingest.loader import (
     DEFAULT_DPI,
     SUPPORTED_EXTENSIONS,
     collect_source_files,
+    deduplicate_files,
     ingest_document,
 )
 from src.ingest.models import IngestedDocument, PageRender
@@ -325,3 +326,141 @@ class TestCollectSourceFiles:
         file_path.write_bytes(b"content")
         with pytest.raises(IngestionError):
             collect_source_files(file_path)
+
+
+# ---------------------------------------------------------------------------
+# deduplicate_files
+# ---------------------------------------------------------------------------
+
+
+class TestDeduplicateFiles:
+    """deduplicate_files() groups files by SHA-256 content hash.
+
+    Only the first file (alphabetically) per unique-content group is kept.
+    Skipped files are recorded in the returned duplicate_map.
+    """
+
+    def test_empty_list_returns_empty_results(self, tmp_path: Path) -> None:
+        unique, dup_map = deduplicate_files([])
+
+        assert unique == []
+        assert dup_map == {}
+
+    def test_single_file_returns_that_file_no_duplicates(self, tmp_path: Path) -> None:
+        f = tmp_path / "only.pdf"
+        f.write_bytes(b"unique content")
+
+        unique, dup_map = deduplicate_files([f])
+
+        assert unique == [f]
+        assert dup_map == {}
+
+    def test_two_unique_files_both_returned(self, tmp_path: Path) -> None:
+        a = tmp_path / "alpha.pdf"
+        b = tmp_path / "bravo.pdf"
+        a.write_bytes(b"content_a")
+        b.write_bytes(b"content_b")
+
+        unique, dup_map = deduplicate_files([a, b])
+
+        assert set(unique) == {a, b}
+        assert dup_map == {}
+
+    def test_two_identical_files_keeps_first_alphabetically(self, tmp_path: Path) -> None:
+        payload = b"identical bytes"
+        a = tmp_path / "alpha.pdf"
+        b = tmp_path / "bravo.pdf"
+        a.write_bytes(payload)
+        b.write_bytes(payload)
+        # collect_source_files sorts alphabetically, so pass in sorted order
+        files = sorted([a, b], key=lambda p: p.name)
+
+        unique, dup_map = deduplicate_files(files)
+
+        assert unique == [a]
+        assert dup_map == {"alpha.pdf": ["bravo.pdf"]}
+
+    def test_three_identical_files_keeps_first_lists_both_others(self, tmp_path: Path) -> None:
+        payload = b"same bytes"
+        a = tmp_path / "alpha.pdf"
+        b = tmp_path / "bravo.pdf"
+        c = tmp_path / "charlie.pdf"
+        for f in (a, b, c):
+            f.write_bytes(payload)
+        files = sorted([a, b, c], key=lambda p: p.name)
+
+        unique, dup_map = deduplicate_files(files)
+
+        assert unique == [a]
+        assert dup_map == {"alpha.pdf": ["bravo.pdf", "charlie.pdf"]}
+
+    def test_two_independent_duplicate_groups(self, tmp_path: Path) -> None:
+        """Two separate groups of duplicates are each handled independently."""
+        group1_a = tmp_path / "a1.pdf"
+        group1_b = tmp_path / "a2.pdf"
+        group2_a = tmp_path / "b1.pdf"
+        group2_b = tmp_path / "b2.pdf"
+        group1_a.write_bytes(b"group one")
+        group1_b.write_bytes(b"group one")
+        group2_a.write_bytes(b"group two")
+        group2_b.write_bytes(b"group two")
+        files = sorted([group1_a, group1_b, group2_a, group2_b], key=lambda p: p.name)
+
+        unique, dup_map = deduplicate_files(files)
+
+        assert set(unique) == {group1_a, group2_a}
+        assert dup_map == {
+            "a1.pdf": ["a2.pdf"],
+            "b1.pdf": ["b2.pdf"],
+        }
+
+    def test_all_unique_files_returns_empty_duplicate_map(self, tmp_path: Path) -> None:
+        files = []
+        for i in range(4):
+            f = tmp_path / f"doc_{i}.pdf"
+            f.write_bytes(f"unique content {i}".encode())
+            files.append(f)
+
+        unique, dup_map = deduplicate_files(files)
+
+        assert len(unique) == 4
+        assert dup_map == {}
+
+    def test_unique_files_preserve_input_order(self, tmp_path: Path) -> None:
+        """Unique files appear in the same order as in the input list."""
+        # Pass in reverse-alphabetical order to confirm output order matches input
+        c = tmp_path / "charlie.pdf"
+        b = tmp_path / "bravo.pdf"
+        a = tmp_path / "alpha.pdf"
+        c.write_bytes(b"c")
+        b.write_bytes(b"b")
+        a.write_bytes(b"a")
+
+        unique, _ = deduplicate_files([c, b, a])
+
+        assert [p.name for p in unique] == ["charlie.pdf", "bravo.pdf", "alpha.pdf"]
+
+    def test_duplicate_uses_content_hash_not_filename(self, tmp_path: Path) -> None:
+        """Files with different names but identical bytes are flagged as duplicates."""
+        payload = b"settlement statement bytes"
+        original = tmp_path / "settlement.pdf"
+        copy = tmp_path / "settlement_copy.pdf"
+        original.write_bytes(payload)
+        copy.write_bytes(payload)
+
+        unique, dup_map = deduplicate_files([original, copy])
+
+        assert len(unique) == 1
+        assert len(dup_map) == 1
+
+    def test_different_content_not_flagged_as_duplicate(self, tmp_path: Path) -> None:
+        """Files that differ by even one byte must not be grouped together."""
+        f1 = tmp_path / "doc_a.pdf"
+        f2 = tmp_path / "doc_b.pdf"
+        f1.write_bytes(b"content version 1")
+        f2.write_bytes(b"content version 2")
+
+        unique, dup_map = deduplicate_files([f1, f2])
+
+        assert len(unique) == 2
+        assert dup_map == {}

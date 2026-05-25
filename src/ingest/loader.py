@@ -123,6 +123,49 @@ def hash_document(source_path: Path) -> str:
     return hashlib.sha256(source_path.read_bytes()).hexdigest()
 
 
+def deduplicate_files(
+    files: list[Path],
+) -> tuple[list[Path], dict[str, list[str]]]:
+    """Group *files* by content hash and return one representative per group.
+
+    When multiple files share the same SHA-256 content hash the alphabetically
+    first filename is kept and the rest are considered duplicates.  The caller
+    (pipeline worker) should skip the duplicates and pass the returned map to
+    the report layer so users can see which filenames were excluded.
+
+    Preconditions:
+    - Every path in *files* must exist and have a supported extension.
+    - *files* is typically already sorted alphabetically by ``collect_source_files()``;
+      that ordering determines which file is treated as the canonical copy.
+
+    Returns:
+        A tuple of:
+        - ``unique_files``: one ``Path`` per unique content hash, in the same
+          relative order as the input.
+        - ``duplicate_map``: maps each kept filename to the list of duplicate
+          filenames that share its content hash.  Files with no duplicates are
+          not included in the map.
+    """
+    seen: dict[str, Path] = {}          # hash -> first (kept) path
+    duplicates: dict[str, list[str]] = {}  # kept name -> [duplicate names]
+
+    for path in files:
+        content_hash = hash_document(path)
+        if content_hash in seen:
+            kept_name = seen[content_hash].name
+            duplicates.setdefault(kept_name, []).append(path.name)
+            logger.info(
+                "Duplicate detected: '{}' is identical to '{}' — will be skipped",
+                path.name,
+                kept_name,
+            )
+        else:
+            seen[content_hash] = path
+
+    unique_files = list(seen.values())
+    return unique_files, duplicates
+
+
 def collect_source_files(folder: Path) -> list[Path]:
     """Return all supported document files in folder, sorted by name.
 

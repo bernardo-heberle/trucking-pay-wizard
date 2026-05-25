@@ -49,6 +49,7 @@ def build_excel(
     results: list[DocumentExtractionResult],
     output_path: Path,
     page_offsets: dict[str, int],
+    duplicate_map: dict[str, list[str]] | None = None,
 ) -> Path:
     """Build an Excel spreadsheet with one row per load.
 
@@ -69,6 +70,11 @@ def build_excel(
     of that document in the combined PDF.  Per-load PDF Page is computed from
     that base plus the load's own source page offset.
 
+    *duplicate_map* maps a kept filename to the list of byte-identical filenames
+    that were excluded from the pipeline.  When a document has duplicates, every
+    one of its load rows receives an additional note:
+    ``Exact duplicates excluded from analysis: <name1>, <name2>``.
+
     Returns *output_path* on success.
 
     Raises:
@@ -80,11 +86,20 @@ def build_excel(
 
     _write_header_row(ws, _HEADERS)
 
+    _dup_map: dict[str, list[str]] = duplicate_map or {}
+
     data_row = 2
     parseable_date_count = 0
     for result in results:
         doc_name = result.source_path.name
         doc_base_page = page_offsets.get(doc_name, "")
+
+        duplicate_names = _dup_map.get(doc_name, [])
+        duplicate_note = (
+            f"Exact duplicates excluded from analysis: {', '.join(duplicate_names)}"
+            if duplicate_names
+            else ""
+        )
 
         if result.extraction_error:
             # Failed extractions get a single row with the error in Notes.
@@ -92,7 +107,8 @@ def build_excel(
             ws.cell(row=data_row, column=_COL_PDF_PAGE, value=doc_base_page or "")
             cert_cell = ws.cell(row=data_row, column=_COL_CERTAINTY, value=Certainty.NOT_FOUND.value)
             cert_cell.fill = _FILL_RED
-            notes_cell = ws.cell(row=data_row, column=_COL_NOTES, value=result.extraction_error)
+            error_notes = "; ".join(filter(None, [duplicate_note, result.extraction_error]))
+            notes_cell = ws.cell(row=data_row, column=_COL_NOTES, value=error_notes)
             notes_cell.fill = _FILL_RED
             data_row += 1
             continue
@@ -114,7 +130,7 @@ def build_excel(
 
             # Date cell — write datetime on success; blank + red fill + Notes on failure.
             date_certainty: Certainty | None = None
-            notes_parts: list[str] = []
+            notes_parts: list[str] = [duplicate_note] if duplicate_note else []
             if load.date is not None:
                 date_raw = load.date.value
                 date_certainty = load.date.certainty

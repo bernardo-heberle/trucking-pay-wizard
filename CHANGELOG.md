@@ -5,6 +5,13 @@ Entries are written for staff using the app — not for developers.
 
 ---
 
+## [0.4.0] — 2026-05-25
+
+### Added
+- The tool now detects when the same document has been submitted more than once (identical file contents under different filenames). Only one copy is processed; the duplicates are skipped. The spreadsheet notes which filenames were excluded in the Notes column of the corresponding row.
+
+---
+
 ## [0.3.0] — 2026-05-25
 
 ### Added

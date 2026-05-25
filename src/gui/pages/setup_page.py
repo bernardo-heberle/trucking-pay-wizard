@@ -19,7 +19,7 @@ from PySide6.QtWidgets import (
 
 from src.gui._errors import friendly_message
 from src.gui._widgets import TruckProgressWidget, add_corner_sparkles
-from src.ingest import collect_source_files, hash_document
+from src.ingest import collect_source_files, deduplicate_files, hash_document
 
 
 def _extraction_version() -> str:
@@ -65,12 +65,23 @@ class _PipelineWorker(QObject):
             extractor = LlmExtractor.from_config()
             version = _extraction_version()
 
-            source_files = collect_source_files(self._folder)
-            n = len(source_files)
+            all_files = collect_source_files(self._folder)
+            source_files, duplicate_map = deduplicate_files(all_files)
+            n_total = len(all_files)
+            n_unique = len(source_files)
+            n_dupes = n_total - n_unique
+
+            if n_dupes:
+                self.progress.emit(
+                    f"Found {n_total} document{'s' if n_total != 1 else ''} "
+                    f"({n_dupes} exact duplicate{'s' if n_dupes != 1 else ''} will be skipped) — starting…"
+                )
+            else:
+                self.progress.emit(
+                    f"Found {n_unique} document{'s' if n_unique != 1 else ''} — starting…"
+                )
+            n = n_unique
             total = n + 1
-            self.progress.emit(
-                f"Found {n} document{'s' if n != 1 else ''} — starting…"
-            )
             self.progress_step.emit(0, total)
 
             ocr_client = None
@@ -110,7 +121,8 @@ class _PipelineWorker(QObject):
 
             self.progress.emit("Building your report…")
             pdf_path, excel_path = build_report(
-                results, self._folder / "results", prefix=self._prefix
+                results, self._folder / "results", prefix=self._prefix,
+                duplicate_map=duplicate_map,
             )
             self.progress_step.emit(total, total)
             self.finished.emit(str(pdf_path), str(excel_path))

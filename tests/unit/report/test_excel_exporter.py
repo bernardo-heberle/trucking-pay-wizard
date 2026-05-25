@@ -667,6 +667,140 @@ class TestPayNumericCells:
         assert pay_val == pytest.approx(1200.50)
 
 
+class TestDuplicateNotes:
+    """Duplicate filenames appear in the Notes column of the kept document's rows."""
+
+    def _load_ws(self, tmp_path: Path, results, offsets, dup_map=None):
+        out = tmp_path / "out.xlsx"
+        build_excel(results, out, offsets, duplicate_map=dup_map)
+        return openpyxl.load_workbook(str(out)).active
+
+    def test_no_duplicate_map_leaves_notes_cell_empty(
+        self, synthetic_source_pdf: Path, tmp_path: Path
+    ) -> None:
+        result = make_extraction_result(synthetic_source_pdf)
+        ws = self._load_ws(
+            tmp_path, [result], {synthetic_source_pdf.name: 1}, dup_map=None
+        )
+        header_map = {ws.cell(row=1, column=c).value: c for c in range(1, ws.max_column + 1)}
+        notes_val = ws.cell(row=2, column=header_map["Notes"]).value
+        assert notes_val is None or notes_val == ""
+
+    def test_empty_duplicate_map_leaves_notes_cell_empty(
+        self, synthetic_source_pdf: Path, tmp_path: Path
+    ) -> None:
+        result = make_extraction_result(synthetic_source_pdf)
+        ws = self._load_ws(
+            tmp_path, [result], {synthetic_source_pdf.name: 1}, dup_map={}
+        )
+        header_map = {ws.cell(row=1, column=c).value: c for c in range(1, ws.max_column + 1)}
+        notes_val = ws.cell(row=2, column=header_map["Notes"]).value
+        assert notes_val is None or notes_val == ""
+
+    def test_single_duplicate_appears_in_notes(
+        self, synthetic_source_pdf: Path, tmp_path: Path
+    ) -> None:
+        result = make_extraction_result(synthetic_source_pdf)
+        dup_map = {synthetic_source_pdf.name: ["settlement (1).pdf"]}
+        ws = self._load_ws(
+            tmp_path, [result], {synthetic_source_pdf.name: 1}, dup_map=dup_map
+        )
+        header_map = {ws.cell(row=1, column=c).value: c for c in range(1, ws.max_column + 1)}
+        notes_val = ws.cell(row=2, column=header_map["Notes"]).value
+
+        assert notes_val is not None
+        assert "Exact duplicates excluded from analysis:" in notes_val
+        assert "settlement (1).pdf" in notes_val
+
+    def test_multiple_duplicates_all_appear_in_notes(
+        self, synthetic_source_pdf: Path, tmp_path: Path
+    ) -> None:
+        result = make_extraction_result(synthetic_source_pdf)
+        dup_map = {
+            synthetic_source_pdf.name: ["copy_a.pdf", "copy_b.pdf", "copy_c.pdf"]
+        }
+        ws = self._load_ws(
+            tmp_path, [result], {synthetic_source_pdf.name: 1}, dup_map=dup_map
+        )
+        header_map = {ws.cell(row=1, column=c).value: c for c in range(1, ws.max_column + 1)}
+        notes_val = ws.cell(row=2, column=header_map["Notes"]).value
+
+        assert "copy_a.pdf" in notes_val
+        assert "copy_b.pdf" in notes_val
+        assert "copy_c.pdf" in notes_val
+
+    def test_duplicate_note_on_every_load_row_of_multi_load_document(
+        self, synthetic_source_pdf: Path, tmp_path: Path
+    ) -> None:
+        """Each load row of a document with duplicates must carry the note."""
+        from tests.unit.report.conftest import make_load
+
+        loads = [
+            make_load(synthetic_source_pdf, index=i, pay_value=f"{i * 100}.00")
+            for i in range(1, 4)
+        ]
+        result = make_extraction_result(synthetic_source_pdf, loads=loads)
+        dup_map = {synthetic_source_pdf.name: ["dup.pdf"]}
+        ws = self._load_ws(
+            tmp_path, [result], {synthetic_source_pdf.name: 1}, dup_map=dup_map
+        )
+        header_map = {ws.cell(row=1, column=c).value: c for c in range(1, ws.max_column + 1)}
+        notes_col = header_map["Notes"]
+
+        for data_row in range(2, 5):  # rows 2, 3, 4 are the three load rows
+            notes_val = ws.cell(row=data_row, column=notes_col).value
+            assert notes_val is not None, f"Row {data_row}: expected duplicate note, got None"
+            assert "dup.pdf" in notes_val, f"Row {data_row}: 'dup.pdf' not found in {notes_val!r}"
+
+    def test_duplicate_note_combined_with_unparseable_date(
+        self, synthetic_source_pdf: Path, tmp_path: Path
+    ) -> None:
+        """When both a duplicate note and an unparseable-date note apply, both appear."""
+        result = make_extraction_result(
+            synthetic_source_pdf,
+            fields=[
+                ExtractedField(
+                    name="pay", value="500.00",
+                    source_document=synthetic_source_pdf.name, source_page=1,
+                    certainty=Certainty.HIGH,
+                ),
+                ExtractedField(
+                    name="date", value="not a date",
+                    source_document=synthetic_source_pdf.name, source_page=1,
+                    certainty=Certainty.HIGH,
+                ),
+            ],
+        )
+        dup_map = {synthetic_source_pdf.name: ["copy.pdf"]}
+        ws = self._load_ws(
+            tmp_path, [result], {synthetic_source_pdf.name: 1}, dup_map=dup_map
+        )
+        header_map = {ws.cell(row=1, column=c).value: c for c in range(1, ws.max_column + 1)}
+        notes_val = ws.cell(row=2, column=header_map["Notes"]).value
+
+        assert notes_val is not None
+        assert "copy.pdf" in notes_val
+        assert 'Unparseable date: "not a date"' in notes_val
+
+    def test_unrelated_document_notes_cell_empty_when_dup_map_set(
+        self, synthetic_source_pdf: Path, synthetic_source_pdf_b: Path, tmp_path: Path
+    ) -> None:
+        """A document NOT in the dup_map must not have a duplicate note."""
+        r_a = make_extraction_result(synthetic_source_pdf, content_hash="h1")
+        r_b = make_extraction_result(synthetic_source_pdf_b, content_hash="h2", page_count=2)
+        # Only doc_a has a duplicate; doc_b does not.
+        dup_map = {synthetic_source_pdf.name: ["extra.pdf"]}
+        offsets = {synthetic_source_pdf.name: 1, synthetic_source_pdf_b.name: 2}
+        ws = self._load_ws(tmp_path, [r_a, r_b], offsets, dup_map=dup_map)
+        header_map = {ws.cell(row=1, column=c).value: c for c in range(1, ws.max_column + 1)}
+
+        # Row 2 = doc_a (has duplicate note)
+        assert "extra.pdf" in (ws.cell(row=2, column=header_map["Notes"]).value or "")
+        # Row 3 = doc_b (no duplicate note)
+        doc_b_notes = ws.cell(row=3, column=header_map["Notes"]).value
+        assert doc_b_notes is None or doc_b_notes == ""
+
+
 class TestDateFormatNormalization:
     """Dates from all newly-supported surface forms are written as datetime objects.
 

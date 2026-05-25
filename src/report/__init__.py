@@ -18,6 +18,7 @@ def build_report(
     results: list[DocumentExtractionResult],
     output_folder: Path,
     prefix: str = "",
+    duplicate_map: dict[str, list[str]] | None = None,
 ) -> tuple[Path, Path]:
     """Orchestrate report assembly: combined PDF then Excel spreadsheet.
 
@@ -29,6 +30,10 @@ def build_report(
     ``<prefix>_combined.pdf`` and ``<prefix>_extracted.xlsx``.
     When omitted the legacy names ``combined_report.pdf`` /
     ``extracted_data.xlsx`` are used.
+
+    *duplicate_map* maps a kept filename to the list of byte-identical filenames
+    that were excluded from processing.  When provided, ``build_excel`` adds a
+    note to each affected row so staff can see which files were skipped.
 
     Returns ``(pdf_path, excel_path)``.
 
@@ -50,7 +55,7 @@ def build_report(
     pdf_path, page_offsets = build_pdf(results, pdf_path)
 
     logger.info("Building Excel spreadsheet …")
-    build_excel(results, excel_path, page_offsets)
+    build_excel(results, excel_path, page_offsets, duplicate_map=duplicate_map)
 
     logger.info("Report assembly complete.")
     return pdf_path, excel_path

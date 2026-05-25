@@ -5,6 +5,17 @@ Entries are written for staff using the app — not for developers.
 
 ---
 
+## [0.3.0] — 2026-05-25
+
+### Added
+- Added support for remittance advice / advice-of-deposit documents (such as those issued by Weyerhaeuser) — the tool now correctly extracts the total payment amount and the processing date from these documents.
+
+### Fixed
+- Fixed an issue where documents listing multiple invoice line items could cause the tool to report an individual line-item amount instead of the overall total.
+- Fixed an issue where documents with no pickup date (such as remittance advices) caused the date field to be left blank — the tool now falls back to the earliest date visible in the document.
+
+---
+
 ## [0.2.0] — 2026-05-25
 
 ### Changed

@@ -15,7 +15,7 @@ _TOOL_SCHEMA: dict[str, Any] = {
     "name": _TOOL_NAME,
     "description": (
         "Extract financial fields from a trucking income document.  "
-        "Return one entry per distinct load with its pay and pickup date."
+        "Return one entry per distinct load with its pay and date."
     ),
     "input_schema": {
         "type": "object",
@@ -61,8 +61,8 @@ _TOOL_SCHEMA: dict[str, Any] = {
                         "date": {
                             "type": ["object", "null"],
                             "description": (
-                                "Pickup or earliest date for this load — the date the "
-                                "truck was or will be picked up."
+                                "The most relevant date for this load — pickup date if "
+                                "present, otherwise the earliest date on the document."
                             ),
                             "properties": {
                                 "value": {
@@ -99,15 +99,16 @@ _SYSTEM_PROMPT = """\
 You are a precise document data extractor for trucking income documents.
 
 Common formats include: CentralDispatch settlement sheets, V2 Dispatch load \
-summaries, Super Dispatch / BacklotCars carrier statements, and COD settlement \
-statements.
+summaries, Super Dispatch / BacklotCars carrier statements, COD settlement \
+statements, and remittance advice / advice-of-deposit payment notifications \
+(e.g. from shippers such as Weyerhaeuser).
 
 Your task:
 - Extract the **total payment to carrier** (the dollar amount the carrier \
-receives) and **pickup date** for each load on the document.
+receives) and **the most relevant date** for each load on the document.
 - Some documents list a single load; many settlement statements list several. \
-Return one entry per distinct load with its own pay and pickup date. If the \
-document has only one load, return a single-element array.
+Return one entry per distinct load with its own pay and date. If the document \
+has only one load, return a single-element array.
 
 Rules:
 - For pay: return the dollar amount exactly as it appears in the document, \
@@ -124,18 +125,30 @@ original document.
 - Do NOT fabricate values. Only extract what is explicitly stated.
 - Do NOT merge multiple loads into one — each distinct load is its own entry.
 
-Disambiguation:
+Disambiguation — Pay:
 - "Total payment to carrier" is the net amount the carrier receives after any \
 deductions. It is NOT the shipper price, broker fee, COD amount, deposit, or \
 insurance fee. If multiple dollar amounts appear, choose the one explicitly \
 labeled as carrier payment, "Company owes Carrier", or equivalent.
+- If the document shows invoice line items (individual invoice amounts) followed \
+by a labeled "TOTAL" row, return exactly ONE load using the TOTAL row amount as \
+the pay. The individual line items are components that sum to the TOTAL — they \
+are NOT separate loads. Never split a document into multiple loads solely \
+because it lists multiple invoice line items.
+- Some documents show negative line items (credits or adjustments) with a \
+trailing minus sign (e.g. "2,324.50-"). These are deductions already reflected \
+in the TOTAL; do not negate or adjust the TOTAL.
 - If the document shows a revision history with older amounts (e.g. $0.00 from \
 a previous revision), extract only the current/final amount — not the \
 historical one.
-- Prefer "Pickup Date" or "Pickup Exactly" when present. If no pickup date \
-exists, use the earliest load-specific date. Do NOT use the settlement date, \
-invoice date, or statement date — those cover the entire settlement, not \
-individual loads."""
+
+Disambiguation — Date:
+- Prefer "Pickup Date" or "Pickup Exactly" when present.
+- If no pickup date is present, use the earliest date visible anywhere in the \
+document (e.g. a date labeled "electronically processed on", "payment date", \
+"transaction date", "invoice date", or "statement date").
+- Do NOT return null for date when any date is visible in the document — always \
+fall back to the earliest date rather than leaving the field empty."""
 
 
 def _normalize_pay_value(raw: str) -> str | None:

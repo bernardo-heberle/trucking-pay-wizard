@@ -1049,6 +1049,49 @@ def _multi_load_duplicate_pay() -> dict:
     )
 
 
+def _multi_load_duplicate_date() -> dict:
+    """Two loads on the same pickup date with different pay values.
+
+    This is a regression fixture for the source_line + sequential-offset
+    disambiguation path: both loads share ``04/02/2024`` as their date string,
+    so a naive ``re.search`` would pin both date occurrences to the first line.
+    The resolver must use source_line context (primary) or sequential offset
+    (fallback) to assign each load its own distinct date line.
+
+    Expected:
+        loads[0]: date=04/02/2024, pay=$1,100.00
+        loads[1]: date=04/02/2024, pay=$1,300.00
+    """
+    return _build_fixture(
+        source_path="MultiLoad_DuplicateDate_April.pdf",
+        content_hash="44dd55ee66ff11aa22bb33cc44dd55ee66ff11aa22bb33cc44dd55ee66ff11aa",
+        pages={
+            1: [
+                "SETTLEMENT STATEMENT",
+                "Carrier: ACME Trucking LLC",
+                "Payee: Joe Doe",
+                "Period: 04/01/2024 - 04/30/2024",
+                "",
+                "Load 1",
+                "Pickup Date: 04/02/2024",
+                "Origin: Columbus, OH",
+                "Destination: Indianapolis, IN",
+                "Total Payment to Carrier: $1,100.00",
+                "",
+                "Load 2",
+                "Pickup Date: 04/02/2024",
+                "Origin: Dayton, OH",
+                "Destination: Louisville, KY",
+                "Total Payment to Carrier: $1,300.00",
+                "",
+                "Settlement Totals",
+                "Gross Pay: $2,400.00",
+                "Net Pay to Carrier: $2,400.00",
+            ],
+        },
+    )
+
+
 def _single_load_settlement() -> dict:
     """A single-load settlement to confirm the new schema handles N=1.
 
@@ -1092,6 +1135,7 @@ _ALL_FIXTURES = {
     # Multi-load fixtures (one Excel row per load downstream)
     "multi_load_settlement.json": _multi_load_settlement,
     "multi_load_duplicate_pay.json": _multi_load_duplicate_pay,
+    "multi_load_duplicate_date.json": _multi_load_duplicate_date,
     "single_load_settlement.json": _single_load_settlement,
 }
 

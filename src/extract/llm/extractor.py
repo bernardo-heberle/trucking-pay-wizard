@@ -183,12 +183,22 @@ class LlmExtractor:
     ) -> list[ExtractedLoad]:
         """Populate source_spans and source_page for each field in every load.
 
-        For each load, the date field is located first (it is the anchor).
-        The pay field match is then picked preferring the occurrence closest
-        to the date's character offset — ideally on the same OCR line —
-        rather than always using the global first match.  This prevents a pay
-        value that appears twice in the document from being paired with the
-        wrong load.
+        Disambiguation uses three layers in priority order:
+
+        1. **source_line context match** — if the LLM returned a source_line
+           for the field, search for that line in OCR text first.  A full line
+           is almost always unique even when the bare value repeats, so this is
+           the most reliable anchor.
+
+        2. **Sequential offset consumption** — loads are processed in order;
+           each load starts its search at or after the end of the previous
+           load's resolved region.  This prevents load N+1 from claiming an
+           occurrence already assigned to load N when source_line matching
+           fails.
+
+        3. **Closest-to-date-anchor fallback** — within a single load, pay is
+           resolved closest to the date's offset when multiple matches remain
+           after the earlier layers narrow the candidates.
 
         Fields whose value is not found in the OCR text are returned unchanged
         (no spans) — staff will need to locate and mark them manually in the
@@ -197,27 +207,86 @@ class LlmExtractor:
         full_text = ocr_result.full_text
         resolved_loads: list[ExtractedLoad] = []
 
+        # min_offset advances as each load is resolved so that later loads
+        # cannot claim occurrences already consumed by earlier ones.
+        min_offset: int = 0
+
         for load in loads:
             # Step 1: resolve the date field and record its character offset.
             date_offset: int | None = None
             resolved_date: ExtractedField | None = load.date
             if load.date is not None and load.date.value:
                 resolved_date, date_offset = self._resolve_field_with_offset(
-                    load.date, full_text, ocr_result, anchor_offset=None
+                    load.date,
+                    full_text,
+                    ocr_result,
+                    anchor_offset=None,
+                    min_offset=min_offset,
                 )
 
             # Step 2: resolve the pay field, anchored to the date's offset.
+            pay_offset: int | None = None
             resolved_pay: ExtractedField | None = load.pay
             if load.pay is not None and load.pay.value:
-                resolved_pay, _pay_offset = self._resolve_field_with_offset(
-                    load.pay, full_text, ocr_result, anchor_offset=date_offset
+                resolved_pay, pay_offset = self._resolve_field_with_offset(
+                    load.pay,
+                    full_text,
+                    ocr_result,
+                    anchor_offset=date_offset,
+                    min_offset=min_offset,
                 )
 
             resolved_loads.append(
                 dataclasses.replace(load, pay=resolved_pay, date=resolved_date)
             )
 
+            # Advance the sequential cursor past the furthest resolved offset
+            # so the next load's search starts beyond this load's region.
+            offsets = [o for o in (date_offset, pay_offset) if o is not None]
+            if offsets:
+                min_offset = max(offsets) + 1
+
         return resolved_loads
+
+    def _find_offset_via_source_line(
+        self,
+        field: ExtractedField,
+        full_text: str,
+        min_offset: int,
+    ) -> int | None:
+        """Return the character offset of *field.value* within its source line.
+
+        Searches for *field.source_line* in *full_text* (case-insensitive).
+        When found, locates *field.value* within that line match and returns
+        its absolute offset in *full_text*.  Returns ``None`` when either the
+        source line or the value within it cannot be found.
+
+        The search starts at *min_offset* to respect sequential ordering across
+        loads.
+        """
+        if not field.source_line:
+            return None
+
+        line_pattern = re.compile(re.escape(field.source_line), re.IGNORECASE)
+        line_match = line_pattern.search(full_text, min_offset)
+        if line_match is None:
+            logger.debug(
+                "source_line not found in OCR text for field '{}'; will fall back",
+                field.name,
+            )
+            return None
+
+        value_pattern = re.compile(re.escape(field.value), re.IGNORECASE)
+        value_match = value_pattern.search(full_text, line_match.start(), line_match.end())
+        if value_match is None:
+            logger.debug(
+                "Field '{}' value {!r} not found within matched source_line; will fall back",
+                field.name,
+                field.value,
+            )
+            return None
+
+        return value_match.start()
 
     def _resolve_field_with_offset(
         self,
@@ -225,18 +294,33 @@ class LlmExtractor:
         full_text: str,
         ocr_result: OcrResult,
         anchor_offset: int | None,
+        min_offset: int = 0,
     ) -> tuple[ExtractedField, int | None]:
         """Find *field.value* in *full_text* and attach OCR provenance.
 
-        When *anchor_offset* is given the match closest to that offset is
-        preferred over the first match.  Returns ``(resolved_field,
-        match_char_offset)``, where *match_char_offset* is the start position
-        of the best match in *full_text*, or ``None`` when no match is found.
-        """
-        pattern = re.compile(re.escape(field.value), re.IGNORECASE)
-        matches = list(pattern.finditer(full_text))
+        Resolution priority:
+        1. source_line context match — if the LLM provided a source_line, use
+           it to pin the exact occurrence (most reliable for duplicates).
+        2. Sequential floor — candidates before *min_offset* are excluded so
+           later loads cannot steal occurrences from earlier ones.
+        3. Closest-to-anchor — among remaining candidates, prefer the match
+           nearest *anchor_offset* (within-load pay-vs-date pairing).
+        4. First remaining match — when no anchor is set.
 
-        if not matches:
+        Returns ``(resolved_field, match_char_offset)`` where
+        *match_char_offset* is the start of the chosen match in *full_text*,
+        or ``None`` when no match is found.
+        """
+        # Layer 1: try to resolve via the LLM-provided source line.
+        context_offset = self._find_offset_via_source_line(field, full_text, min_offset)
+        if context_offset is not None:
+            return self._build_resolved_field(field, full_text, ocr_result, context_offset)
+
+        # Layer 2 + 3 + 4: fall back to regex over all occurrences.
+        pattern = re.compile(re.escape(field.value), re.IGNORECASE)
+        all_matches = list(pattern.finditer(full_text))
+
+        if not all_matches:
             logger.debug(
                 "Source location not found in OCR text for field '{}' value {!r}",
                 field.name,
@@ -244,13 +328,44 @@ class LlmExtractor:
             )
             return field, None
 
-        # Pick the match closest to the anchor offset (or the first if no anchor).
-        if anchor_offset is not None:
-            best_match = min(matches, key=lambda m: abs(m.start() - anchor_offset))
-        else:
-            best_match = matches[0]
+        # Apply the sequential floor (Layer 2).
+        candidates = [m for m in all_matches if m.start() >= min_offset]
+        if not candidates:
+            # All occurrences are before the cursor — fall back to the closest
+            # overall match rather than returning nothing.
+            logger.debug(
+                "All occurrences of field '{}' value {!r} are before min_offset {}; "
+                "using closest overall match",
+                field.name,
+                field.value,
+                min_offset,
+            )
+            candidates = all_matches
 
-        lines = ocr_result.find_lines_for_span(best_match.start(), best_match.end())
+        # Layer 3: prefer match closest to anchor_offset within candidates.
+        if anchor_offset is not None:
+            best_match = min(candidates, key=lambda m: abs(m.start() - anchor_offset))
+        else:
+            # Layer 4: first remaining candidate.
+            best_match = candidates[0]
+
+        return self._build_resolved_field(field, full_text, ocr_result, best_match.start())
+
+    def _build_resolved_field(
+        self,
+        field: ExtractedField,
+        full_text: str,
+        ocr_result: OcrResult,
+        match_start: int,
+    ) -> tuple[ExtractedField, int]:
+        """Attach OCR provenance to *field* at *match_start* in *full_text*.
+
+        Finds the end of the match for *field.value* beginning at *match_start*,
+        maps the span to OCR lines, and returns the resolved field together
+        with the match start offset.
+        """
+        match_end = match_start + len(field.value)
+        lines = ocr_result.find_lines_for_span(match_start, match_end)
         spans = [
             SourceSpan(page_number=line.page_number, bounding_box=line.bounding_box)
             for line in lines
@@ -263,9 +378,9 @@ class LlmExtractor:
             field.name,
             first_page,
             len(spans),
-            best_match.start(),
+            match_start,
         )
-        return resolved, best_match.start()
+        return resolved, match_start
 
     def _verify_pay_fields(
         self,

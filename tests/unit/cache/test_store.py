@@ -260,6 +260,99 @@ class TestRoundTrip:
         assert loaded.loads[0].date.certainty == Certainty.HIGH
 
 
+class TestSourceLineRoundTrip:
+    """Verify that source_line survives cache serialization and old caches deserialize cleanly."""
+
+    def test_source_line_roundtrips_correctly(self, tmp_path: Path) -> None:
+        """A field with source_line set must survive a full cache put/get cycle."""
+        source = tmp_path / "doc.pdf"
+        pay = ExtractedField(
+            name="pay",
+            value="750.00",
+            source_document=source.name,
+            source_page=1,
+            source_line="Total Payment to Carrier: $750.00",
+        )
+        result = DocumentExtractionResult(
+            source_path=source,
+            content_hash=_HASH_A,
+            page_count=1,
+            loads=[ExtractedLoad(index=1, pay=pay, date=None)],
+        )
+
+        cache_put(tmp_path, result)
+        loaded = cache_get(tmp_path, _HASH_A)
+
+        assert loaded is not None
+        assert loaded.loads[0].pay is not None
+        assert loaded.loads[0].pay.source_line == "Total Payment to Carrier: $750.00"
+
+    def test_source_line_none_roundtrips_correctly(self, tmp_path: Path) -> None:
+        """A field with source_line=None must also round-trip without error."""
+        source = tmp_path / "doc.pdf"
+        pay = ExtractedField(
+            name="pay",
+            value="500.00",
+            source_document=source.name,
+            source_page=1,
+            source_line=None,
+        )
+        result = DocumentExtractionResult(
+            source_path=source,
+            content_hash=_HASH_A,
+            page_count=1,
+            loads=[ExtractedLoad(index=1, pay=pay, date=None)],
+        )
+
+        cache_put(tmp_path, result)
+        loaded = cache_get(tmp_path, _HASH_A)
+
+        assert loaded is not None
+        assert loaded.loads[0].pay is not None
+        assert loaded.loads[0].pay.source_line is None
+
+    def test_old_cache_without_source_line_key_deserializes_to_none(self, tmp_path: Path) -> None:
+        """Cache entries written before source_line existed (no key in JSON) must
+        deserialize with source_line=None rather than raising KeyError."""
+        import json
+
+        cache_dir = tmp_path / ".cache"
+        cache_dir.mkdir()
+
+        old_format = {
+            "source_path": str(tmp_path / "old_doc.pdf"),
+            "content_hash": _HASH_A,
+            "page_count": 1,
+            "extraction_error": None,
+            "loads": [
+                {
+                    "index": 1,
+                    "pay": {
+                        "name": "pay",
+                        "value": "600.00",
+                        "source_document": "old_doc.pdf",
+                        "source_page": 1,
+                        "confidence": 0.95,
+                        "certainty": "High",
+                        "source_spans": [],
+                        # deliberately no "source_line" key
+                    },
+                    "date": None,
+                }
+            ],
+        }
+        (cache_dir / f"{_HASH_A}_llm.json").write_text(
+            json.dumps(old_format), encoding="utf-8"
+        )
+
+        loaded = cache_get(tmp_path, _HASH_A)
+
+        assert loaded is not None
+        assert loaded.loads[0].pay is not None
+        assert loaded.loads[0].pay.source_line is None
+        assert loaded.loads[0].pay.value == "600.00"
+
+
 class TestCacheVersioning:
 
     def test_filename_without_version(self) -> None:

@@ -321,6 +321,148 @@ class TestSingleLoadNewSchema:
 
 # ── Malformed / edge-case LLM responses ─────────────────────────────────────
 
+# ── Duplicate-date two-load document ─────────────────────────────────────────
+
+OCR_DUPLICATE_DATE = [
+    "SETTLEMENT STATEMENT",
+    "Carrier: ACME Trucking LLC",
+    "",
+    "Load 1",
+    "Pickup Date: 04/02/2024",
+    "Total Payment to Carrier: $1,100.00",
+    "",
+    "Load 2",
+    "Pickup Date: 04/02/2024",
+    "Total Payment to Carrier: $1,300.00",
+    "",
+    "Gross Pay: $2,400.00",
+]
+
+_DUPLICATE_DATE_WITH_SOURCE_LINE = {
+    "loads": [
+        {
+            "pay": {
+                "value": "$1,100.00",
+                "confidence": 0.95,
+                "source_line": "Total Payment to Carrier: $1,100.00",
+            },
+            "date": {
+                "value": "04/02/2024",
+                "confidence": 0.95,
+                "source_line": "Pickup Date: 04/02/2024",
+            },
+        },
+        {
+            "pay": {
+                "value": "$1,300.00",
+                "confidence": 0.95,
+                "source_line": "Total Payment to Carrier: $1,300.00",
+            },
+            "date": {
+                "value": "04/02/2024",
+                "confidence": 0.95,
+                "source_line": "Pickup Date: 04/02/2024",
+            },
+        },
+    ]
+}
+
+_DUPLICATE_DATE_NO_SOURCE_LINE = {
+    "loads": [
+        {
+            "pay": {"value": "$1,100.00", "confidence": 0.95},
+            "date": {"value": "04/02/2024", "confidence": 0.95},
+        },
+        {
+            "pay": {"value": "$1,300.00", "confidence": 0.95},
+            "date": {"value": "04/02/2024", "confidence": 0.95},
+        },
+    ]
+}
+
+
+@patch("src.extract.llm.extractor.time.sleep")
+class TestDuplicateDateExtraction:
+    """Two loads sharing the same date string — correct disambiguation required."""
+
+    def test_both_loads_returned(self, _sleep) -> None:
+        client = MagicMock()
+        client.messages.create.return_value = _mock_response(_DUPLICATE_DATE_WITH_SOURCE_LINE)
+        extractor = LlmExtractor(client=client, settings=_make_settings())
+        ocr = _build_ocr(OCR_DUPLICATE_DATE)
+
+        result = extractor.extract(ocr, page_count=1)
+
+        assert result.extraction_error is None
+        assert len(result.loads) == 2
+
+    def test_pay_values_differ_between_loads_with_source_line(self, _sleep) -> None:
+        """source_line disambiguates the two pay lines even though dates are identical."""
+        client = MagicMock()
+        client.messages.create.return_value = _mock_response(_DUPLICATE_DATE_WITH_SOURCE_LINE)
+        extractor = LlmExtractor(client=client, settings=_make_settings())
+        ocr = _build_ocr(OCR_DUPLICATE_DATE)
+
+        result = extractor.extract(ocr, page_count=1)
+
+        assert result.loads[0].pay.value == "$1,100.00"
+        assert result.loads[1].pay.value == "$1,300.00"
+
+    def test_date_spans_differ_between_loads_with_source_line(self, _sleep) -> None:
+        """When source_line is provided for the duplicate date string, each load must
+        highlight a different occurrence of the date in the OCR text."""
+        client = MagicMock()
+        client.messages.create.return_value = _mock_response(_DUPLICATE_DATE_WITH_SOURCE_LINE)
+        extractor = LlmExtractor(client=client, settings=_make_settings())
+        ocr = _build_ocr(OCR_DUPLICATE_DATE)
+
+        result = extractor.extract(ocr, page_count=1)
+
+        load1_date = result.loads[0].date
+        load2_date = result.loads[1].date
+        assert load1_date is not None and load2_date is not None
+        assert len(load1_date.source_spans) == 1
+        assert len(load2_date.source_spans) == 1
+        assert (
+            load1_date.source_spans[0].bounding_box.y
+            != load2_date.source_spans[0].bounding_box.y
+        ), "Both date loads resolved to the same bounding box — disambiguation failed"
+
+    def test_date_spans_differ_between_loads_without_source_line(self, _sleep) -> None:
+        """Sequential offset fallback must also disambiguate duplicate dates when
+        source_line is absent."""
+        client = MagicMock()
+        client.messages.create.return_value = _mock_response(_DUPLICATE_DATE_NO_SOURCE_LINE)
+        extractor = LlmExtractor(client=client, settings=_make_settings())
+        ocr = _build_ocr(OCR_DUPLICATE_DATE)
+
+        result = extractor.extract(ocr, page_count=1)
+
+        load1_date = result.loads[0].date
+        load2_date = result.loads[1].date
+        assert load1_date is not None and load2_date is not None
+        assert len(load1_date.source_spans) == 1
+        assert len(load2_date.source_spans) == 1
+        assert (
+            load1_date.source_spans[0].bounding_box.y
+            != load2_date.source_spans[0].bounding_box.y
+        ), "Sequential fallback did not disambiguate duplicate date occurrences"
+
+    def test_all_loads_high_certainty_with_duplicate_dates(self, _sleep) -> None:
+        client = MagicMock()
+        client.messages.create.return_value = _mock_response(_DUPLICATE_DATE_WITH_SOURCE_LINE)
+        extractor = LlmExtractor(client=client, settings=_make_settings())
+        ocr = _build_ocr(OCR_DUPLICATE_DATE)
+
+        result = extractor.extract(ocr, page_count=1)
+
+        for load in result.loads:
+            assert load.pay is not None
+            assert load.pay.certainty == Certainty.HIGH, (
+                f"Load {load.index} pay certainty expected HIGH, got {load.pay.certainty}"
+            )
+
+
 @patch("src.extract.llm.extractor.time.sleep")
 class TestMalformedLoadsResponses:
     """Verify graceful handling of malformed loads arrays from the LLM."""

@@ -98,6 +98,7 @@ def _serialize_field(field: ExtractedField | None) -> dict | None:
         "value": field.value,
         "source_document": field.source_document,
         "source_page": field.source_page,
+        "source_line": field.source_line,
         "confidence": field.confidence,
         "certainty": field.certainty.value if field.certainty is not None else None,
         "source_spans": [
@@ -124,6 +125,7 @@ def _deserialize_field(data: dict | None) -> ExtractedField | None:
         value=data["value"],
         source_document=data["source_document"],
         source_page=data["source_page"],
+        source_line=data.get("source_line"),
         confidence=data.get("confidence"),
         certainty=_CERTAINTY_LOOKUP.get(data.get("certainty", ""), None),
         source_spans=[

@@ -256,6 +256,75 @@ class TestParseToolResult:
         assert "load" in prompt
         assert "each load" in prompt or "one entry per" in prompt or "per load" in prompt
 
+    def test_source_line_populated_when_present(self) -> None:
+        """When source_line is in the tool response, it must be on the ExtractedField."""
+        loads = self.schema.parse_tool_result(
+            _wrap(
+                pay={"value": "750.00", "confidence": 0.95, "source_line": "Total Payment to Carrier: $750.00"},
+            ),
+            source_document="test.pdf",
+        )
+        assert loads[0].pay is not None
+        assert loads[0].pay.source_line == "Total Payment to Carrier: $750.00"
+
+    def test_source_line_is_none_when_absent(self) -> None:
+        """When source_line is omitted from the tool response, field.source_line must be None."""
+        loads = self.schema.parse_tool_result(
+            _wrap(pay={"value": "750.00", "confidence": 0.95}),
+            source_document="test.pdf",
+        )
+        assert loads[0].pay is not None
+        assert loads[0].pay.source_line is None
+
+    def test_source_line_is_none_for_plain_string_field(self) -> None:
+        """When a field degrades to a bare string (Haiku quirk), source_line must be None."""
+        loads = self.schema.parse_tool_result(
+            {"loads": [{"pay": "1850.00", "date": None}]},
+            source_document="test.pdf",
+        )
+        assert loads[0].pay is not None
+        assert loads[0].pay.source_line is None
+
+    def test_source_line_for_date_field_populated_when_present(self) -> None:
+        loads = self.schema.parse_tool_result(
+            _wrap(date={"value": "03/12/2024", "confidence": 0.95, "source_line": "Pickup Date: 03/12/2024"}),
+            source_document="test.pdf",
+        )
+        assert loads[0].date is not None
+        assert loads[0].date.source_line == "Pickup Date: 03/12/2024"
+
+    def test_source_line_empty_string_normalised_to_none(self) -> None:
+        """An empty string for source_line should be treated the same as absent (None)."""
+        loads = self.schema.parse_tool_result(
+            _wrap(pay={"value": "750.00", "confidence": 0.95, "source_line": ""}),
+            source_document="test.pdf",
+        )
+        assert loads[0].pay is not None
+        assert loads[0].pay.source_line is None
+
+    def test_tool_schema_has_source_line_on_pay(self) -> None:
+        """The tool schema must declare source_line as a property of the pay object."""
+        defn = self.schema.tool_definition()
+        pay_props = (
+            defn["input_schema"]["properties"]["loads"]["items"]
+            ["properties"]["pay"]["properties"]
+        )
+        assert "source_line" in pay_props
+
+    def test_tool_schema_has_source_line_on_date(self) -> None:
+        """The tool schema must declare source_line as a property of the date object."""
+        defn = self.schema.tool_definition()
+        date_props = (
+            defn["input_schema"]["properties"]["loads"]["items"]
+            ["properties"]["date"]["properties"]
+        )
+        assert "source_line" in date_props
+
+    def test_prompt_instructs_source_line(self) -> None:
+        """The system prompt must ask the model to return source_line."""
+        prompt = self.schema.system_prompt()
+        assert "source_line" in prompt
+
 
 class TestParseMultiLoadToolResult:
     """The schema returns one ExtractedLoad per element of the loads array."""

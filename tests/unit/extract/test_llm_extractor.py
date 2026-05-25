@@ -185,6 +185,195 @@ class TestResolveSourceLocations:
         assert bbox.height == pytest.approx(0.25)
 
 
+class TestSourceLineDisambiguation:
+    """Unit tests for source_line context-first disambiguation in _resolve_source_locations."""
+
+    def _extractor_with_response(self, tool_input: dict) -> LlmExtractor:
+        settings = _make_settings()
+        client = MagicMock()
+        client.messages.create.return_value = _mock_tool_response(
+            "extract_income_fields", tool_input
+        )
+        return LlmExtractor(client=client, settings=settings)
+
+    def test_source_line_picks_second_occurrence_of_duplicate_value(self) -> None:
+        """When a value appears twice and source_line identifies the second line,
+        the highlight must target the second occurrence, not the first."""
+        ocr = _make_multi_line_ocr([
+            ("Total Payment to Carrier: $1,200.00", 1),
+            ("Load 2 of 2", 1),
+            ("Total Payment to Carrier: $1,200.00", 1),
+        ])
+        tool_input = {
+            "loads": [
+                {
+                    "pay": {
+                        "value": "$1,200.00",
+                        "confidence": 0.95,
+                        "source_line": "Total Payment to Carrier: $1,200.00",
+                    },
+                    "date": None,
+                },
+                {
+                    "pay": {
+                        "value": "$1,200.00",
+                        "confidence": 0.95,
+                        "source_line": "Total Payment to Carrier: $1,200.00",
+                    },
+                    "date": None,
+                },
+            ]
+        }
+        extractor = self._extractor_with_response(tool_input)
+        result = extractor.extract(ocr, page_count=1)
+
+        load1_pay = result.loads[0].pay
+        load2_pay = result.loads[1].pay
+        assert load1_pay is not None
+        assert load2_pay is not None
+        assert len(load1_pay.source_spans) == 1
+        assert len(load2_pay.source_spans) == 1
+        # The two loads must resolve to different bounding boxes (different y positions).
+        assert load1_pay.source_spans[0].bounding_box.y != load2_pay.source_spans[0].bounding_box.y
+
+    def test_source_line_match_finds_correct_page(self) -> None:
+        """When the source_line is unique (appears only on page 2), source_page must be 2,
+        even though the value alone also appears on page 1."""
+        ocr = _make_multi_line_ocr([
+            ("Summary Pay: $750.00", 1),
+            ("Pickup Date: 03/01/2024 Load Detail Pay: $750.00", 2),
+        ])
+        tool_input = {
+            "loads": [
+                {
+                    "pay": {
+                        "value": "$750.00",
+                        "confidence": 0.95,
+                        "source_line": "Pickup Date: 03/01/2024 Load Detail Pay: $750.00",
+                    },
+                    "date": {
+                        "value": "03/01/2024",
+                        "confidence": 0.95,
+                        "source_line": "Pickup Date: 03/01/2024 Load Detail Pay: $750.00",
+                    },
+                }
+            ]
+        }
+        extractor = self._extractor_with_response(tool_input)
+        result = extractor.extract(ocr, page_count=2)
+
+        pay = result.loads[0].pay
+        assert pay is not None
+        # source_line appears only on page 2, so the resolver must pick page 2.
+        assert pay.source_page == 2
+
+    def test_fallback_to_sequential_when_source_line_absent(self) -> None:
+        """Without source_line, sequential offset prevents load 2 from
+        claiming the same occurrence as load 1."""
+        ocr = _make_multi_line_ocr([
+            ("Pickup: 04/02/2024", 1),
+            ("Pay: $1,200.00", 1),
+            ("Pickup: 04/16/2024", 1),
+            ("Pay: $1,200.00", 1),
+        ])
+        tool_input = {
+            "loads": [
+                {
+                    "pay": {"value": "$1,200.00", "confidence": 0.95},
+                    "date": {"value": "04/02/2024", "confidence": 0.95},
+                },
+                {
+                    "pay": {"value": "$1,200.00", "confidence": 0.95},
+                    "date": {"value": "04/16/2024", "confidence": 0.95},
+                },
+            ]
+        }
+        extractor = self._extractor_with_response(tool_input)
+        result = extractor.extract(ocr, page_count=1)
+
+        load1_pay = result.loads[0].pay
+        load2_pay = result.loads[1].pay
+        assert load1_pay is not None and load2_pay is not None
+        assert len(load1_pay.source_spans) == 1
+        assert len(load2_pay.source_spans) == 1
+        # The two loads must point to different lines (different y coordinates).
+        assert load1_pay.source_spans[0].bounding_box.y != load2_pay.source_spans[0].bounding_box.y
+
+    def test_fallback_to_sequential_for_duplicate_dates(self) -> None:
+        """Two loads sharing the same date string must each get their own occurrence
+        via sequential offset consumption (no source_line)."""
+        ocr = _make_multi_line_ocr([
+            ("Pickup: 04/02/2024", 1),
+            ("Pay: $1,100.00", 1),
+            ("Pickup: 04/02/2024", 1),
+            ("Pay: $1,300.00", 1),
+        ])
+        tool_input = {
+            "loads": [
+                {
+                    "pay": {"value": "$1,100.00", "confidence": 0.95},
+                    "date": {"value": "04/02/2024", "confidence": 0.95},
+                },
+                {
+                    "pay": {"value": "$1,300.00", "confidence": 0.95},
+                    "date": {"value": "04/02/2024", "confidence": 0.95},
+                },
+            ]
+        }
+        extractor = self._extractor_with_response(tool_input)
+        result = extractor.extract(ocr, page_count=1)
+
+        load1_date = result.loads[0].date
+        load2_date = result.loads[1].date
+        assert load1_date is not None and load2_date is not None
+        assert len(load1_date.source_spans) == 1
+        assert len(load2_date.source_spans) == 1
+        assert load1_date.source_spans[0].bounding_box.y != load2_date.source_spans[0].bounding_box.y
+
+    def test_source_line_not_found_falls_back_gracefully(self) -> None:
+        """When source_line does not match any OCR text, the resolver must fall back
+        to regex matching and still return spans rather than raising."""
+        ocr = _make_multi_line_ocr([
+            ("Pay: $750.00", 1),
+        ])
+        tool_input = {
+            "loads": [
+                {
+                    "pay": {
+                        "value": "$750.00",
+                        "confidence": 0.95,
+                        "source_line": "Completely different text that is not in the OCR",
+                    },
+                    "date": None,
+                }
+            ]
+        }
+        extractor = self._extractor_with_response(tool_input)
+        result = extractor.extract(ocr, page_count=1)
+
+        pay = result.loads[0].pay
+        assert pay is not None
+        # Fallback must still find $750.00 in the OCR text.
+        assert len(pay.source_spans) == 1
+
+    def test_source_line_stored_on_field_after_extraction(self) -> None:
+        """The source_line from the LLM must be preserved on ExtractedField
+        even after resolution (it is diagnostic context, not consumed away)."""
+        ocr = _make_ocr_result("Total Payment to Carrier: $750.00")
+        tool_input = _loads_input(
+            pay={"value": "$750.00", "confidence": 0.95, "source_line": "Total Payment to Carrier: $750.00"}
+        )
+        settings = _make_settings()
+        client = MagicMock()
+        client.messages.create.return_value = _mock_tool_response("extract_income_fields", tool_input)
+        extractor = LlmExtractor(client=client, settings=settings)
+        result = extractor.extract(ocr, page_count=1)
+
+        pay = result.loads[0].pay
+        assert pay is not None
+        assert pay.source_line == "Total Payment to Carrier: $750.00"
+
+
 class TestLlmExtractorExtract:
 
     def test_returns_document_extraction_result(self) -> None:

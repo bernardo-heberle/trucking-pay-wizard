@@ -138,6 +138,24 @@ def sparse_tms_print_ocr() -> OcrResult:
     return load_ocr_fixture("sparse_tms_print_ocr.json")
 
 
+@pytest.fixture(scope="session")
+def multi_load_settlement_ocr() -> OcrResult:
+    """Three-load settlement — distinct pay ($1,250/$2,400/$875.50) and dates per load."""
+    return load_ocr_fixture("multi_load_settlement.json")
+
+
+@pytest.fixture(scope="session")
+def multi_load_duplicate_pay_ocr() -> OcrResult:
+    """Two loads sharing pay $1,200.00 on different dates (04/02 and 04/16)."""
+    return load_ocr_fixture("multi_load_duplicate_pay.json")
+
+
+@pytest.fixture(scope="session")
+def multi_load_duplicate_date_ocr() -> OcrResult:
+    """Two loads sharing date 04/02/2024 with different pay ($1,100 and $1,300)."""
+    return load_ocr_fixture("multi_load_duplicate_date.json")
+
+
 # ---------------------------------------------------------------------------
 # PDF builder fixtures (function-scoped so each test gets its own tmp dir)
 # ---------------------------------------------------------------------------

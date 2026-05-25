@@ -246,3 +246,212 @@ class TestMultiVehicleExtraction:
         date = result.loads[0].date
         assert date is not None
         assert date_variant in date.value
+
+
+# ---------------------------------------------------------------------------
+# Multi-load fixtures — test that the LLM returns multiple loads and that
+# source_line context correctly disambiguates duplicate values
+# ---------------------------------------------------------------------------
+
+
+class TestMultiLoadSettlementExtraction:
+    """Three-load settlement — distinct pay and date per load.
+
+    Validates that the model returns all three loads, pins financial values,
+    and that source_line is populated and source_spans are resolved for each
+    load (confirming the highlighting pipeline has enough data to work).
+    """
+
+    def test_returns_three_loads(self, anthropic_extractor) -> None:
+        ocr = load_ocr_fixture("multi_load_settlement.json")
+        result = anthropic_extractor.extract(ocr, page_count=1)
+
+        assert result.extraction_error is None
+        assert len(result.loads) == 3, (
+            f"Expected 3 loads, got {len(result.loads)}: "
+            f"{[l.pay.value if l.pay else None for l in result.loads]}"
+        )
+
+    def test_pay_values_pinned_per_load(self, anthropic_extractor) -> None:
+        ocr = load_ocr_fixture("multi_load_settlement.json")
+        result = anthropic_extractor.extract(ocr, page_count=1)
+
+        assert len(result.loads) == 3
+        assert _normalize_pay_value(result.loads[0].pay.value) == "1250.00", (
+            f"Load 1 raw pay: {result.loads[0].pay.value!r}"
+        )
+        assert _normalize_pay_value(result.loads[1].pay.value) == "2400.00", (
+            f"Load 2 raw pay: {result.loads[1].pay.value!r}"
+        )
+        assert _normalize_pay_value(result.loads[2].pay.value) == "875.50", (
+            f"Load 3 raw pay: {result.loads[2].pay.value!r}"
+        )
+
+    def test_date_values_pinned_per_load(self, anthropic_extractor) -> None:
+        ocr = load_ocr_fixture("multi_load_settlement.json")
+        result = anthropic_extractor.extract(ocr, page_count=1)
+
+        assert len(result.loads) == 3
+        assert "03/05/2024" in result.loads[0].date.value
+        assert "03/12/2024" in result.loads[1].date.value
+        assert "03/19/2024" in result.loads[2].date.value
+
+    def test_all_loads_high_certainty(self, anthropic_extractor) -> None:
+        ocr = load_ocr_fixture("multi_load_settlement.json")
+        result = anthropic_extractor.extract(ocr, page_count=1)
+
+        assert len(result.loads) == 3
+        for load in result.loads:
+            assert load.pay is not None
+            assert load.pay.certainty == Certainty.HIGH, (
+                f"Load {load.index} pay certainty: {load.pay.certainty}"
+            )
+
+    def test_source_spans_resolved_for_all_loads(self, anthropic_extractor) -> None:
+        """Each load's pay and date must have source_spans — the PDF highlighter needs them."""
+        ocr = load_ocr_fixture("multi_load_settlement.json")
+        result = anthropic_extractor.extract(ocr, page_count=1)
+
+        assert len(result.loads) == 3
+        for load in result.loads:
+            assert load.pay is not None
+            assert len(load.pay.source_spans) >= 1, (
+                f"Load {load.index} pay has no source_spans"
+            )
+            assert load.date is not None
+            assert len(load.date.source_spans) >= 1, (
+                f"Load {load.index} date has no source_spans"
+            )
+
+    def test_source_line_populated_by_llm(self, anthropic_extractor) -> None:
+        """The LLM must return source_line for each field so disambiguation can work."""
+        ocr = load_ocr_fixture("multi_load_settlement.json")
+        result = anthropic_extractor.extract(ocr, page_count=1)
+
+        assert len(result.loads) == 3
+        for load in result.loads:
+            assert load.pay is not None
+            assert load.pay.source_line is not None, (
+                f"Load {load.index} pay.source_line is None — LLM did not return it"
+            )
+            assert load.date is not None
+            assert load.date.source_line is not None, (
+                f"Load {load.index} date.source_line is None — LLM did not return it"
+            )
+
+
+class TestDuplicatePayLiveExtraction:
+    """Two loads sharing pay $1,200.00 on different dates.
+
+    The critical property: each load's pay must resolve to a *different*
+    bounding box in the OCR text — not both pointing at the first occurrence.
+    This validates the full disambiguation pipeline end-to-end with real LLM
+    source_line output.
+    """
+
+    def test_returns_two_loads(self, anthropic_extractor) -> None:
+        ocr = load_ocr_fixture("multi_load_duplicate_pay.json")
+        result = anthropic_extractor.extract(ocr, page_count=1)
+
+        assert result.extraction_error is None
+        assert len(result.loads) == 2
+
+    def test_both_pay_values_normalize_to_1200(self, anthropic_extractor) -> None:
+        ocr = load_ocr_fixture("multi_load_duplicate_pay.json")
+        result = anthropic_extractor.extract(ocr, page_count=1)
+
+        assert len(result.loads) == 2
+        assert _normalize_pay_value(result.loads[0].pay.value) == "1200.00"
+        assert _normalize_pay_value(result.loads[1].pay.value) == "1200.00"
+
+    def test_dates_differ_between_loads(self, anthropic_extractor) -> None:
+        ocr = load_ocr_fixture("multi_load_duplicate_pay.json")
+        result = anthropic_extractor.extract(ocr, page_count=1)
+
+        assert len(result.loads) == 2
+        assert "04/02/2024" in result.loads[0].date.value
+        assert "04/16/2024" in result.loads[1].date.value
+
+    def test_pay_spans_resolve_to_different_locations(self, anthropic_extractor) -> None:
+        """The two identical pay values must each resolve to a distinct OCR line.
+
+        If both loads point to the same bounding box, disambiguation failed —
+        one load's highlight would cover the wrong line in the PDF report.
+        """
+        ocr = load_ocr_fixture("multi_load_duplicate_pay.json")
+        result = anthropic_extractor.extract(ocr, page_count=1)
+
+        assert len(result.loads) == 2
+        load1_pay = result.loads[0].pay
+        load2_pay = result.loads[1].pay
+        assert load1_pay is not None and len(load1_pay.source_spans) >= 1, (
+            "Load 1 pay has no source_spans"
+        )
+        assert load2_pay is not None and len(load2_pay.source_spans) >= 1, (
+            "Load 2 pay has no source_spans"
+        )
+        assert load1_pay.source_spans[0].bounding_box.y != load2_pay.source_spans[0].bounding_box.y, (
+            f"Both pay loads resolved to the same y={load1_pay.source_spans[0].bounding_box.y} — "
+            "disambiguation failed"
+        )
+
+
+class TestDuplicateDateLiveExtraction:
+    """Two loads sharing the same pickup date (04/02/2024) with different pays.
+
+    The critical property: each load's date must resolve to a *different*
+    bounding box — not both pinned to the first occurrence of 04/02/2024.
+    This is the hardest disambiguation case: the anchor field itself is
+    duplicated, so source_line or sequential offset must carry the load.
+    """
+
+    def test_returns_two_loads(self, anthropic_extractor) -> None:
+        ocr = load_ocr_fixture("multi_load_duplicate_date.json")
+        result = anthropic_extractor.extract(ocr, page_count=1)
+
+        assert result.extraction_error is None
+        assert len(result.loads) == 2
+
+    def test_pay_values_differ_between_loads(self, anthropic_extractor) -> None:
+        ocr = load_ocr_fixture("multi_load_duplicate_date.json")
+        result = anthropic_extractor.extract(ocr, page_count=1)
+
+        assert len(result.loads) == 2
+        assert _normalize_pay_value(result.loads[0].pay.value) == "1100.00", (
+            f"Load 1 raw pay: {result.loads[0].pay.value!r}"
+        )
+        assert _normalize_pay_value(result.loads[1].pay.value) == "1300.00", (
+            f"Load 2 raw pay: {result.loads[1].pay.value!r}"
+        )
+
+    def test_both_dates_are_the_duplicate_value(self, anthropic_extractor) -> None:
+        ocr = load_ocr_fixture("multi_load_duplicate_date.json")
+        result = anthropic_extractor.extract(ocr, page_count=1)
+
+        assert len(result.loads) == 2
+        assert "04/02/2024" in result.loads[0].date.value
+        assert "04/02/2024" in result.loads[1].date.value
+
+    def test_date_spans_resolve_to_different_locations(self, anthropic_extractor) -> None:
+        """The duplicate date string must resolve to two distinct OCR lines.
+
+        If both loads point to the same bounding box, the second load's date
+        highlight would cover the first load's date line — a clear error that
+        staff would notice in the PDF report.
+        """
+        ocr = load_ocr_fixture("multi_load_duplicate_date.json")
+        result = anthropic_extractor.extract(ocr, page_count=1)
+
+        assert len(result.loads) == 2
+        load1_date = result.loads[0].date
+        load2_date = result.loads[1].date
+        assert load1_date is not None and len(load1_date.source_spans) >= 1, (
+            "Load 1 date has no source_spans"
+        )
+        assert load2_date is not None and len(load2_date.source_spans) >= 1, (
+            "Load 2 date has no source_spans"
+        )
+        assert load1_date.source_spans[0].bounding_box.y != load2_date.source_spans[0].bounding_box.y, (
+            f"Both date loads resolved to the same y={load1_date.source_spans[0].bounding_box.y} — "
+            "duplicate-date disambiguation failed"
+        )

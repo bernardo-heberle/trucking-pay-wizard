@@ -50,6 +50,14 @@ _TOOL_SCHEMA: dict[str, Any] = {
                                     "type": "number",
                                     "description": "Confidence 0.0-1.0 that this value is correct.",
                                 },
+                                "source_line": {
+                                    "type": "string",
+                                    "description": (
+                                        "The complete line of text from the document that "
+                                        "contains this value. Copy it exactly as it appears "
+                                        "— do not paraphrase, truncate, or rearrange."
+                                    ),
+                                },
                             },
                             "required": ["value", "confidence"],
                         },
@@ -70,6 +78,14 @@ _TOOL_SCHEMA: dict[str, Any] = {
                                 "confidence": {
                                     "type": "number",
                                     "description": "Confidence 0.0-1.0 that this value is correct.",
+                                },
+                                "source_line": {
+                                    "type": "string",
+                                    "description": (
+                                        "The complete line of text from the document that "
+                                        "contains this value. Copy it exactly as it appears "
+                                        "— do not paraphrase, truncate, or rearrange."
+                                    ),
                                 },
                             },
                             "required": ["value", "confidence"],
@@ -98,6 +114,10 @@ Rules:
 including any currency symbols, commas, or formatting (e.g. '$1,500.00', \
 '$820.00', '1200.50').
 - For date: return the date string exactly as it appears in the document text.
+- For each field, also return source_line: the complete line of text from the \
+document that contains the value. Copy it exactly as it appears — do not \
+paraphrase, truncate, or rearrange. This is used to locate the value in the \
+original document.
 - If a field is clearly present, return it with high confidence (>= 0.9).
 - If you are uncertain or the value is ambiguous, lower your confidence score.
 - If a field is not present for a load, return null for that field.
@@ -139,6 +159,7 @@ def _parse_field_entry(
         raw_value = entry.get("value", "") or ""
         confidence = float(entry.get("confidence", 0.0))
         certainty = _confidence_to_certainty(confidence)
+        source_line = entry.get("source_line") or None
     elif isinstance(entry, str):
         # Haiku occasionally collapses the field to a plain string instead
         # of the required {"value": "...", "confidence": ...} object.
@@ -148,6 +169,7 @@ def _parse_field_entry(
         raw_value = entry
         confidence = 0.0
         certainty = Certainty.REVIEW
+        source_line = None
     else:
         raise MalformedToolResponse(
             f"Field '{field_name}' has unexpected type {type(entry).__name__!r} "
@@ -171,6 +193,7 @@ def _parse_field_entry(
         value=raw_value,
         source_document=source_document,
         source_page=None,
+        source_line=source_line,
         confidence=confidence,
         certainty=certainty,
     )

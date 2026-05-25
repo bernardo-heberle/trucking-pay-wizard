@@ -41,6 +41,7 @@ class ExtractedField:
     source_document: str
     source_page: int | None
     source_spans: list[SourceSpan] = field(default_factory=list)
+    source_line: str | None = None
     confidence: float | None = None
     certainty: Certainty | None = None
 

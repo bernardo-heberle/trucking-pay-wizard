@@ -450,7 +450,8 @@ class LlmExtractor:
 
         response = self._client.messages.create(
             model=self._settings.llm_model,
-            max_tokens=1024,
+            max_tokens=2048,
+            temperature=self._settings.llm_temperature,
             system=self._schema.system_prompt(),
             tools=[tool_def],
             tool_choice={"type": "tool", "name": tool_name},

@@ -22,6 +22,7 @@ def _make_settings(**overrides) -> Settings:
     defaults = dict(
         anthropic_api_key="sk-test-key",
         llm_model="claude-3-5-haiku-20241022",
+        llm_temperature=0.0,
         confidence_high_threshold=0.9,
         confidence_review_threshold=0.6,
     )
@@ -487,6 +488,32 @@ class TestLlmExtractorExtract:
 
         call_args = client.messages.create.call_args
         assert call_args.kwargs["model"] == "claude-3-opus-20240229"
+
+    def test_temperature_zero_is_passed_to_api(self) -> None:
+        settings = _make_settings(llm_temperature=0.0)
+        client = MagicMock()
+        client.messages.create.return_value = _mock_tool_response(
+            "extract_income_fields",
+            _loads_input(pay={"value": "750.00", "confidence": 0.95}),
+        )
+        extractor = LlmExtractor(client=client, settings=settings)
+        extractor.extract(_make_ocr_result(), page_count=1)
+
+        call_args = client.messages.create.call_args
+        assert call_args.kwargs["temperature"] == 0.0
+
+    def test_max_tokens_is_2048(self) -> None:
+        settings = _make_settings()
+        client = MagicMock()
+        client.messages.create.return_value = _mock_tool_response(
+            "extract_income_fields",
+            _loads_input(pay={"value": "750.00", "confidence": 0.95}),
+        )
+        extractor = LlmExtractor(client=client, settings=settings)
+        extractor.extract(_make_ocr_result(), page_count=1)
+
+        call_args = client.messages.create.call_args
+        assert call_args.kwargs["max_tokens"] == 2048
 
 
 class TestLlmExtractorFromConfig:

@@ -15,6 +15,7 @@ class Settings:
 
     anthropic_api_key: str
     llm_model: str
+    llm_temperature: float
 
     # Confidence thresholds for mapping LLM scores to Certainty enum
     confidence_high_threshold: float
@@ -22,6 +23,7 @@ class Settings:
 
 
 _DEFAULT_MODEL = "claude-sonnet-4-5"
+_DEFAULT_TEMPERATURE = 0.0
 _DEFAULT_HIGH_THRESHOLD = 0.9
 _DEFAULT_REVIEW_THRESHOLD = 0.6
 
@@ -47,6 +49,7 @@ def load_settings() -> Settings:
 
     load_dotenv()
     llm_model = (os.getenv("LLM_MODEL") or _DEFAULT_MODEL).strip()
+    llm_temperature = float(os.getenv("LLM_TEMPERATURE") or _DEFAULT_TEMPERATURE)
 
     high_t = float(os.getenv("CONFIDENCE_HIGH_THRESHOLD") or _DEFAULT_HIGH_THRESHOLD)
     review_t = float(os.getenv("CONFIDENCE_REVIEW_THRESHOLD") or _DEFAULT_REVIEW_THRESHOLD)
@@ -54,6 +57,7 @@ def load_settings() -> Settings:
     return Settings(
         anthropic_api_key=api_key,
         llm_model=llm_model,
+        llm_temperature=llm_temperature,
         confidence_high_threshold=high_t,
         confidence_review_threshold=review_t,
     )

@@ -40,10 +40,8 @@ _TOOL_SCHEMA: dict[str, Any] = {
                                 "value": {
                                     "type": "string",
                                     "description": (
-                                        "The dollar amount exactly as it appears in the "
-                                        "document, including any currency symbols, commas, "
-                                        "or formatting (e.g. '$1,500.00', '$820.00', "
-                                        "'1 200,50')."
+                                        "Dollar amount as it appears in the document "
+                                        "(e.g. '$1,500.00', '$820.00')."
                                     ),
                                 },
                                 "confidence": {
@@ -53,13 +51,12 @@ _TOOL_SCHEMA: dict[str, Any] = {
                                 "source_line": {
                                     "type": "string",
                                     "description": (
-                                        "The complete line of text from the document that "
-                                        "contains this value. Copy it exactly as it appears "
-                                        "— do not paraphrase, truncate, or rearrange."
+                                        "Complete line of text containing this value, "
+                                        "copied verbatim from the document."
                                     ),
                                 },
                             },
-                            "required": ["value", "confidence"],
+                            "required": ["value", "confidence", "source_line"],
                         },
                         "date": {
                             "type": ["object", "null"],
@@ -71,7 +68,7 @@ _TOOL_SCHEMA: dict[str, Any] = {
                                 "value": {
                                     "type": "string",
                                     "description": (
-                                        "Raw date string as it appears in the document "
+                                        "Date string as it appears in the document "
                                         "(e.g. '03/11/2024', 'March 13, 2024')."
                                     ),
                                 },
@@ -82,13 +79,12 @@ _TOOL_SCHEMA: dict[str, Any] = {
                                 "source_line": {
                                     "type": "string",
                                     "description": (
-                                        "The complete line of text from the document that "
-                                        "contains this value. Copy it exactly as it appears "
-                                        "— do not paraphrase, truncate, or rearrange."
+                                        "Complete line of text containing this value, "
+                                        "copied verbatim from the document."
                                     ),
                                 },
                             },
-                            "required": ["value", "confidence"],
+                            "required": ["value", "confidence", "source_line"],
                         },
                     },
                     "required": ["pay", "date"],
@@ -101,6 +97,10 @@ _TOOL_SCHEMA: dict[str, Any] = {
 
 _SYSTEM_PROMPT = """\
 You are a precise document data extractor for trucking income documents.
+
+Common formats include: CentralDispatch settlement sheets, V2 Dispatch load \
+summaries, Super Dispatch / BacklotCars carrier statements, and COD settlement \
+statements.
 
 Your task:
 - Extract the **total payment to carrier** (the dollar amount the carrier \
@@ -122,7 +122,20 @@ original document.
 - If you are uncertain or the value is ambiguous, lower your confidence score.
 - If a field is not present for a load, return null for that field.
 - Do NOT fabricate values. Only extract what is explicitly stated.
-- Do NOT merge multiple loads into one — each distinct load is its own entry."""
+- Do NOT merge multiple loads into one — each distinct load is its own entry.
+
+Disambiguation:
+- "Total payment to carrier" is the net amount the carrier receives after any \
+deductions. It is NOT the shipper price, broker fee, COD amount, deposit, or \
+insurance fee. If multiple dollar amounts appear, choose the one explicitly \
+labeled as carrier payment, "Company owes Carrier", or equivalent.
+- If the document shows a revision history with older amounts (e.g. $0.00 from \
+a previous revision), extract only the current/final amount — not the \
+historical one.
+- Prefer "Pickup Date" or "Pickup Exactly" when present. If no pickup date \
+exists, use the earliest load-specific date. Do NOT use the settlement date, \
+invoice date, or statement date — those cover the entire settlement, not \
+individual loads."""
 
 
 def _normalize_pay_value(raw: str) -> str | None:

@@ -5,6 +5,16 @@ Entries are written for staff using the app — not for developers.
 
 ---
 
+## [0.2.0] — 2026-05-25
+
+### Changed
+- Improved accuracy when identifying the correct carrier payment on documents that also show shipper prices, broker fees, COD amounts, or deposits — the tool now correctly targets the amount labeled as carrier payment.
+- Fixed cases where a document with a revision history (e.g. an older $0.00 entry) could cause the wrong pay amount to be extracted — the tool now picks the current/final amount.
+- Improved date extraction to prefer "Pickup Date" or "Pickup Exactly" fields and avoid picking up settlement-level dates (invoice date, statement date) as the load pickup date.
+- Extraction results are now fully deterministic — repeated runs on the same document will always produce the same result.
+
+---
+
 ## [0.1.4] — 2026-05-08
 
 ### Changed

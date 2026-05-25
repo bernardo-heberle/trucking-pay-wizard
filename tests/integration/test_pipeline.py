@@ -228,6 +228,7 @@ def _make_settings_for_integration() -> Settings:
     return Settings(
         anthropic_api_key="sk-test-key",
         llm_model="claude-3-5-haiku-20241022",
+        llm_temperature=0.0,
         confidence_high_threshold=0.9,
         confidence_review_threshold=0.6,
     )

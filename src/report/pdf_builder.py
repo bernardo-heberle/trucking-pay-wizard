@@ -187,6 +187,12 @@ def _highlight_field(
         x, y, w, h = span.bounding_box.as_pts()
         rect = fitz.Rect(x, y, x + w, y + h)
         page = combined[page_idx]
+        # OCR boxes are in the page's visual (rendered) frame, but annotations
+        # are placed in the page's unrotated coordinate space.  For rotated
+        # pages (e.g. landscape tables saved with /Rotate 90) the raw rect would
+        # be drawn sideways, so map it back through the page's derotation matrix.
+        if page.rotation:
+            rect = rect * page.derotation_matrix
         annot = page.add_highlight_annot(rect)
         if annot:
             annot.set_colors(stroke=_HIGHLIGHT_COLOR)

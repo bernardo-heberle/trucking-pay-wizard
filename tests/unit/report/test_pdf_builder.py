@@ -402,3 +402,82 @@ class TestPageTruncation:
         annots = list(doc[highlight_page_0indexed].annots() or [])
         assert len(annots) >= 1
         doc.close()
+
+
+class TestRotatedPageHighlights:
+    """Highlights must land on the marked text even on rotated source pages.
+
+    OCR runs on the rendered (visual) image, so its bounding boxes are in the
+    page's visual frame.  Annotations are stored in the page's unrotated frame,
+    so the builder must map the box through the page's derotation matrix.  These
+    tests build a source page, place real text, feed the visual-frame box that
+    OCR would have produced, and assert the resulting highlight actually covers
+    that text.
+    """
+
+    _MARKER = "PAYVALUE12345"
+
+    def _build_source(self, tmp_path: Path, rotation: int) -> Path:
+        doc = fitz.open()
+        # Portrait media box; rotation 90 displays it as a landscape page,
+        # mirroring the real ArcBest table pages (mediabox 612x792, /Rotate 90).
+        page = doc.new_page(width=612, height=792)
+        page.set_rotation(rotation)
+        page.insert_text((120, 200), self._MARKER, fontsize=12)
+        path = tmp_path / f"rotated_{rotation}.pdf"
+        doc.save(str(path))
+        doc.close()
+        return path
+
+    def _visual_box_for_marker(self, source_path: Path) -> tuple[BoundingBox, fitz.Rect]:
+        """Return (OCR-style visual-frame box in inches, unrotated text rect in pts)."""
+        doc = fitz.open(str(source_path))
+        page = doc[0]
+        text_rect = page.search_for(self._MARKER)[0]  # unrotated (mediabox) coords
+        # OCR sees the rendered/visual frame, so convert via the rotation matrix.
+        visual = (text_rect * page.rotation_matrix).normalize()
+        doc.close()
+        bbox = BoundingBox(
+            x=visual.x0 / 72,
+            y=visual.y0 / 72,
+            width=visual.width / 72,
+            height=visual.height / 72,
+        )
+        return bbox, text_rect
+
+    def _result_marking_text(self, source_path: Path, bbox: BoundingBox) -> DocumentExtractionResult:
+        return make_extraction_result(
+            source_path,
+            fields=[
+                ExtractedField(
+                    name="pay",
+                    value=self._MARKER,
+                    source_document=source_path.name,
+                    source_page=1,
+                    source_spans=[SourceSpan(page_number=1, bounding_box=bbox)],
+                    certainty=Certainty.HIGH,
+                ),
+            ],
+        )
+
+    @pytest.mark.parametrize("rotation", [0, 90], ids=["unrotated", "rotated_90"])
+    def test_highlight_covers_marked_text(self, rotation: int, tmp_path: Path) -> None:
+        source = self._build_source(tmp_path, rotation)
+        bbox, _ = self._visual_box_for_marker(source)
+        result = self._result_marking_text(source, bbox)
+        out = tmp_path / f"combined_{rotation}.pdf"
+
+        build_pdf([result], out)
+
+        doc = fitz.open(str(out))
+        page = doc[0]
+        annots = list(page.annots() or [])
+        assert len(annots) == 1
+        annot_rect = annots[0].rect
+        text_rect = page.search_for(self._MARKER)[0]
+        overlap = (annot_rect & text_rect).get_area()
+        # The highlight must cover the bulk of the text it marks.  Without the
+        # derotation fix the rotated box would land elsewhere on the page and
+        # overlap would be zero.
+        assert overlap > 0.5 * text_rect.get_area()
+        doc.close()

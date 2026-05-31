@@ -109,6 +109,26 @@ class TestCleaning:
     def test_surrounding_whitespace_stripped(self) -> None:
         assert parse_extracted_date("  03/12/2024  ") == datetime.date(2024, 3, 12)
 
+    def test_strips_leading_weekday_with_abbrev_month_period(self) -> None:
+        """'Sunday, Feb. 16, 2025' -> date(2025, 2, 16) — weekday prefix + 'Feb.'."""
+        assert parse_extracted_date("Sunday, Feb. 16, 2025") == datetime.date(2025, 2, 16)
+
+    def test_strips_leading_weekday_abbreviated(self) -> None:
+        """An abbreviated leading weekday is stripped just like the full name."""
+        assert parse_extracted_date("Mon, March 13, 2024") == datetime.date(2024, 3, 13)
+
+    def test_strips_leading_weekday_no_comma(self) -> None:
+        """A leading weekday with no comma is still stripped."""
+        assert parse_extracted_date("Wednesday March 13, 2024") == datetime.date(2024, 3, 13)
+
+    def test_strips_abbrev_month_period_without_weekday(self) -> None:
+        """'Feb. 16, 2025' parses even without a leading weekday."""
+        assert parse_extracted_date("Feb. 16, 2025") == datetime.date(2025, 2, 16)
+
+    def test_abbrev_period_does_not_affect_numeric_dates(self) -> None:
+        """The period-stripping rule is a no-op for slash-delimited numeric dates."""
+        assert parse_extracted_date("Sunday, 02/16/2025") == datetime.date(2025, 2, 16)
+
 
 class TestInvalidInputs:
     """The helper must return None rather than raise or guess for bad inputs."""

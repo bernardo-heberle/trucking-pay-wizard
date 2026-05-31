@@ -5,6 +5,23 @@ Entries are written for staff using the app — not for developers.
 
 ---
 
+## [1.0.2] — 2026-05-31
+
+### Fixed
+- Fixed highlight placement on rotated, landscape document pages (such as the wide earnings and deduction tables on ArcBest settlement statements). The highlights now sit correctly across the values instead of being drawn sideways.
+
+### Changed
+- Settlement statements that only show open or outstanding items — where nothing was actually paid out that period (for example, a statement noting "No items were closed this period") — now have their amounts flagged for manual review instead of being marked as confirmed, so staff can verify them.
+
+---
+
+## [1.0.1] — 2026-05-31
+
+### Fixed
+- Fixed an issue where payment dates written with a leading day of the week or an abbreviated month with a period (for example, "Sunday, Feb. 16, 2025") were left blank in the spreadsheet instead of being recognized as a date.
+
+---
+
 ## [1.0.0] — 2026-05-31
 
 ### Added

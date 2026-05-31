@@ -44,7 +44,7 @@ Set your Anthropic API key in `.env`:
 ANTHROPIC_API_KEY=sk-ant-...
 ```
 
-Get your key from https://console.anthropic.com/. The default model is `claude-haiku-4-5`; override with `LLM_MODEL` if needed.
+Get your key from https://console.anthropic.com/. The default model is `claude-sonnet-4-5` (recommended for accuracy); override with `LLM_MODEL` if needed — for example, `claude-haiku-4-5` is ~3.5x cheaper but omits dates more often on dense documents.
 
 ### Notes
 

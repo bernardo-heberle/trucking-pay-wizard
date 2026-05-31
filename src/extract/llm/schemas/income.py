@@ -167,6 +167,12 @@ including any currency symbols, commas, or formatting (e.g. '$1,500.00', \
 document that contains the value. Copy it exactly as it appears — do not \
 paraphrase, truncate, or rearrange. This is used to locate the value in the \
 original document.
+- When the same load's amount appears more than once in the document (the same \
+figure repeated in multiple places), prefer the FIRST occurrence in reading \
+order for both the value and its source_line. This is a tie-breaker only: the \
+Disambiguation rules below take precedence when they point to a specific \
+occurrence (e.g. the labeled "TOTAL" row, the current/final revised amount \
+rather than an older revision, or the settlement-summary pay-out figure).
 - If a field is clearly present, return it with high confidence (>= 0.9).
 - If you are uncertain or the value is ambiguous, lower your confidence score.
 - If a field is not present for a load, return null for that field.
@@ -199,6 +205,15 @@ paid out to the carrier from the summary (labeled, e.g., "Total Period Pay-Out",
 "Total Pay-Out", "Net Pay", or "Total Paid"). Do NOT use the gross "Total Period \
 Earnings" figure, and do NOT create a separate load for each detail row — ignore \
 the item-by-item earning and deduction calculations on the detail pages.
+- Some settlement statements are "Open Items" summaries that explicitly state \
+nothing was actually paid out this period (e.g. "This is only a summary of your \
+account. No items were closed this period.", an "Open Items" heading, or only \
+"Total Outstanding On-Pro Earnings" / "Outstanding" / "Future" / "Open" totals \
+with NO "Total Period Pay-Out" or "Net Pay" line). In this case the per-load \
+amounts are outstanding, unpaid estimates rather than confirmed payments — \
+extract them, but assign each pay field a REDUCED confidence between 0.70 and \
+0.85 (never >= 0.9) so staff verify them manually. Do this even when the \
+individual amounts are clearly printed.
 
 Disambiguation — Date:
 - Prefer "Pickup Date" or "Pickup Exactly" when present.

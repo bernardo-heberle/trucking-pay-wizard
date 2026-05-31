@@ -155,7 +155,7 @@ Use `.env` files for secrets (API keys, credentials) and YAML/TOML for applicati
 Key configuration variables:
 
 - `ANTHROPIC_API_KEY` — required
-- `LLM_MODEL` — which Claude model to use (defaults to `claude-haiku-4-5`)
+- `LLM_MODEL` — which Claude model to use (defaults to `claude-sonnet-4-5`)
 
 ---
 

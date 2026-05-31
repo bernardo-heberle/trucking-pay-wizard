@@ -20,6 +20,16 @@ _TRAILING_TIME = re.compile(
     r"\s+at\s+\d{1,2}:\d{2}\s*(?:AM|PM|am|pm)?\s*$",
     re.IGNORECASE,
 )
+# Strip a leading weekday name (full or abbreviated), optionally followed by a
+# comma, e.g. "Sunday, Feb. 16, 2025" -> "Feb. 16, 2025".
+_LEADING_WEEKDAY = re.compile(
+    r"^\s*(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)[a-z]*\s*,?\s*",
+    re.IGNORECASE,
+)
+# Remove a period that directly follows a letter, e.g. "Feb." -> "Feb", so the
+# abbreviated-month formats match. Numeric dates have no letters before a
+# period, so this is a no-op for them.
+_ABBREV_PERIOD = re.compile(r"(?<=[A-Za-z])\.")
 
 _FORMATS = (
     "%m/%d/%Y",
@@ -33,19 +43,30 @@ _FORMATS = (
 
 
 def _clean(raw: str) -> str:
-    """Strip trailing weekday and time-of-day clauses from a date string."""
+    """Strip weekday names, time-of-day clauses, and month-abbreviation periods.
+
+    Removes a leading weekday clause (``"Sunday, "``), trailing weekday and
+    time-of-day clauses, and the trailing period on abbreviated month names
+    (``"Feb."`` -> ``"Feb"``) so the surface forms reach a known strptime
+    format.
+    """
     cleaned = raw.strip()
     cleaned = _TRAILING_TIME.sub("", cleaned)
     cleaned = _TRAILING_WEEKDAY.sub("", cleaned)
+    cleaned = _LEADING_WEEKDAY.sub("", cleaned)
+    cleaned = _ABBREV_PERIOD.sub("", cleaned)
     return cleaned.strip()
 
 
 def parse_extracted_date(raw: str) -> datetime.date | None:
     """Parse a date string produced by the LLM extractor.
 
-    Strips trailing weekday clauses like ``" (Wed)"`` and trailing time-of-day
-    clauses like ``" at 11:52 AM"`` before attempting strptime, since both
-    appear verbatim in real OCR output (e.g. from V2 Dispatch documents).
+    Before attempting strptime, the raw string is normalized to absorb the
+    surface variation seen in real OCR output:
+        - leading weekday clauses like ``"Sunday, "``
+        - trailing weekday clauses like ``" (Wed)"``
+        - trailing time-of-day clauses like ``" at 11:52 AM"`` (e.g. V2 Dispatch)
+        - trailing periods on abbreviated month names (``"Feb."`` -> ``"Feb"``)
 
     Supported input formats:
         - ``MM/DD/YYYY``, ``M/D/YYYY``, ``MM/DD/YY``, ``M/D/YY``
@@ -53,6 +74,7 @@ def parse_extracted_date(raw: str) -> datetime.date | None:
         - ``YYYY-MM-DD`` (ISO 8601)
         - ``Month DD, YYYY`` (e.g. ``March 13, 2024``)
         - ``Mon DD, YYYY`` (e.g. ``Mar 13, 2024``)
+        - any of the above prefixed with a weekday (e.g. ``Sunday, Feb. 16, 2025``)
 
     Two-digit years follow Python's ``%y`` default: ``00–68`` map to
     ``2000–2068``, ``69–99`` map to ``1969–1999``.

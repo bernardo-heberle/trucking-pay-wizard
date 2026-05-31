@@ -18,6 +18,7 @@ Fixture files and their expected extraction values:
     super_dispatch_backlotcars.json   pay=1350.00   date=04/22/2024
     multi_vehicle_central_dispatch.json pay=4500.00 date=05/06/2024
     summary_with_detail_tables.json   pay=981.92    date contains "Feb. 16, 2025" (single load)
+    weekly_hauling_breakdown.json     4 loads: 600.00/900.00/750.00/800.00 per weekly Load Total
     insurance_certificate.json        is_payment_document=False
     bill_of_lading_no_payment.json    is_payment_document=False
 """
@@ -514,6 +515,76 @@ class TestSummaryWithDetailExtraction:
         assert pay.certainty == Certainty.HIGH
 
 
+class TestWeeklyHaulingBreakdownExtraction:
+    """Weekly hauling breakdown with a per-week ``Load Total`` and no grand total.
+
+    Four weekly sections, each closed by its own ``Load Total`` subtotal and
+    with no overall/net-pay line. The correct extraction is one load per weekly
+    subtotal (not one per haul line, not a single summed figure), each dated by
+    the earliest load date in its section. This is the regression guard for the
+    multi-section-subtotal prompt rule.
+    """
+
+    def test_returns_four_loads(self, anthropic_extractor) -> None:
+        ocr = load_ocr_fixture("weekly_hauling_breakdown.json")
+        result = anthropic_extractor.extract(ocr, page_count=4)
+
+        assert result.extraction_error is None
+        assert len(result.loads) == 4, (
+            f"Expected 4 loads (one per weekly Load Total), got {len(result.loads)}: "
+            f"{[l.pay.value if l.pay else None for l in result.loads]}"
+        )
+
+    def test_is_payment_document(self, anthropic_extractor) -> None:
+        ocr = load_ocr_fixture("weekly_hauling_breakdown.json")
+        result = anthropic_extractor.extract(ocr, page_count=4)
+
+        assert result.is_payment_document is True, (
+            f"Hauling breakdown misclassified as non-payment "
+            f"(reason: {result.classification_reason!r})"
+        )
+
+    def test_pay_values_are_the_weekly_load_totals(self, anthropic_extractor) -> None:
+        ocr = load_ocr_fixture("weekly_hauling_breakdown.json")
+        result = anthropic_extractor.extract(ocr, page_count=4)
+
+        assert len(result.loads) == 4
+        assert _normalize_pay_value(result.loads[0].pay.value) == "600.00", (
+            f"Load 1 raw pay: {result.loads[0].pay.value!r}"
+        )
+        assert _normalize_pay_value(result.loads[1].pay.value) == "900.00", (
+            f"Load 2 raw pay: {result.loads[1].pay.value!r}"
+        )
+        assert _normalize_pay_value(result.loads[2].pay.value) == "750.00", (
+            f"Load 3 raw pay: {result.loads[2].pay.value!r}"
+        )
+        assert _normalize_pay_value(result.loads[3].pay.value) == "800.00", (
+            f"Load 4 raw pay: {result.loads[3].pay.value!r}"
+        )
+
+    def test_dates_are_earliest_per_section(self, anthropic_extractor) -> None:
+        ocr = load_ocr_fixture("weekly_hauling_breakdown.json")
+        result = anthropic_extractor.extract(ocr, page_count=4)
+
+        assert len(result.loads) == 4
+        assert "01/08/2024" in result.loads[0].date.value
+        assert "01/15/2024" in result.loads[1].date.value
+        assert "01/22/2024" in result.loads[2].date.value
+        assert "01/29/2024" in result.loads[3].date.value
+
+    def test_all_loads_high_certainty(self, anthropic_extractor) -> None:
+        """Each Load Total appears literally in the text — pay verification passes."""
+        ocr = load_ocr_fixture("weekly_hauling_breakdown.json")
+        result = anthropic_extractor.extract(ocr, page_count=4)
+
+        assert len(result.loads) == 4
+        for load in result.loads:
+            assert load.pay is not None
+            assert load.pay.certainty == Certainty.HIGH, (
+                f"Load {load.index} pay certainty: {load.pay.certainty}"
+            )
+
+
 class TestDocumentClassification:
     """The LLM flags whether each document is a proof-of-payment document."""
 
@@ -525,8 +596,9 @@ class TestDocumentClassification:
             ("super_dispatch_backlotcars.json", 3),
             ("cod_settlement_ocr.json", 1),
             ("summary_with_detail_tables.json", 4),
+            ("weekly_hauling_breakdown.json", 4),
         ],
-        ids=["central_dispatch", "v2_dispatch", "super_dispatch", "cod", "summary"],
+        ids=["central_dispatch", "v2_dispatch", "super_dispatch", "cod", "summary", "weekly_hauling"],
     )
     def test_payment_documents_classified_as_payment(
         self, anthropic_extractor, fixture_name, page_count

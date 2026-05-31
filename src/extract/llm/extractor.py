@@ -465,9 +465,15 @@ class LlmExtractor:
 
         response = self._client.messages.create(
             model=self._settings.llm_model,
-            max_tokens=2048,
+            max_tokens=4096,
             temperature=self._settings.llm_temperature,
-            system=self._schema.system_prompt(),
+            system=[
+                {
+                    "type": "text",
+                    "text": self._schema.system_prompt(),
+                    "cache_control": {"type": "ephemeral"},
+                }
+            ],
             tools=[tool_def],
             tool_choice={"type": "tool", "name": tool_name},
             messages=[

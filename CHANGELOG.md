@@ -5,6 +5,20 @@ Entries are written for staff using the app — not for developers.
 
 ---
 
+## [1.1.1] — 2026-05-31
+
+### Changed
+- Reduced the cost of processing each folder and slightly sped up extraction by reusing the shared instructions across documents instead of resending them for every file.
+
+---
+
+## [1.1.0] — 2026-05-31
+
+### Added
+- Added support for weekly hauling/load breakdown statements that list each load on its own line with a separate total for each week (and no single grand total). These documents used to come back blank; the tool now reports one line per weekly total instead of leaving the amount and date empty.
+
+---
+
 ## [1.0.2] — 2026-05-31
 
 ### Fixed

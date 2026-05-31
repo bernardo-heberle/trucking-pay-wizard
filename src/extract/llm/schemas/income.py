@@ -52,7 +52,11 @@ _TOOL_SCHEMA: dict[str, Any] = {
                 "minItems": 1,
                 "description": (
                     "One entry per distinct load on the document. "
-                    "Single-load documents return a one-element array."
+                    "Single-load documents return a one-element array. "
+                    "When the document is divided into sections that each end "
+                    "with their own subtotal (e.g. a per-week 'Load Total') and "
+                    "there is no single grand total, return one entry per "
+                    "section using that section's subtotal as the pay."
                 ),
                 "items": {
                     "type": "object",
@@ -146,6 +150,11 @@ that have nothing to do with proof of payment. Flag those.
 carrier received (or is owed) a payment: settlement statements, dispatch/load \
 sheets showing a carrier pay amount, carrier statements, COD settlements, \
 remittance advice, or advice-of-deposit / payment notifications.
+- A per-load hauling or delivery settlement that lists each load/job/haul with \
+the amount earned for it (e.g. a weekly breakdown with a per-line haul amount \
+and a per-week subtotal) IS proof of payment. Do NOT mark such a document as \
+non-payment merely because it lacks the words "net pay", "carrier payment", or \
+a single grand total.
 - Set is_payment_document = false ONLY when the document clearly has no proof of \
 payment to a carrier — for example a bill of lading or rate confirmation with no \
 payment amount, an insurance certificate or COI, a driver's license, an inspection \
@@ -178,6 +187,11 @@ rather than an older revision, or the settlement-summary pay-out figure).
 - If a field is not present for a load, return null for that field.
 - Do NOT fabricate values. Only extract what is explicitly stated.
 - Do NOT merge multiple loads into one — each distinct load is its own entry.
+- A document that visibly lists dollar amounts paid for loads, jobs, or hauls \
+is a payment document even without explicit "carrier payment" or "net pay" \
+labels. NEVER return null pay for every load when per-load or per-section \
+dollar amounts are clearly present — only return null pay for a load that \
+genuinely has no associated amount.
 
 Disambiguation — Pay:
 - "Total payment to carrier" is the net amount the carrier receives after any \
@@ -205,6 +219,16 @@ paid out to the carrier from the summary (labeled, e.g., "Total Period Pay-Out",
 "Total Pay-Out", "Net Pay", or "Total Paid"). Do NOT use the gross "Total Period \
 Earnings" figure, and do NOT create a separate load for each detail row — ignore \
 the item-by-item earning and deduction calculations on the detail pages.
+- Some documents are divided into multiple sections or groups of load \
+line-items where EACH section ends with its own subtotal (e.g. a per-page or \
+per-week "Load Total", "Subtotal", or "Week Total") and there is NO single grand \
+total or net-pay line covering all sections together. In this case return ONE \
+load per section: use that section's subtotal as the pay and the earliest load \
+date within the section as the date. This is different from the single-"TOTAL" \
+rule above (which applies only when one TOTAL closes the entire document): here \
+there are several independent subtotals and no overall total, so each subtotal \
+is its own load. Do NOT split each individual line-item into its own load, and \
+do NOT sum the subtotals into one figure.
 - Some settlement statements are "Open Items" summaries that explicitly state \
 nothing was actually paid out this period (e.g. "This is only a summary of your \
 account. No items were closed this period.", an "Open Items" heading, or only \

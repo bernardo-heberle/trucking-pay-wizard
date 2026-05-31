@@ -502,7 +502,7 @@ class TestLlmExtractorExtract:
         call_args = client.messages.create.call_args
         assert call_args.kwargs["temperature"] == 0.0
 
-    def test_max_tokens_is_2048(self) -> None:
+    def test_cache_breakpoint_on_system_prompt_not_top_level(self) -> None:
         settings = _make_settings()
         client = MagicMock()
         client.messages.create.return_value = _mock_tool_response(
@@ -513,7 +513,45 @@ class TestLlmExtractorExtract:
         extractor.extract(_make_ocr_result(), page_count=1)
 
         call_args = client.messages.create.call_args
-        assert call_args.kwargs["max_tokens"] == 2048
+        # Automatic top-level caching would place the breakpoint on the
+        # document; we must use an explicit breakpoint on the static prefix.
+        assert "cache_control" not in call_args.kwargs
+
+        system = call_args.kwargs["system"]
+        assert system == [
+            {
+                "type": "text",
+                "text": IncomeDocumentSchema().system_prompt(),
+                "cache_control": {"type": "ephemeral"},
+            }
+        ]
+
+    def test_document_message_is_not_cached(self) -> None:
+        settings = _make_settings()
+        client = MagicMock()
+        client.messages.create.return_value = _mock_tool_response(
+            "extract_income_fields",
+            _loads_input(pay={"value": "750.00", "confidence": 0.95}),
+        )
+        extractor = LlmExtractor(client=client, settings=settings)
+        extractor.extract(_make_ocr_result(), page_count=1)
+
+        call_args = client.messages.create.call_args
+        document_message = call_args.kwargs["messages"][0]
+        assert "cache_control" not in document_message
+
+    def test_max_tokens_is_4096(self) -> None:
+        settings = _make_settings()
+        client = MagicMock()
+        client.messages.create.return_value = _mock_tool_response(
+            "extract_income_fields",
+            _loads_input(pay={"value": "750.00", "confidence": 0.95}),
+        )
+        extractor = LlmExtractor(client=client, settings=settings)
+        extractor.extract(_make_ocr_result(), page_count=1)
+
+        call_args = client.messages.create.call_args
+        assert call_args.kwargs["max_tokens"] == 4096
 
 
 class TestLlmExtractorFromConfig:

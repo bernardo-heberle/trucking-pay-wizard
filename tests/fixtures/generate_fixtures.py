@@ -1352,6 +1352,78 @@ def _bill_of_lading_no_payment() -> dict:
     )
 
 
+def _weekly_hauling_breakdown() -> dict:
+    """A weekly hauling breakdown (CamScanner-style), shrunk to 4 weeks.
+
+    Mirrors a per-load hauling settlement that lists each haul on its own set
+    of OCR lines (operator, load date, driver, well, ticket, control, miles,
+    amount) grouped into weekly sections.  Each section ends with its own
+    ``Load Total`` subtotal and there is NO single grand total or net-pay line.
+
+    All names, well names, and ticket numbers are synthetic.
+
+    Expected: is_payment_document=True and exactly 4 loads, one per weekly
+    ``Load Total`` (NOT one per haul line, NOT a single summed total):
+        loads[0]: date=01/08/2024, pay=$600.00
+        loads[1]: date=01/15/2024, pay=$900.00
+        loads[2]: date=01/22/2024, pay=$750.00
+        loads[3]: date=01/29/2024, pay=$800.00
+    """
+
+    def _week(load_date_1: str, amt_1: str, load_date_2: str, amt_2: str,
+              ticket_1: str, ticket_2: str, total: str) -> list[str]:
+        return [
+            "Week Breakdown",
+            "A Smith",
+            "B Smith",
+            "Escrow",
+            "Certified",
+            "FLEET SERVICES",
+            "Operator Name",
+            "Load Date",
+            "Driver",
+            "Well Name",
+            "Sand Ticket",
+            "Sand Control",
+            "Miles",
+            "Total Hauling",
+            "HAULCO",
+            load_date_1,
+            "ALEX MORGAN",
+            "NORTH RIDGE 1",
+            ticket_1,
+            "30100001",
+            "32",
+            amt_1,
+            "HAULCO",
+            load_date_2,
+            "ALEX MORGAN",
+            "NORTH RIDGE 2",
+            ticket_2,
+            "30100002",
+            "28",
+            amt_2,
+            "Load Total",
+            total,
+            "Scanned with CamScanner",
+        ]
+
+    return _build_fixture(
+        source_path="Weekly_Hauling_Breakdown.pdf",
+        content_hash="7a17e10ad7a17e10ad7a17e10ad7a17e10ad7a17e10ad7a17e10ad7a17e10ad7",
+        pages={
+            1: _week("01/08/2024", "$310.00", "01/09/2024", "$290.00",
+                     "045-100001", "045-100002", "$600.00"),
+            2: _week("01/15/2024", "$475.00", "01/16/2024", "$425.00",
+                     "045-100101", "045-100102", "$900.00"),
+            3: _week("01/22/2024", "$525.00", "01/23/2024", "$225.00",
+                     "045-100201", "045-100202", "$750.00"),
+            4: _week("01/29/2024", "$360.00", "01/30/2024", "$440.00",
+                     "045-100301", "045-100302", "$800.00"),
+        },
+    )
+
+
 _ALL_FIXTURES = {
     "central_dispatch_settlement.json": _central_dispatch_settlement,
     "v2_dispatch_load.json": _v2_dispatch_load,
@@ -1370,6 +1442,8 @@ _ALL_FIXTURES = {
     "single_load_settlement.json": _single_load_settlement,
     # Summary page + detail tables (extract summary, ignore item-by-item detail)
     "summary_with_detail_tables.json": _summary_with_detail_tables,
+    # Multi-section hauling breakdown — one load per per-week "Load Total"
+    "weekly_hauling_breakdown.json": _weekly_hauling_breakdown,
     # Non-payment documents (classifier must set is_payment_document=False)
     "insurance_certificate.json": _insurance_certificate,
     "bill_of_lading_no_payment.json": _bill_of_lading_no_payment,

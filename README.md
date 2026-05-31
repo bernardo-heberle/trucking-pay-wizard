@@ -167,4 +167,13 @@ To view a line-by-line coverage report:
 
 # License
 
-Private internal project.
+This project is publicly visible but all rights are reserved. No part of this codebase may be copied, modified, distributed, or used in any form without explicit written permission from the developer.
+
+---
+
+# Developer
+
+This application was built by **Bernardo Aguzzoli Heberle**. If you are interested in business opportunities or have questions about this project, feel free to reach out.
+
+- Email: bernardo.aguzzoli@gmail.com
+- Phone: (859) 202-5581

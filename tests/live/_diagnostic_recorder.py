@@ -241,7 +241,7 @@ class RecordingLlmExtractor(LlmExtractor):
     # _call_llm() — capture prompt artefacts and raw LLM response
     # ------------------------------------------------------------------
 
-    def _call_llm(self, text: str, source_document: str) -> list[ExtractedLoad]:
+    def _call_llm(self, text: str, source_document: str):
         self.last_record.total_attempts += 1
 
         # Reset the API recorder for this attempt so we get fresh data.
@@ -251,7 +251,8 @@ class RecordingLlmExtractor(LlmExtractor):
         api_rec.last_output_tokens = None
         api_rec.last_raw_tool_input = None
 
-        parsed_loads = super()._call_llm(text, source_document)
+        # _call_llm now returns (loads, classification); capture but pass through.
+        parsed_loads, classification = super()._call_llm(text, source_document)
 
         # Populate record from the just-completed API call.
         rec = self.last_record
@@ -271,7 +272,7 @@ class RecordingLlmExtractor(LlmExtractor):
         # Snapshot of parsed loads before resolution/verification.
         rec.parsed_loads_raw = [_load_summary(load) for load in parsed_loads]
 
-        return parsed_loads
+        return parsed_loads, classification
 
     # ------------------------------------------------------------------
     # _resolve_source_locations() — capture per-field OCR match info

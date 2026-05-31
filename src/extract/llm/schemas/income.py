@@ -175,13 +175,19 @@ including any currency symbols, commas, or formatting (e.g. '$1,500.00', \
 - For each field, also return source_line: the complete line of text from the \
 document that contains the value. Copy it exactly as it appears — do not \
 paraphrase, truncate, or rearrange. This is used to locate the value in the \
-original document.
+original document. The source_line MUST be the line of the SAME occurrence you \
+chose for the value: by default the FIRST occurrence of that figure in reading \
+order. Do NOT copy a later line, and do NOT copy a different line that merely \
+contains the same number while referring to another field, load, or total.
 - When the same load's amount appears more than once in the document (the same \
 figure repeated in multiple places), prefer the FIRST occurrence in reading \
-order for both the value and its source_line. This is a tie-breaker only: the \
+order, and set source_line to that first occurrence's line. This first- \
+occurrence preference is a tie-breaker for selecting the value: the \
 Disambiguation rules below take precedence when they point to a specific \
-occurrence (e.g. the labeled "TOTAL" row, the current/final revised amount \
-rather than an older revision, or the settlement-summary pay-out figure).
+occurrence (the labeled "TOTAL" row, the current/final revised amount rather \
+than an older revision, or the settlement-summary pay-out figure). Whenever a \
+Disambiguation rule selects a specific occurrence, set source_line to THAT \
+occurrence's line — keep the value and its source_line on the same occurrence.
 - If a field is clearly present, return it with high confidence (>= 0.9).
 - If you are uncertain or the value is ambiguous, lower your confidence score.
 - If a field is not present for a load, return null for that field.

@@ -5,6 +5,13 @@ Entries are written for staff using the app — not for developers.
 
 ---
 
+## [1.1.2] — 2026-05-31
+
+### Fixed
+- Fixed an issue where a highlighted amount could be marked on the wrong line when the same dollar figure appeared more than once in a document. The highlight now lands on the first/correct occurrence.
+
+---
+
 ## [1.1.1] — 2026-05-31
 
 ### Changed

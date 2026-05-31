@@ -14,7 +14,14 @@ from src.extract.llm.client import build_anthropic_client
 from src.extract.llm.sanitizer import sanitize_text
 from src.extract.llm.schemas.base import ExtractionSchema
 from src.extract.llm.schemas.income import IncomeDocumentSchema, _normalize_pay_value
-from src.extract.models import Certainty, DocumentExtractionResult, ExtractedField, ExtractedLoad, SourceSpan
+from src.extract.models import (
+    Certainty,
+    Classification,
+    DocumentExtractionResult,
+    ExtractedField,
+    ExtractedLoad,
+    SourceSpan,
+)
 from src.extract.pay_verifier import verify_pay_against_ocr
 from src.ocr.models import OcrResult
 
@@ -100,7 +107,7 @@ class LlmExtractor:
 
         for attempt in range(1, _MAX_ATTEMPTS + 1):
             try:
-                loads = self._call_llm(sanitized_text, source_name)
+                loads, classification = self._call_llm(sanitized_text, source_name)
 
             except ExtractionError:
                 # Non-retryable configuration error — propagate immediately.
@@ -137,15 +144,20 @@ class LlmExtractor:
                 loads = self._resolve_source_locations(loads, ocr_result)
                 loads = self._verify_pay_fields(loads, sanitized_text, source_name)
                 logger.info(
-                    "LLM extraction complete for '{}' — {} load(s) found",
+                    "LLM extraction complete for '{}' — {} load(s) found, "
+                    "is_payment_document={}",
                     source_name,
                     len(loads),
+                    classification.is_payment_document,
                 )
                 return DocumentExtractionResult(
                     source_path=ocr_result.source_path,
                     content_hash=ocr_result.content_hash,
                     loads=loads,
                     page_count=page_count,
+                    is_payment_document=classification.is_payment_document,
+                    classification_confidence=classification.confidence,
+                    classification_reason=classification.reason,
                 )
 
             if attempt < _MAX_ATTEMPTS:
@@ -438,12 +450,15 @@ class LlmExtractor:
 
         return verified_loads
 
-    def _call_llm(self, text: str, source_document: str) -> list[ExtractedLoad]:
+    def _call_llm(
+        self, text: str, source_document: str
+    ) -> tuple[list[ExtractedLoad], Classification]:
         """Send *text* to Claude and parse the structured tool response.
 
-        Raises ``_NoToolUseBlock`` if the response contains no ``tool_use``
-        block.  All other exceptions propagate to the retry loop in
-        ``extract()``.
+        Returns the extracted loads together with the document-level
+        ``Classification``.  Raises ``_NoToolUseBlock`` if the response
+        contains no ``tool_use`` block.  All other exceptions propagate to the
+        retry loop in ``extract()``.
         """
         tool_def = self._schema.tool_definition()
         tool_name = tool_def["name"]
@@ -471,9 +486,11 @@ class LlmExtractor:
 
         for block in response.content:
             if block.type == "tool_use" and block.name == tool_name:
-                return self._schema.parse_tool_result(
+                loads = self._schema.parse_tool_result(
                     block.input,
                     source_document=source_document,
                 )
+                classification = self._schema.parse_classification(block.input)
+                return loads, classification
 
         raise _NoToolUseBlock()

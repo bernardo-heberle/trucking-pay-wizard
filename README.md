@@ -2,7 +2,7 @@
 
 Desktop application for extracting trucking income information from documents submitted during downtime insurance claims.
 
-Staff work with folder-based sessions — drop documents into a working folder, run the tool, and receive a combined PDF with an index page and a cross-referenced CSV/Excel spreadsheet. Adding more documents and re-running processes only the new files and regenerates the full output.
+Staff work with folder-based sessions — drop documents into a working folder, run the tool, and receive a combined PDF of the payment documents and a cross-referenced Excel spreadsheet listing every document. The tool also classifies whether each document is actually proof of a payment; non-payment documents and exact duplicates are left out of the PDF and grayed out in the spreadsheet. Adding more documents and re-running processes only the new files and regenerates the full output.
 
 ---
 
@@ -30,10 +30,11 @@ A standalone desktop application that:
 1. Manages folder-based processing sessions (one folder per claim or batch)
 2. Accepts documents via drag-and-drop into the working folder
 3. Converts documents into machine-readable text using OCR
-4. Extracts and validates financial fields (via rule-based patterns or schema-driven LLM extraction)
-5. Generates a combined PDF with a summary index page and all source documents
-6. Generates a CSV/Excel spreadsheet cross-referenced to PDF page numbers
-7. Caches per-document results so re-runs only process new files
+4. Extracts and validates financial fields via schema-driven LLM extraction
+5. Classifies whether each document is proof of a payment, erring toward inclusion when unsure
+6. Generates a combined PDF of the payment documents (in date order) with extracted values highlighted
+7. Generates an Excel spreadsheet listing every document, cross-referenced to PDF page numbers, with non-payment documents and duplicates grayed out at the bottom
+8. Caches per-document results so re-runs only process new files
 
 The tool is distributed as a self-contained executable. No server infrastructure or installation process required.
 
@@ -64,7 +65,8 @@ Current focus areas:
 - desktop GUI for folder management, document input, and result review
 - OCR integration
 - financial field extraction and validation (schema-driven LLM extraction via Anthropic API)
-- report assembly (combined PDF + CSV/Excel generation)
+- document classification (payment vs. non-payment) to keep irrelevant uploads out of the report
+- report assembly (combined PDF + Excel generation)
 - packaging as a distributable executable
 - evaluation with DTC staff for feedback
 

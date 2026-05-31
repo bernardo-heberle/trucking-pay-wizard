@@ -392,3 +392,76 @@ class TestCacheVersioning:
         result = _make_result(tmp_path / "doc.pdf")
         cache_put(tmp_path, result, version="some_fp")
         assert cache_get(tmp_path, _HASH_A) is None
+
+
+class TestClassificationRoundTrip:
+    """The document-level classification must survive a cache put/get cycle."""
+
+    def test_non_payment_classification_roundtrips(self, tmp_path: Path) -> None:
+        source = tmp_path / "coi.pdf"
+        result = DocumentExtractionResult(
+            source_path=source,
+            content_hash=_HASH_A,
+            page_count=1,
+            loads=[ExtractedLoad(index=1, pay=None, date=None)],
+            is_payment_document=False,
+            classification_confidence=0.82,
+            classification_reason="Insurance certificate, no carrier pay.",
+        )
+        cache_put(tmp_path, result)
+        loaded = cache_get(tmp_path, _HASH_A)
+
+        assert loaded is not None
+        assert loaded.is_payment_document is False
+        assert loaded.classification_confidence == pytest.approx(0.82)
+        assert loaded.classification_reason == "Insurance certificate, no carrier pay."
+
+    def test_payment_classification_roundtrips(self, tmp_path: Path) -> None:
+        source = tmp_path / "settlement.pdf"
+        result = _make_result(source, content_hash=_HASH_A)
+        result.is_payment_document = True
+        result.classification_confidence = 0.97
+        cache_put(tmp_path, result)
+        loaded = cache_get(tmp_path, _HASH_A)
+
+        assert loaded is not None
+        assert loaded.is_payment_document is True
+        assert loaded.classification_confidence == pytest.approx(0.97)
+
+    def test_legacy_cache_without_classification_defaults_to_payment(
+        self, tmp_path: Path
+    ) -> None:
+        """A cache file written before classification existed must load as a payment doc."""
+        cache_dir = tmp_path / ".cache"
+        cache_dir.mkdir()
+        legacy = {
+            "source_path": str(tmp_path / "old.pdf"),
+            "content_hash": _HASH_A,
+            "page_count": 1,
+            "extraction_error": None,
+            "loads": [
+                {
+                    "index": 1,
+                    "pay": {
+                        "name": "pay",
+                        "value": "750.00",
+                        "source_document": "old.pdf",
+                        "source_page": 1,
+                        "source_line": None,
+                        "confidence": 0.95,
+                        "certainty": "High",
+                        "source_spans": [],
+                    },
+                    "date": None,
+                }
+            ],
+        }
+        (cache_dir / f"{_HASH_A}_llm.json").write_text(
+            json.dumps(legacy), encoding="utf-8"
+        )
+
+        loaded = cache_get(tmp_path, _HASH_A)
+        assert loaded is not None
+        assert loaded.is_payment_document is True
+        assert loaded.classification_confidence is None
+        assert loaded.classification_reason is None

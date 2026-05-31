@@ -137,3 +137,35 @@ class TestDateSortedReportOrder:
         ws = wb.active
         assert ws.cell(row=2, column=1).value == "alpha.pdf"
         assert ws.cell(row=3, column=1).value == "bravo.pdf"
+
+
+class TestNonPaymentExclusion:
+    """Non-payment documents are excluded from the combined PDF but kept in Excel."""
+
+    def test_non_payment_doc_not_embedded_in_pdf(self, tmp_path: Path) -> None:
+        pdf_pay = _make_source_pdf(tmp_path / "settlement.pdf")
+        pdf_nonpay = _make_source_pdf(tmp_path / "insurance.pdf")
+
+        payment = _make_result(pdf_pay, "01/01/2024", content_hash="b" * 64)
+        nonpayment = _make_result(pdf_nonpay, "02/01/2024", content_hash="c" * 64)
+        nonpayment.is_payment_document = False
+
+        out_dir = tmp_path / "output"
+        pdf_path, excel_path = build_report([payment, nonpayment], out_dir)
+
+        doc = fitz.open(str(pdf_path))
+        all_text = "".join(page.get_text() for page in doc)
+        page_count = len(doc)
+        doc.close()
+
+        # Only the payment document's single page should be in the PDF.
+        assert page_count == 1
+        assert "settlement.pdf" in all_text
+        assert "insurance.pdf" not in all_text
+
+        # The non-payment doc must still appear in the Excel spreadsheet.
+        ws = openpyxl.load_workbook(str(excel_path)).active
+        doc_names = [
+            ws.cell(row=r, column=1).value for r in range(2, ws.max_row + 1)
+        ]
+        assert "insurance.pdf" in doc_names

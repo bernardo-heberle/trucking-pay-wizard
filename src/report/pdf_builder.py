@@ -14,17 +14,21 @@ _HIGHLIGHT_COLOR = (0.0, 0.75, 0.85)  # cyan — neutral "extracted" marker
 def build_pdf(
     results: list[DocumentExtractionResult],
     output_path: Path,
-) -> tuple[Path, dict[str, int]]:
+) -> tuple[Path, dict[str, int], dict[str, int]]:
     """Build a combined PDF with source pages and highlight annotations.
 
     High-confidence documents are truncated to the last page that carries a
     highlighted field.  All other documents are included in full so staff can
     find and mark the relevant pages manually.
 
-    Returns ``(output_path, page_offsets)`` where *page_offsets* maps each
-    ``source_path.name`` to its 1-indexed starting page in the combined PDF.
-    This mapping feeds into the Excel exporter so users can cross-reference
-    spreadsheet rows with PDF pages.
+    Callers are expected to pass only the documents that belong in the combined
+    PDF (e.g. payment documents); any document in *results* is embedded.
+
+    Returns ``(output_path, page_offsets, page_limits)`` where *page_offsets*
+    maps each ``source_path.name`` to its 1-indexed starting page in the
+    combined PDF and *page_limits* maps each name to the number of pages it
+    occupies (after any high-confidence truncation).  Together they let the
+    Excel exporter show the page range a document spans.
 
     Raises:
         ReportAssemblyError: A source document cannot be opened or embedded.
@@ -66,7 +70,7 @@ def build_pdf(
         current_page - 1,
     )
 
-    return output_path, page_offsets
+    return output_path, page_offsets, page_limits
 
 
 def _all_fields(result: DocumentExtractionResult) -> list[ExtractedField]:

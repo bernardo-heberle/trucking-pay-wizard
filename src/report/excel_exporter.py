@@ -20,12 +20,22 @@ _DAYS_FORMAT = '[=1]0" day";0" days"'
 _FILL_GREEN = PatternFill(start_color="C6EFCE", end_color="C6EFCE", fill_type="solid")
 _FILL_YELLOW = PatternFill(start_color="FFEB9C", end_color="FFEB9C", fill_type="solid")
 _FILL_RED = PatternFill(start_color="FFC7CE", end_color="FFC7CE", fill_type="solid")
+_FILL_GRAY = PatternFill(start_color="D9D9D9", end_color="D9D9D9", fill_type="solid")
 
 _CERTAINTY_FILLS: dict[Certainty, PatternFill] = {
     Certainty.HIGH: _FILL_GREEN,
     Certainty.REVIEW: _FILL_YELLOW,
     Certainty.NOT_FOUND: _FILL_RED,
 }
+
+# Placeholder shown for fields that do not apply to an excluded document.
+_NA = "NA"
+
+# Notes shown on the single review/exclusion rows.
+_REVIEW_NO_VALUES_NOTE = (
+    "Classified as financial document, but tool could not extract values - REVIEW"
+)
+_NONFINANCIAL_NOTE = "Not included - document contains no payment information"
 
 # Fixed column indices (1-based).
 _COL_DOCUMENT = 1
@@ -49,31 +59,37 @@ def build_excel(
     results: list[DocumentExtractionResult],
     output_path: Path,
     page_offsets: dict[str, int],
+    page_limits: dict[str, int] | None = None,
     duplicate_map: dict[str, list[str]] | None = None,
 ) -> Path:
-    """Build an Excel spreadsheet with one row per load.
+    """Build an Excel spreadsheet describing every document in the packet.
 
     Column layout: ``Document | PDF Page | Certainty | Date | Pay | Notes``.
 
-    Documents with multiple loads produce multiple consecutive rows with the
-    same document name repeated.  The TOTALS row uses ``=SUM(…)`` on the Pay
-    column and ``=MAX(…)-MIN(…)+1`` on the Date column so that Excel
-    auto-recalculates if staff correct any cell.
+    Rows are grouped into tiers, top to bottom:
 
-    When a date string cannot be parsed it is not written to the Date cell;
-    instead the raw value appears in the Notes cell as
-    ``Unparseable date: "<value>"`` and the Date cell is coloured red.  This
-    keeps the Date column purely numeric so the MAX/MIN totals formula is
-    reliable.
+    1. Payment documents with a parseable date — one row per extracted load,
+       ordered chronologically.  Multi-load documents repeat the document name.
+    2. Payment documents that are in the PDF but have no parseable date — either
+       their load rows (when values were extracted) or, when nothing usable was
+       extracted, a single red review row whose PDF Page shows the document's
+       page range (e.g. ``33 - 38``).
+    3. Excluded documents, grayed out: non-payment documents (with a note that
+       they contain no payment information) followed by exact duplicates (noted
+       as ``Exact duplicate of <kept filename>``).  Their PDF Page and Certainty
+       show ``NA``; the Date and Pay cells are left blank so the totals formulas
+       ignore them.  These documents are absent from the combined PDF.
+    4. A TOTALS row at the very bottom (``=SUM`` on Pay, ``=MAX-MIN+1`` on Date),
+       which reflects the payment rows only (blank cells are ignored).
 
-    *page_offsets* maps ``source_path.name`` to the 1-indexed starting page
-    of that document in the combined PDF.  Per-load PDF Page is computed from
-    that base plus the load's own source page offset.
+    *page_offsets* maps ``source_path.name`` to the 1-indexed starting page of
+    that document in the combined PDF; *page_limits* maps it to the number of
+    pages it spans there.  Together they give the page range for review rows.
+    Per-load PDF Page is the document's base page plus the load's own offset.
 
-    *duplicate_map* maps a kept filename to the list of byte-identical filenames
-    that were excluded from the pipeline.  When a document has duplicates, every
-    one of its load rows receives an additional note:
-    ``Exact duplicates excluded from analysis: <name1>, <name2>``.
+    *duplicate_map* maps a kept filename to the byte-identical filenames that
+    were excluded from the pipeline; each excluded name becomes its own grayed
+    row.  The kept document itself carries no duplicate note.
 
     Returns *output_path* on success.
 
@@ -87,98 +103,53 @@ def build_excel(
     _write_header_row(ws, _HEADERS)
 
     _dup_map: dict[str, list[str]] = duplicate_map or {}
+    _page_limits: dict[str, int] = page_limits or {}
+
+    payment_docs = [r for r in results if r.is_payment_document]
+    nonpayment_docs = [r for r in results if not r.is_payment_document]
+
+    # Tier 1 before tier 2: dated payment docs (chronological) then undated.
+    tier1 = sorted(
+        (r for r in payment_docs if _doc_earliest_date(r) is not None),
+        key=lambda r: _doc_earliest_date(r),  # type: ignore[arg-type, return-value]
+    )
+    tier2 = [r for r in payment_docs if _doc_earliest_date(r) is None]
 
     data_row = 2
     parseable_date_count = 0
-    for result in results:
-        doc_name = result.source_path.name
-        doc_base_page = page_offsets.get(doc_name, "")
-
-        duplicate_names = _dup_map.get(doc_name, [])
-        duplicate_note = (
-            f"Exact duplicates excluded from analysis: {', '.join(duplicate_names)}"
-            if duplicate_names
-            else ""
+    for result in tier1 + tier2:
+        data_row, wrote_dates = _write_payment_doc(
+            ws, result, data_row, page_offsets, _page_limits
         )
+        parseable_date_count += wrote_dates
 
-        if result.extraction_error:
-            # Failed extractions get a single row with the error in Notes.
-            ws.cell(row=data_row, column=_COL_DOCUMENT, value=doc_name)
-            ws.cell(row=data_row, column=_COL_PDF_PAGE, value=doc_base_page or "")
-            cert_cell = ws.cell(row=data_row, column=_COL_CERTAINTY, value=Certainty.NOT_FOUND.value)
-            cert_cell.fill = _FILL_RED
-            error_notes = "; ".join(filter(None, [duplicate_note, result.extraction_error]))
-            notes_cell = ws.cell(row=data_row, column=_COL_NOTES, value=error_notes)
-            notes_cell.fill = _FILL_RED
-            data_row += 1
-            continue
+    has_payment_rows = data_row > 2
 
-        for load in result.loads:
-            ws.cell(row=data_row, column=_COL_DOCUMENT, value=doc_name)
-
-            # Per-load PDF page: base offset + (load's source_page - 1).
-            load_source_page = _load_source_page(load)
-            if isinstance(doc_base_page, int) and load_source_page is not None:
-                pdf_page = doc_base_page + (load_source_page - 1)
-            else:
-                pdf_page = doc_base_page or ""
-            ws.cell(row=data_row, column=_COL_PDF_PAGE, value=pdf_page)
-
-            load_cert = load.certainty()
-            cert_cell = ws.cell(row=data_row, column=_COL_CERTAINTY, value=load_cert.value)
-            cert_cell.fill = _fill_for_certainty(load_cert)
-
-            # Date cell — write datetime on success; blank + red fill + Notes on failure.
-            date_certainty: Certainty | None = None
-            notes_parts: list[str] = [duplicate_note] if duplicate_note else []
-            if load.date is not None:
-                date_raw = load.date.value
-                date_certainty = load.date.certainty
-                parsed_date = parse_extracted_date(date_raw)
-                if parsed_date is not None:
-                    date_value: datetime.datetime | None = datetime.datetime(
-                        parsed_date.year, parsed_date.month, parsed_date.day
-                    )
-                    parseable_date_count += 1
-                else:
-                    date_value = None
-                    notes_parts.append(f'Unparseable date: "{date_raw}"')
-            else:
-                date_value = None
-
-            date_cell = ws.cell(row=data_row, column=_COL_DATE, value=date_value)
-            date_cell.number_format = _DATE_FORMAT
-            if date_value is not None:
-                date_cell.fill = _fill_for_certainty(date_certainty)
-            else:
-                date_cell.fill = _FILL_RED
-
-            # Pay cell
-            pay_value: float | str | None = None
-            pay_certainty: Certainty | None = None
-            if load.pay is not None:
-                pay_certainty = load.pay.certainty
-                pay_value = _parse_pay_float(load.pay.value)
-            pay_cell = ws.cell(row=data_row, column=_COL_PAY, value=pay_value)
-            pay_cell.number_format = _CURRENCY_FORMAT
-            pay_cell.fill = _fill_for_certainty(pay_certainty) if pay_value is not None else _FILL_RED
-
-            # Notes cell — join any note fragments.
-            if notes_parts:
-                notes_cell = ws.cell(row=data_row, column=_COL_NOTES, value="; ".join(notes_parts))
-                notes_cell.fill = _FILL_RED
-
+    # Tier 3: excluded documents, grayed out, written above the totals row.
+    for result in nonpayment_docs:
+        _write_excluded_row(ws, result.source_path.name, _NONFINANCIAL_NOTE, data_row)
+        data_row += 1
+    for kept_name, duplicate_names in _dup_map.items():
+        for duplicate_name in duplicate_names:
+            _write_excluded_row(
+                ws,
+                duplicate_name,
+                f"Exact duplicate of {kept_name}",
+                data_row,
+            )
             data_row += 1
 
-    totals_row = data_row
-    data_end_row = data_row - 1
-    _write_totals_row(
-        ws,
-        data_start_row=2,
-        data_end_row=data_end_row,
-        totals_row=totals_row,
-        has_parseable_dates=parseable_date_count > 0,
-    )
+    # TOTALS row sits at the very bottom.  Excluded rows leave Date/Pay blank, so
+    # the SUM/MAX/MIN formulas over the full data range reflect payment rows only.
+    if has_payment_rows:
+        totals_row = data_row
+        _write_totals_row(
+            ws,
+            data_start_row=2,
+            data_end_row=totals_row - 1,
+            totals_row=totals_row,
+            has_parseable_dates=parseable_date_count > 0,
+        )
 
     _auto_width(ws, _N_FIXED_COLS)
 
@@ -189,14 +160,161 @@ def build_excel(
             f"Failed to save Excel file '{output_path}': {exc}"
         ) from exc
 
-    n_load_rows = data_end_row - 1  # excludes header
     logger.info(
-        "Excel report saved to '{}' — {} load row(s) across {} document(s)",
+        "Excel report saved to '{}' — {} payment document(s), "
+        "{} non-payment, {} duplicate(s)",
         output_path.name,
-        n_load_rows,
-        len(results),
+        len(payment_docs),
+        len(nonpayment_docs),
+        sum(len(v) for v in _dup_map.values()),
     )
     return output_path
+
+
+def _doc_earliest_date(result: DocumentExtractionResult) -> datetime.date | None:
+    """Return the earliest parseable load date in *result*, or ``None``."""
+    earliest: datetime.date | None = None
+    for load in result.loads:
+        if load.date is not None and load.date.value:
+            parsed = parse_extracted_date(load.date.value)
+            if parsed is not None and (earliest is None or parsed < earliest):
+                earliest = parsed
+    return earliest
+
+
+def _page_range_text(
+    doc_name: str,
+    page_offsets: dict[str, int],
+    page_limits: dict[str, int],
+) -> str:
+    """Return the document's page range in the combined PDF (e.g. ``33 - 38``).
+
+    Returns a single page number when the document spans one page, or ``NA``
+    when the document is not present in the PDF.
+    """
+    start = page_offsets.get(doc_name)
+    limit = page_limits.get(doc_name)
+    if not isinstance(start, int) or not isinstance(limit, int) or limit < 1:
+        return _NA
+    end = start + limit - 1
+    return str(start) if end == start else f"{start} - {end}"
+
+
+def _write_payment_doc(
+    ws,
+    result: DocumentExtractionResult,
+    data_row: int,
+    page_offsets: dict[str, int],
+    page_limits: dict[str, int],
+) -> tuple[int, int]:
+    """Write the row(s) for one payment document.
+
+    Returns ``(next_data_row, parseable_date_count)``.  Documents with no
+    extractable values (including hard extraction failures) get a single red
+    review row whose PDF Page shows the document's page range.
+    """
+    doc_name = result.source_path.name
+
+    if not result.has_extractable_values():
+        ws.cell(row=data_row, column=_COL_DOCUMENT, value=doc_name)
+        ws.cell(
+            row=data_row,
+            column=_COL_PDF_PAGE,
+            value=_page_range_text(doc_name, page_offsets, page_limits),
+        )
+        cert_cell = ws.cell(
+            row=data_row, column=_COL_CERTAINTY, value=Certainty.REVIEW.value
+        )
+        cert_cell.fill = _FILL_RED
+        note = _REVIEW_NO_VALUES_NOTE
+        if result.extraction_error:
+            note = f"{note} ({result.extraction_error})"
+        notes_cell = ws.cell(row=data_row, column=_COL_NOTES, value=note)
+        notes_cell.fill = _FILL_RED
+        return data_row + 1, 0
+
+    doc_base_page = page_offsets.get(doc_name, "")
+    parseable_date_count = 0
+    for load in result.loads:
+        ws.cell(row=data_row, column=_COL_DOCUMENT, value=doc_name)
+
+        # Per-load PDF page: base offset + (load's source_page - 1).
+        load_source_page = _load_source_page(load)
+        if isinstance(doc_base_page, int) and load_source_page is not None:
+            pdf_page: int | str = doc_base_page + (load_source_page - 1)
+        else:
+            pdf_page = doc_base_page or ""
+        ws.cell(row=data_row, column=_COL_PDF_PAGE, value=pdf_page)
+
+        load_cert = load.certainty()
+        cert_cell = ws.cell(row=data_row, column=_COL_CERTAINTY, value=load_cert.value)
+        cert_cell.fill = _fill_for_certainty(load_cert)
+
+        # Date cell — write datetime on success; blank + red fill + Notes on failure.
+        date_certainty: Certainty | None = None
+        notes_parts: list[str] = []
+        if load.date is not None:
+            date_raw = load.date.value
+            date_certainty = load.date.certainty
+            parsed_date = parse_extracted_date(date_raw)
+            if parsed_date is not None:
+                date_value: datetime.datetime | None = datetime.datetime(
+                    parsed_date.year, parsed_date.month, parsed_date.day
+                )
+                parseable_date_count += 1
+            else:
+                date_value = None
+                notes_parts.append(f'Unparseable date: "{date_raw}"')
+        else:
+            date_value = None
+
+        date_cell = ws.cell(row=data_row, column=_COL_DATE, value=date_value)
+        date_cell.number_format = _DATE_FORMAT
+        if date_value is not None:
+            date_cell.fill = _fill_for_certainty(date_certainty)
+        else:
+            date_cell.fill = _FILL_RED
+
+        # Pay cell
+        pay_value: float | str | None = None
+        pay_certainty: Certainty | None = None
+        if load.pay is not None:
+            pay_certainty = load.pay.certainty
+            pay_value = _parse_pay_float(load.pay.value)
+        pay_cell = ws.cell(row=data_row, column=_COL_PAY, value=pay_value)
+        pay_cell.number_format = _CURRENCY_FORMAT
+        pay_cell.fill = (
+            _fill_for_certainty(pay_certainty) if pay_value is not None else _FILL_RED
+        )
+
+        # Notes cell — join any note fragments.
+        if notes_parts:
+            notes_cell = ws.cell(
+                row=data_row, column=_COL_NOTES, value="; ".join(notes_parts)
+            )
+            notes_cell.fill = _FILL_RED
+
+        data_row += 1
+
+    return data_row, parseable_date_count
+
+
+def _write_excluded_row(ws, doc_name: str, note: str, row: int) -> None:
+    """Write a grayed-out row for an excluded document.
+
+    PDF Page and Certainty show ``NA``; the Date and Pay cells are left blank so
+    the totals ``SUM``/``MAX``/``MIN`` formulas over the full data range ignore
+    them.  The whole row is filled gray.
+    """
+    ws.cell(row=row, column=_COL_DOCUMENT, value=doc_name)
+    ws.cell(row=row, column=_COL_PDF_PAGE, value=_NA)
+    ws.cell(row=row, column=_COL_CERTAINTY, value=_NA)
+    # Date and Pay intentionally left blank (not "NA") so totals formulas ignore them.
+    ws.cell(row=row, column=_COL_DATE)
+    ws.cell(row=row, column=_COL_PAY)
+    ws.cell(row=row, column=_COL_NOTES, value=note)
+    for col in range(1, _N_FIXED_COLS + 1):
+        ws.cell(row=row, column=col).fill = _FILL_GRAY
 
 
 def _load_source_page(load: ExtractedLoad) -> int | None:

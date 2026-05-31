@@ -34,11 +34,12 @@ class TestToolDefinition:
         assert "input_schema" in defn
 
     def test_input_schema_requires_loads_array(self) -> None:
-        """The new schema returns a top-level ``loads`` array."""
+        """The schema returns a top-level ``loads`` array and classification flag."""
         schema = IncomeDocumentSchema()
         input_schema = schema.tool_definition()["input_schema"]
         assert "loads" in input_schema["properties"]
-        assert input_schema["required"] == ["loads"]
+        assert "is_payment_document" in input_schema["properties"]
+        assert input_schema["required"] == ["is_payment_document", "loads"]
 
     def test_loads_array_items_have_pay_and_date(self) -> None:
         schema = IncomeDocumentSchema()
@@ -485,3 +486,63 @@ class TestNormalizePayValueProperties:
         assert _normalize_pay_value(str(d)) is None, (
             f"Expected None for negative input {d}"
         )
+
+
+class TestClassificationParsing:
+    """parse_classification reads the document-level classification flag."""
+
+    def test_payment_document_true(self) -> None:
+        schema = IncomeDocumentSchema()
+        result = schema.parse_classification(
+            {
+                "is_payment_document": True,
+                "classification_confidence": 0.95,
+                "classification_reason": "Settlement statement with carrier pay.",
+                "loads": [],
+            }
+        )
+        assert result.is_payment_document is True
+        assert result.confidence == 0.95
+        assert result.reason == "Settlement statement with carrier pay."
+
+    def test_non_payment_document_false(self) -> None:
+        schema = IncomeDocumentSchema()
+        result = schema.parse_classification(
+            {
+                "is_payment_document": False,
+                "classification_confidence": 0.8,
+                "classification_reason": "Insurance certificate, no payment.",
+            }
+        )
+        assert result.is_payment_document is False
+        assert result.confidence == 0.8
+        assert result.reason == "Insurance certificate, no payment."
+
+    def test_missing_flag_defaults_to_true(self) -> None:
+        """Err on the side of inclusion when the flag is absent."""
+        schema = IncomeDocumentSchema()
+        result = schema.parse_classification({"loads": []})
+        assert result.is_payment_document is True
+        assert result.confidence is None
+        assert result.reason is None
+
+    def test_non_boolean_flag_defaults_to_true(self) -> None:
+        """A malformed flag value must not exclude the document."""
+        schema = IncomeDocumentSchema()
+        result = schema.parse_classification({"is_payment_document": "yes"})
+        assert result.is_payment_document is True
+
+    def test_unparseable_confidence_becomes_none(self) -> None:
+        schema = IncomeDocumentSchema()
+        result = schema.parse_classification(
+            {"is_payment_document": False, "classification_confidence": "high"}
+        )
+        assert result.is_payment_document is False
+        assert result.confidence is None
+
+    def test_empty_reason_becomes_none(self) -> None:
+        schema = IncomeDocumentSchema()
+        result = schema.parse_classification(
+            {"is_payment_document": True, "classification_reason": ""}
+        )
+        assert result.reason is None

@@ -154,6 +154,9 @@ def _serialize(result: DocumentExtractionResult) -> dict:
         "content_hash": result.content_hash,
         "page_count": result.page_count,
         "extraction_error": result.extraction_error,
+        "is_payment_document": result.is_payment_document,
+        "classification_confidence": result.classification_confidence,
+        "classification_reason": result.classification_reason,
         "loads": [
             {
                 "index": load.index,
@@ -186,4 +189,7 @@ def _deserialize(data: dict, source_path: Path) -> DocumentExtractionResult:
         loads=loads,
         page_count=data.get("page_count", 0),
         extraction_error=data.get("extraction_error"),
+        is_payment_document=data.get("is_payment_document", True),
+        classification_confidence=data.get("classification_confidence"),
+        classification_reason=data.get("classification_reason"),
     )

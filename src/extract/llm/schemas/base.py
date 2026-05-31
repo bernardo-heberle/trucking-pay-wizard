@@ -5,7 +5,7 @@ import json
 from abc import ABC, abstractmethod
 from typing import Any
 
-from src.extract.models import ExtractedLoad
+from src.extract.models import Classification, ExtractedLoad
 
 
 class ExtractionSchema(ABC):
@@ -72,3 +72,12 @@ class ExtractionSchema(ABC):
         with confidence scores.
         """
         ...
+
+    def parse_classification(self, tool_input: dict[str, Any]) -> Classification:
+        """Return the document-level classification from *tool_input*.
+
+        Schemas that do not classify documents inherit this default, which
+        always treats the document as a payment document so it is never
+        excluded from the combined report.
+        """
+        return Classification()

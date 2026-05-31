@@ -42,8 +42,8 @@ This folder-based model keeps things simple: no database, no server, no session 
        ┌─────────────────────────────────┐
        │   Per-Document (cacheable)       │
        │                                  │
-       │   Ingestion → OCR → Extract →   │
-       │                      Validate    │
+       │   Ingestion → OCR → Extract +   │
+       │            Classify → Validate    │
        └─────────────┬───────────────────┘
                      ↓
          Cache results in folder
@@ -51,8 +51,8 @@ This folder-based model keeps things simple: no database, no server, no session 
        ┌─────────────────────────────────┐
        │   Report Assembly                │
        │                                  │
-       │   Combined PDF (with index)      │
-       │   CSV/Excel (with page refs)     │
+       │   Combined PDF (payment docs)    │
+       │   Excel (all docs, tiered)       │
        └─────────────────────────────────┘
 ```
 
@@ -143,6 +143,12 @@ Before OCR text is sent to the Anthropic API, a regex-based sanitizer scrubs sen
 
 The LLM extractor is schema-driven. Each schema defines the fields to extract, the prompt context, and the tool-use JSON definition. New document types are supported by adding a schema — the extractor itself does not change.
 
+### Document Classification
+
+Alongside field extraction, the LLM returns a document-level classification: whether the document is proof of a payment to the carrier (`is_payment_document`), plus a confidence score and a short reason. These are stored on `DocumentExtractionResult` and persisted in the cache.
+
+The prompt is tuned to **err on the side of caution** — when the model is unsure, it classifies the document as a payment document so nothing is dropped by mistake. This catches files that truckers upload to the wrong place (insurance certificates, bills of lading, unrelated documents). Non-payment documents are kept out of the combined PDF but remain visible (grayed out) in the spreadsheet so staff can see what was filtered and why.
+
 ---
 
 ## Validation
@@ -163,14 +169,15 @@ Report assembly consumes all cached per-document results and produces two cross-
 
 **Combined PDF** contains:
 
-- A generated summary/index page listing each source document, its starting page in the combined PDF, and a summary of extracted values
-- All original documents concatenated in order (images converted to PDF pages)
+- Only documents classified as payment documents (non-payment documents and exact duplicates are excluded). Payment documents appear in date order, with documents whose date could not be extracted placed at the bottom.
+- All included source documents concatenated in order (images converted to PDF pages), with extracted values highlighted.
 
-**CSV/Excel** contains:
+**Excel** contains one entry for every document, grouped into tiers:
 
-- One row per extracted record
-- All extracted fields (gross pay, net pay, dates, etc.)
-- A page number column referencing the corresponding page in the combined PDF
+- Payment documents with a readable date first (one row per extracted load), in date order.
+- Payment documents that are in the PDF but have no readable date next. When such a document yielded no usable value, it appears as a single red review row whose page column shows the document's page range in the combined PDF (for example, "33 - 38").
+- Excluded documents next, grayed out: non-payment documents (noted as containing no payment information) and exact duplicates (noted as a duplicate of the kept original). Their PDF page and certainty columns show `NA`, while the date and pay columns are left blank so the totals ignore them.
+- A TOTALS row at the very bottom summing the pay column and the date span; it reflects the payment rows only.
 
 The two artifacts form a cross-referenced pair: staff review the spreadsheet and flip to the exact page in the PDF to verify any value. Report assembly always regenerates from the full set of cached results, so adding new documents and re-running produces an updated, complete report.
 

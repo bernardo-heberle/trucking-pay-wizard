@@ -5,6 +5,20 @@ Entries are written for staff using the app — not for developers.
 
 ---
 
+## [1.0.0] — 2026-05-31
+
+### Added
+- The tool now decides whether each document is actually proof of a payment to the carrier. Documents that clearly are not (such as an insurance certificate, a bill of lading, or a file uploaded to the wrong place by mistake) are flagged. When the tool is unsure, it keeps the document in to be safe.
+- Documents the tool could not confirm as payment proof are now listed in the spreadsheet, grayed out, with a note explaining they were left out of the combined PDF because they did not contain payment information.
+
+### Changed
+- The combined PDF now contains only payment documents. Documents identified as non-payment, and exact duplicate files, are no longer added to the PDF.
+- The spreadsheet now lists every document. Payment documents come first (in date order), followed by payment documents with no readable date, then the excluded documents (non-payment and duplicates), with the TOTALS row at the very bottom. Excluded rows leave the date and pay columns blank so the totals stay correct.
+- When a document is a payment document but the tool could not pull out any amount or date, the spreadsheet now shows a single row highlighted in red, marked for review, with the document's page range in the combined PDF (for example, "33 - 38").
+- Duplicate files now appear as their own grayed-out rows that name the original file they duplicate, instead of being noted on the original document's row.
+
+---
+
 ## [0.6.0] — 2026-05-31
 
 ### Added

@@ -9,13 +9,20 @@ import openpyxl
 import pytest
 from openpyxl.utils import get_column_letter
 
-from src.extract.models import Certainty, DocumentExtractionResult, ExtractedField
+from src.extract.models import (
+    Certainty,
+    DocumentExtractionResult,
+    ExtractedField,
+    ExtractedLoad,
+)
 from src.report.excel_exporter import (
     build_excel,
     _DAYS_FORMAT,
     _FILL_GREEN,
     _FILL_YELLOW,
     _FILL_RED,
+    _NONFINANCIAL_NOTE,
+    _REVIEW_NO_VALUES_NOTE,
 )
 from tests.unit.report.conftest import make_extraction_result
 
@@ -544,7 +551,15 @@ class TestTotalsRow:
         ws = wb.active
         header_map = {ws.cell(row=1, column=c).value: c for c in range(1, ws.max_column + 1)}
 
-        date_cell_r1 = ws.cell(row=2, column=header_map["Date"])
+        # r1 (pay only, no date) may be ordered after r2 because it lacks a date,
+        # so locate it by document name rather than assuming a fixed row.
+        doc_col = header_map["Document"]
+        r1_row = next(
+            row
+            for row in range(2, ws.max_row + 1)
+            if ws.cell(row=row, column=doc_col).value == synthetic_source_pdf.name
+        )
+        date_cell_r1 = ws.cell(row=r1_row, column=header_map["Date"])
         assert date_cell_r1.fill.start_color.rgb == "00FFC7CE"
 
 
@@ -667,37 +682,35 @@ class TestPayNumericCells:
         assert pay_val == pytest.approx(1200.50)
 
 
-class TestDuplicateNotes:
-    """Duplicate filenames appear in the Notes column of the kept document's rows."""
+class TestDuplicateRows:
+    """Excluded duplicates appear as their own grayed rows naming the kept original."""
 
     def _load_ws(self, tmp_path: Path, results, offsets, dup_map=None):
         out = tmp_path / "out.xlsx"
         build_excel(results, out, offsets, duplicate_map=dup_map)
         return openpyxl.load_workbook(str(out)).active
 
-    def test_no_duplicate_map_leaves_notes_cell_empty(
+    def _find_row(self, ws, doc_name: str) -> int | None:
+        for row in range(2, ws.max_row + 1):
+            if ws.cell(row=row, column=1).value == doc_name:
+                return row
+        return None
+
+    def test_kept_document_has_no_duplicate_note(
         self, synthetic_source_pdf: Path, tmp_path: Path
     ) -> None:
+        """The kept original must not carry any note about its duplicates."""
         result = make_extraction_result(synthetic_source_pdf)
+        dup_map = {synthetic_source_pdf.name: ["settlement (1).pdf"]}
         ws = self._load_ws(
-            tmp_path, [result], {synthetic_source_pdf.name: 1}, dup_map=None
+            tmp_path, [result], {synthetic_source_pdf.name: 1}, dup_map=dup_map
         )
         header_map = {ws.cell(row=1, column=c).value: c for c in range(1, ws.max_column + 1)}
-        notes_val = ws.cell(row=2, column=header_map["Notes"]).value
+        kept_row = self._find_row(ws, synthetic_source_pdf.name)
+        notes_val = ws.cell(row=kept_row, column=header_map["Notes"]).value
         assert notes_val is None or notes_val == ""
 
-    def test_empty_duplicate_map_leaves_notes_cell_empty(
-        self, synthetic_source_pdf: Path, tmp_path: Path
-    ) -> None:
-        result = make_extraction_result(synthetic_source_pdf)
-        ws = self._load_ws(
-            tmp_path, [result], {synthetic_source_pdf.name: 1}, dup_map={}
-        )
-        header_map = {ws.cell(row=1, column=c).value: c for c in range(1, ws.max_column + 1)}
-        notes_val = ws.cell(row=2, column=header_map["Notes"]).value
-        assert notes_val is None or notes_val == ""
-
-    def test_single_duplicate_appears_in_notes(
+    def test_single_duplicate_gets_its_own_row_naming_original(
         self, synthetic_source_pdf: Path, tmp_path: Path
     ) -> None:
         result = make_extraction_result(synthetic_source_pdf)
@@ -706,13 +719,36 @@ class TestDuplicateNotes:
             tmp_path, [result], {synthetic_source_pdf.name: 1}, dup_map=dup_map
         )
         header_map = {ws.cell(row=1, column=c).value: c for c in range(1, ws.max_column + 1)}
-        notes_val = ws.cell(row=2, column=header_map["Notes"]).value
+        dup_row = self._find_row(ws, "settlement (1).pdf")
 
-        assert notes_val is not None
-        assert "Exact duplicates excluded from analysis:" in notes_val
-        assert "settlement (1).pdf" in notes_val
+        assert dup_row is not None, "Duplicate filename did not get its own row"
+        notes_val = ws.cell(row=dup_row, column=header_map["Notes"]).value
+        assert notes_val == f"Exact duplicate of {synthetic_source_pdf.name}"
 
-    def test_multiple_duplicates_all_appear_in_notes(
+    def test_duplicate_row_fields_are_na_blank_and_gray(
+        self, synthetic_source_pdf: Path, tmp_path: Path
+    ) -> None:
+        result = make_extraction_result(synthetic_source_pdf)
+        dup_map = {synthetic_source_pdf.name: ["copy.pdf"]}
+        ws = self._load_ws(
+            tmp_path, [result], {synthetic_source_pdf.name: 1}, dup_map=dup_map
+        )
+        header_map = {ws.cell(row=1, column=c).value: c for c in range(1, ws.max_column + 1)}
+        dup_row = self._find_row(ws, "copy.pdf")
+
+        # PDF Page and Certainty show NA.
+        for col_name in ("PDF Page", "Certainty"):
+            cell = ws.cell(row=dup_row, column=header_map[col_name])
+            assert cell.value == "NA", f"{col_name} should be NA, got {cell.value!r}"
+            assert cell.fill.start_color.rgb == "00D9D9D9", f"{col_name} should be gray"
+
+        # Date and Pay are blank so the totals formulas ignore them, but stay gray.
+        for col_name in ("Date", "Pay"):
+            cell = ws.cell(row=dup_row, column=header_map[col_name])
+            assert cell.value is None, f"{col_name} should be blank, got {cell.value!r}"
+            assert cell.fill.start_color.rgb == "00D9D9D9", f"{col_name} should be gray"
+
+    def test_multiple_duplicates_each_get_a_row(
         self, synthetic_source_pdf: Path, tmp_path: Path
     ) -> None:
         result = make_extraction_result(synthetic_source_pdf)
@@ -722,83 +758,196 @@ class TestDuplicateNotes:
         ws = self._load_ws(
             tmp_path, [result], {synthetic_source_pdf.name: 1}, dup_map=dup_map
         )
-        header_map = {ws.cell(row=1, column=c).value: c for c in range(1, ws.max_column + 1)}
-        notes_val = ws.cell(row=2, column=header_map["Notes"]).value
+        for name in ("copy_a.pdf", "copy_b.pdf", "copy_c.pdf"):
+            assert self._find_row(ws, name) is not None, f"{name} has no row"
 
-        assert "copy_a.pdf" in notes_val
-        assert "copy_b.pdf" in notes_val
-        assert "copy_c.pdf" in notes_val
-
-    def test_duplicate_note_on_every_load_row_of_multi_load_document(
+    def test_duplicate_row_contributes_nothing_to_pay_totals(
         self, synthetic_source_pdf: Path, tmp_path: Path
     ) -> None:
-        """Each load row of a document with duplicates must carry the note."""
-        from tests.unit.report.conftest import make_load
-
-        loads = [
-            make_load(synthetic_source_pdf, index=i, pay_value=f"{i * 100}.00")
-            for i in range(1, 4)
-        ]
-        result = make_extraction_result(synthetic_source_pdf, loads=loads)
-        dup_map = {synthetic_source_pdf.name: ["dup.pdf"]}
-        ws = self._load_ws(
-            tmp_path, [result], {synthetic_source_pdf.name: 1}, dup_map=dup_map
-        )
-        header_map = {ws.cell(row=1, column=c).value: c for c in range(1, ws.max_column + 1)}
-        notes_col = header_map["Notes"]
-
-        for data_row in range(2, 5):  # rows 2, 3, 4 are the three load rows
-            notes_val = ws.cell(row=data_row, column=notes_col).value
-            assert notes_val is not None, f"Row {data_row}: expected duplicate note, got None"
-            assert "dup.pdf" in notes_val, f"Row {data_row}: 'dup.pdf' not found in {notes_val!r}"
-
-    def test_duplicate_note_combined_with_unparseable_date(
-        self, synthetic_source_pdf: Path, tmp_path: Path
-    ) -> None:
-        """When both a duplicate note and an unparseable-date note apply, both appear."""
-        result = make_extraction_result(
-            synthetic_source_pdf,
-            fields=[
-                ExtractedField(
-                    name="pay", value="500.00",
-                    source_document=synthetic_source_pdf.name, source_page=1,
-                    certainty=Certainty.HIGH,
-                ),
-                ExtractedField(
-                    name="date", value="not a date",
-                    source_document=synthetic_source_pdf.name, source_page=1,
-                    certainty=Certainty.HIGH,
-                ),
-            ],
-        )
+        """The dup row sits above the bottom TOTALS row with a blank Pay cell."""
+        result = make_extraction_result(synthetic_source_pdf)
         dup_map = {synthetic_source_pdf.name: ["copy.pdf"]}
-        ws = self._load_ws(
-            tmp_path, [result], {synthetic_source_pdf.name: 1}, dup_map=dup_map
-        )
+        out = tmp_path / "out.xlsx"
+        build_excel([result], out, {synthetic_source_pdf.name: 1}, duplicate_map=dup_map)
+        ws = openpyxl.load_workbook(str(out), data_only=False).active
         header_map = {ws.cell(row=1, column=c).value: c for c in range(1, ws.max_column + 1)}
-        notes_val = ws.cell(row=2, column=header_map["Notes"]).value
 
-        assert notes_val is not None
-        assert "copy.pdf" in notes_val
-        assert 'Unparseable date: "not a date"' in notes_val
+        # Layout: row 2 payment, row 3 duplicate, row 4 TOTALS (the very bottom).
+        totals_row = self._find_row(ws, "TOTALS")
+        assert totals_row == ws.max_row, "TOTALS must be the very last row"
+        dup_row = self._find_row(ws, "copy.pdf")
+        assert dup_row < totals_row, "duplicate row must sit above the TOTALS row"
 
-    def test_unrelated_document_notes_cell_empty_when_dup_map_set(
+        # The dup row's Pay cell is blank, so it cannot affect the SUM.
+        assert ws.cell(row=dup_row, column=header_map["Pay"]).value is None
+        # SUM spans the full data range; blank dup cell is ignored by Excel.
+        pay_formula = ws.cell(row=totals_row, column=header_map["Pay"]).value
+        assert f"E2:E{totals_row - 1}" in pay_formula, (
+            f"SUM must span the data rows, got {pay_formula!r}"
+        )
+
+
+class TestNonFinancialRows:
+    """Non-payment documents are grayed out with NA fields and excluded from totals."""
+
+    def _find_row(self, ws, doc_name: str) -> int | None:
+        for row in range(2, ws.max_row + 1):
+            if ws.cell(row=row, column=1).value == doc_name:
+                return row
+        return None
+
+    def test_non_financial_doc_is_grayed_with_na_blank_and_note(
+        self, synthetic_source_pdf: Path, tmp_path: Path
+    ) -> None:
+        result = make_extraction_result(synthetic_source_pdf)
+        result.is_payment_document = False
+        out = tmp_path / "out.xlsx"
+        build_excel([result], out, {})
+
+        wb = openpyxl.load_workbook(str(out))
+        ws = wb.active
+        header_map = {ws.cell(row=1, column=c).value: c for c in range(1, ws.max_column + 1)}
+        row = self._find_row(ws, synthetic_source_pdf.name)
+
+        assert row is not None
+        assert ws.cell(row=row, column=header_map["Notes"]).value == _NONFINANCIAL_NOTE
+        for col_name in ("PDF Page", "Certainty"):
+            cell = ws.cell(row=row, column=header_map[col_name])
+            assert cell.value == "NA"
+            assert cell.fill.start_color.rgb == "00D9D9D9"
+        for col_name in ("Date", "Pay"):
+            cell = ws.cell(row=row, column=header_map[col_name])
+            assert cell.value is None
+            assert cell.fill.start_color.rgb == "00D9D9D9"
+
+    def test_non_financial_doc_contributes_nothing_to_pay_totals(
         self, synthetic_source_pdf: Path, synthetic_source_pdf_b: Path, tmp_path: Path
     ) -> None:
-        """A document NOT in the dup_map must not have a duplicate note."""
-        r_a = make_extraction_result(synthetic_source_pdf, content_hash="h1")
-        r_b = make_extraction_result(synthetic_source_pdf_b, content_hash="h2", page_count=2)
-        # Only doc_a has a duplicate; doc_b does not.
-        dup_map = {synthetic_source_pdf.name: ["extra.pdf"]}
-        offsets = {synthetic_source_pdf.name: 1, synthetic_source_pdf_b.name: 2}
-        ws = self._load_ws(tmp_path, [r_a, r_b], offsets, dup_map=dup_map)
+        """A non-payment doc has a blank Pay cell and sits above the bottom TOTALS row."""
+        payment = make_extraction_result(synthetic_source_pdf, content_hash="h1")
+        nonpayment = make_extraction_result(synthetic_source_pdf_b, content_hash="h2")
+        nonpayment.is_payment_document = False
+        out = tmp_path / "out.xlsx"
+        build_excel([payment, nonpayment], out, {synthetic_source_pdf.name: 1})
+
+        ws = openpyxl.load_workbook(str(out), data_only=False).active
+        header_map = {ws.cell(row=1, column=c).value: c for c in range(1, ws.max_column + 1)}
+        totals_row = self._find_row(ws, "TOTALS")
+        assert totals_row == ws.max_row, "TOTALS must be the very last row"
+
+        nonpayment_row = self._find_row(ws, synthetic_source_pdf_b.name)
+        assert nonpayment_row < totals_row, "non-payment row must sit above TOTALS"
+        assert ws.cell(row=nonpayment_row, column=header_map["Pay"]).value is None
+
+        pay_formula = ws.cell(row=totals_row, column=header_map["Pay"]).value
+        assert f"E2:E{totals_row - 1}" in pay_formula
+
+
+class TestNoValuesReviewRow:
+    """A payment doc with nothing extracted gets a red review row with a page range."""
+
+    def _no_values_result(self, source_path: Path) -> DocumentExtractionResult:
+        return DocumentExtractionResult(
+            source_path=source_path,
+            content_hash="novals",
+            page_count=6,
+            loads=[ExtractedLoad(index=1, pay=None, date=None)],
+            is_payment_document=True,
+        )
+
+    def test_review_note_and_red_certainty(
+        self, synthetic_source_pdf: Path, tmp_path: Path
+    ) -> None:
+        result = self._no_values_result(synthetic_source_pdf)
+        out = tmp_path / "out.xlsx"
+        build_excel([result], out, {synthetic_source_pdf.name: 3}, {synthetic_source_pdf.name: 6})
+
+        wb = openpyxl.load_workbook(str(out))
+        ws = wb.active
         header_map = {ws.cell(row=1, column=c).value: c for c in range(1, ws.max_column + 1)}
 
-        # Row 2 = doc_a (has duplicate note)
-        assert "extra.pdf" in (ws.cell(row=2, column=header_map["Notes"]).value or "")
-        # Row 3 = doc_b (no duplicate note)
-        doc_b_notes = ws.cell(row=3, column=header_map["Notes"]).value
-        assert doc_b_notes is None or doc_b_notes == ""
+        assert ws.cell(row=2, column=header_map["Certainty"]).value == "Review"
+        assert ws.cell(row=2, column=header_map["Certainty"]).fill.start_color.rgb == "00FFC7CE"
+        assert ws.cell(row=2, column=header_map["Notes"]).value == _REVIEW_NO_VALUES_NOTE
+
+    def test_pdf_page_shows_inclusive_range(
+        self, synthetic_source_pdf: Path, tmp_path: Path
+    ) -> None:
+        """A doc starting at page 3 and spanning 6 pages must show '3 - 8'."""
+        result = self._no_values_result(synthetic_source_pdf)
+        out = tmp_path / "out.xlsx"
+        build_excel([result], out, {synthetic_source_pdf.name: 3}, {synthetic_source_pdf.name: 6})
+
+        wb = openpyxl.load_workbook(str(out))
+        ws = wb.active
+        header_map = {ws.cell(row=1, column=c).value: c for c in range(1, ws.max_column + 1)}
+        assert ws.cell(row=2, column=header_map["PDF Page"]).value == "3 - 8"
+
+    def test_single_page_doc_shows_single_number(
+        self, synthetic_source_pdf: Path, tmp_path: Path
+    ) -> None:
+        result = self._no_values_result(synthetic_source_pdf)
+        result.page_count = 1
+        out = tmp_path / "out.xlsx"
+        build_excel([result], out, {synthetic_source_pdf.name: 4}, {synthetic_source_pdf.name: 1})
+
+        wb = openpyxl.load_workbook(str(out))
+        ws = wb.active
+        header_map = {ws.cell(row=1, column=c).value: c for c in range(1, ws.max_column + 1)}
+        assert ws.cell(row=2, column=header_map["PDF Page"]).value == "4"
+
+
+class TestTierOrdering:
+    """Rows are ordered: dated payment docs, then undated, then excluded docs."""
+
+    def test_undated_payment_doc_sorts_below_dated(
+        self, synthetic_source_pdf: Path, synthetic_source_pdf_b: Path, tmp_path: Path
+    ) -> None:
+        from tests.unit.report.conftest import make_load
+
+        dated = make_extraction_result(
+            synthetic_source_pdf,
+            content_hash="h1",
+            loads=[make_load(synthetic_source_pdf, date_value="03/01/2024")],
+        )
+        undated = make_extraction_result(
+            synthetic_source_pdf_b,
+            content_hash="h2",
+            loads=[make_load(synthetic_source_pdf_b, date_value=None)],
+        )
+        out = tmp_path / "out.xlsx"
+        # Pass undated first to prove ordering is by tier, not input order.
+        build_excel([undated, dated], out, {})
+
+        ws = openpyxl.load_workbook(str(out)).active
+        assert ws.cell(row=2, column=1).value == synthetic_source_pdf.name
+        assert ws.cell(row=3, column=1).value == synthetic_source_pdf_b.name
+
+    def test_excluded_docs_sort_to_the_bottom(
+        self, synthetic_source_pdf: Path, synthetic_source_pdf_b: Path, tmp_path: Path
+    ) -> None:
+        payment = make_extraction_result(synthetic_source_pdf, content_hash="h1")
+        nonpayment = make_extraction_result(synthetic_source_pdf_b, content_hash="h2")
+        nonpayment.is_payment_document = False
+        out = tmp_path / "out.xlsx"
+        # Non-payment passed first; it must still land below the payment row.
+        build_excel([nonpayment, payment], out, {synthetic_source_pdf.name: 1})
+
+        ws = openpyxl.load_workbook(str(out)).active
+        assert ws.cell(row=2, column=1).value == synthetic_source_pdf.name
+        totals_row = next(
+            row
+            for row in range(2, ws.max_row + 1)
+            if ws.cell(row=row, column=1).value == "TOTALS"
+        )
+        nonpayment_row = next(
+            row
+            for row in range(2, ws.max_row + 1)
+            if ws.cell(row=row, column=1).value == synthetic_source_pdf_b.name
+        )
+        # Excluded rows sit below the payment row but above the bottom TOTALS row.
+        assert 2 < nonpayment_row < totals_row
+        assert totals_row == ws.max_row
 
 
 class TestDateFormatNormalization:

@@ -53,10 +53,11 @@ class TestCombinedPdfStructure:
     def test_returns_page_offsets(self, synthetic_source_pdf: Path, tmp_path: Path) -> None:
         result = make_extraction_result(synthetic_source_pdf)
         out = tmp_path / "combined.pdf"
-        _, offsets = build_pdf([result], out)
+        _, offsets, limits = build_pdf([result], out)
 
         assert synthetic_source_pdf.name in offsets
         assert offsets[synthetic_source_pdf.name] == 1  # source starts at page 1
+        assert limits[synthetic_source_pdf.name] == 1  # single-page document
 
 
 class TestHighlightAnnotations:
@@ -379,7 +380,7 @@ class TestPageTruncation:
         # r_long: HIGH certainty, highlight page 3 → limit 3
         # short starts at 1, long starts at 2
         out = tmp_path / "combined.pdf"
-        _, offsets = build_pdf([r_short, r_long], out)
+        _, offsets, _limits = build_pdf([r_short, r_long], out)
 
         assert offsets[synthetic_source_pdf.name] == 1
         assert offsets[synthetic_source_pdf_long.name] == 2

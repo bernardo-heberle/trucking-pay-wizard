@@ -1,0 +1,326 @@
+{
+  "source_path": "Bill_of_Lading_signed.pdf",
+  "content_hash": "dead10ccdead10ccdead10ccdead10ccdead10ccdead10ccdead10ccdead10cc",
+  "pages": [
+    {
+      "page_number": 1,
+      "width_inches": 8.5,
+      "height_inches": 11.0,
+      "line_count": 26
+    }
+  ],
+  "lines": [
+    {
+      "text": "BILL OF LADING",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 0.5,
+        "width": 1.1,
+        "height": 0.25
+      },
+      "char_start": 0,
+      "char_end": 14
+    },
+    {
+      "text": "Vehicle Condition and Inspection Report",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 0.87,
+        "width": 3.1,
+        "height": 0.25
+      },
+      "char_start": 15,
+      "char_end": 54
+    },
+    {
+      "text": "Carrier: Eagle Express Inc",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.23,
+        "width": 2.1,
+        "height": 0.25
+      },
+      "char_start": 55,
+      "char_end": 81
+    },
+    {
+      "text": "MC Number: 1234567",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.6,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 82,
+      "char_end": 100
+    },
+    {
+      "text": "Driver: John Doe",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.96,
+        "width": 1.3,
+        "height": 0.25
+      },
+      "char_start": 101,
+      "char_end": 117
+    },
+    {
+      "text": "Origin: Los Angeles, CA",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.33,
+        "width": 1.8,
+        "height": 0.25
+      },
+      "char_start": 118,
+      "char_end": 141
+    },
+    {
+      "text": "Destination: Phoenix, AZ",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.69,
+        "width": 1.9,
+        "height": 0.25
+      },
+      "char_start": 142,
+      "char_end": 166
+    },
+    {
+      "text": "Vehicle: 2019 Honda Civic",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.06,
+        "width": 2.0,
+        "height": 0.25
+      },
+      "char_start": 167,
+      "char_end": 192
+    },
+    {
+      "text": "VIN: 2HGFC2F53KH012345",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.42,
+        "width": 1.8,
+        "height": 0.25
+      },
+      "char_start": 193,
+      "char_end": 215
+    },
+    {
+      "text": "Color: Blue   Odometer: 42,180 mi",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.79,
+        "width": 2.6,
+        "height": 0.25
+      },
+      "char_start": 216,
+      "char_end": 249
+    },
+    {
+      "text": "Condition at Pickup",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.15,
+        "width": 1.5,
+        "height": 0.25
+      },
+      "char_start": 250,
+      "char_end": 269
+    },
+    {
+      "text": "Front: minor scratch on bumper",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.52,
+        "width": 2.4,
+        "height": 0.25
+      },
+      "char_start": 270,
+      "char_end": 300
+    },
+    {
+      "text": "Driver Side: clean",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.88,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 301,
+      "char_end": 319
+    },
+    {
+      "text": "Passenger Side: small door ding",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.25,
+        "width": 2.5,
+        "height": 0.25
+      },
+      "char_start": 320,
+      "char_end": 351
+    },
+    {
+      "text": "Rear: clean",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.62,
+        "width": 0.9,
+        "height": 0.25
+      },
+      "char_start": 352,
+      "char_end": 363
+    },
+    {
+      "text": "Roof / Glass: no cracks",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.98,
+        "width": 1.8,
+        "height": 0.25
+      },
+      "char_start": 364,
+      "char_end": 387
+    },
+    {
+      "text": "Pickup acknowledged by shipper representative.",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.35,
+        "width": 3.7,
+        "height": 0.25
+      },
+      "char_start": 388,
+      "char_end": 434
+    },
+    {
+      "text": "Shipper Signature: ____________________",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.71,
+        "width": 3.1,
+        "height": 0.25
+      },
+      "char_start": 435,
+      "char_end": 474
+    },
+    {
+      "text": "Pickup Date: 04/15/2024",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.08,
+        "width": 1.8,
+        "height": 0.25
+      },
+      "char_start": 475,
+      "char_end": 498
+    },
+    {
+      "text": "Condition at Delivery",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.44,
+        "width": 1.7,
+        "height": 0.25
+      },
+      "char_start": 499,
+      "char_end": 520
+    },
+    {
+      "text": "No new damage noted on delivery inspection.",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.81,
+        "width": 3.4,
+        "height": 0.25
+      },
+      "char_start": 521,
+      "char_end": 564
+    },
+    {
+      "text": "Vehicle received in same condition as pickup.",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.17,
+        "width": 3.6,
+        "height": 0.25
+      },
+      "char_start": 565,
+      "char_end": 610
+    },
+    {
+      "text": "Consignee Signature: ____________________",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.54,
+        "width": 3.3,
+        "height": 0.25
+      },
+      "char_start": 611,
+      "char_end": 652
+    },
+    {
+      "text": "Delivery Date: 04/18/2024",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.9,
+        "width": 2.0,
+        "height": 0.25
+      },
+      "char_start": 653,
+      "char_end": 678
+    },
+    {
+      "text": "This document certifies the condition and transfer of the vehicle",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.27,
+        "width": 5.2,
+        "height": 0.25
+      },
+      "char_start": 679,
+      "char_end": 744
+    },
+    {
+      "text": "described above. It is not an invoice or a statement of account.",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.63,
+        "width": 5.1,
+        "height": 0.25
+      },
+      "char_start": 745,
+      "char_end": 809
+    }
+  ]
+}

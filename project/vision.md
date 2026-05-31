@@ -12,8 +12,8 @@ The system reduces the manual effort required by legal staff while improving acc
 
 The immediate goal is a standalone desktop tool distributed as an executable. Staff work with **folder-based sessions** — each folder holds source documents for a claim or batch. Staff drop documents into a folder, run the tool, and receive two cross-referenced output artifacts:
 
-- **Combined PDF** — an index page followed by all source documents, so reviewers can jump to any referenced page
-- **CSV/Excel** — one row per extracted record with a page-number column pointing into the combined PDF
+- **Combined PDF** — the payment documents concatenated in date order with extracted values highlighted, so reviewers can jump to any referenced page. Documents that are not proof of payment, and exact duplicates, are left out.
+- **Excel** — one entry per document with a page reference into the combined PDF. Payment documents come first; documents the tool flagged as non-payment or duplicate are grayed out at the bottom so staff can see exactly what was filtered out and why.
 
 To process additional documents, staff add them to the folder and re-run. Only new documents are processed; the output artifacts are regenerated from the full set.
 
@@ -65,7 +65,6 @@ Future improvements may include:
 - confidence review UI — surface low-confidence LLM extractions for staff approval
 - comparison mode — run both extractors on the same documents to evaluate accuracy
 - schema registry — load extraction schemas from config files for non-developer customisation
-- document classification to automatically reject irrelevant documents
 - document template detection
 - improved review interface based on staff feedback
 - local model option for zero-data-egress environments

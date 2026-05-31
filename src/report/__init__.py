@@ -26,6 +26,11 @@ def build_report(
     building both outputs, so the combined PDF and Excel rows appear in date
     order.  Documents with no extracted date sort to the end.
 
+    Only documents classified as payment documents are embedded in the combined
+    PDF.  Non-payment documents are excluded from the PDF but still listed in
+    the Excel spreadsheet (grayed out).  The Excel exporter owns its own tiered
+    row ordering, so the full *results* set is handed to it unfiltered.
+
     When *prefix* is provided the output files are named
     ``<prefix>_combined.pdf`` and ``<prefix>_extracted.xlsx``.
     When omitted the legacy names ``combined_report.pdf`` /
@@ -51,11 +56,19 @@ def build_report(
         pdf_path = output_folder / "combined_report.pdf"
         excel_path = output_folder / "extracted_data.xlsx"
 
+    pdf_results = [r for r in results if r.is_payment_document]
+
     logger.info("Building combined PDF report …")
-    pdf_path, page_offsets = build_pdf(results, pdf_path)
+    pdf_path, page_offsets, page_limits = build_pdf(pdf_results, pdf_path)
 
     logger.info("Building Excel spreadsheet …")
-    build_excel(results, excel_path, page_offsets, duplicate_map=duplicate_map)
+    build_excel(
+        results,
+        excel_path,
+        page_offsets,
+        page_limits,
+        duplicate_map=duplicate_map,
+    )
 
     logger.info("Report assembly complete.")
     return pdf_path, excel_path

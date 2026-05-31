@@ -1,0 +1,386 @@
+{
+  "source_path": "Certificate_of_Insurance.pdf",
+  "content_hash": "b00f00d1c0ffee00b00f00d1c0ffee00b00f00d1c0ffee00b00f00d1c0ffee00",
+  "pages": [
+    {
+      "page_number": 1,
+      "width_inches": 8.5,
+      "height_inches": 11.0,
+      "line_count": 31
+    }
+  ],
+  "lines": [
+    {
+      "text": "CERTIFICATE OF LIABILITY INSURANCE",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 0.5,
+        "width": 2.7,
+        "height": 0.25
+      },
+      "char_start": 0,
+      "char_end": 34
+    },
+    {
+      "text": "Date Issued: 04/15/2024",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 0.81,
+        "width": 1.8,
+        "height": 0.25
+      },
+      "char_start": 35,
+      "char_end": 58
+    },
+    {
+      "text": "This certificate is issued as a matter of information only and confers",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.11,
+        "width": 5.6,
+        "height": 0.25
+      },
+      "char_start": 59,
+      "char_end": 129
+    },
+    {
+      "text": "no rights upon the certificate holder. This certificate does not amend,",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.42,
+        "width": 5.7,
+        "height": 0.25
+      },
+      "char_start": 130,
+      "char_end": 201
+    },
+    {
+      "text": "extend, or alter the coverage afforded by the policies below.",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.73,
+        "width": 4.9,
+        "height": 0.25
+      },
+      "char_start": 202,
+      "char_end": 263
+    },
+    {
+      "text": "Producer: Midwest Commercial Insurance Agency",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.03,
+        "width": 3.6,
+        "height": 0.25
+      },
+      "char_start": 264,
+      "char_end": 309
+    },
+    {
+      "text": "100 Insurance Plaza, Suite 400",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.34,
+        "width": 2.4,
+        "height": 0.25
+      },
+      "char_start": 310,
+      "char_end": 340
+    },
+    {
+      "text": "Chicago, IL 60601",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.65,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 341,
+      "char_end": 358
+    },
+    {
+      "text": "Insured: Eagle Express Inc",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.95,
+        "width": 2.1,
+        "height": 0.25
+      },
+      "char_start": 359,
+      "char_end": 385
+    },
+    {
+      "text": "1200 Commerce Blvd Ste 300",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.26,
+        "width": 2.1,
+        "height": 0.25
+      },
+      "char_start": 386,
+      "char_end": 412
+    },
+    {
+      "text": "Torrance, CA 90501",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.56,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 413,
+      "char_end": 431
+    },
+    {
+      "text": "Insurer A: National Trucking Casualty Company",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.87,
+        "width": 3.6,
+        "height": 0.25
+      },
+      "char_start": 432,
+      "char_end": 477
+    },
+    {
+      "text": "Coverages",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.18,
+        "width": 0.7,
+        "height": 0.25
+      },
+      "char_start": 478,
+      "char_end": 487
+    },
+    {
+      "text": "Type of Insurance: Commercial Auto Liability",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.48,
+        "width": 3.5,
+        "height": 0.25
+      },
+      "char_start": 488,
+      "char_end": 532
+    },
+    {
+      "text": "Policy Number: CATL-9988776",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.79,
+        "width": 2.2,
+        "height": 0.25
+      },
+      "char_start": 533,
+      "char_end": 560
+    },
+    {
+      "text": "Policy Effective Date: 01/01/2024",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.1,
+        "width": 2.6,
+        "height": 0.25
+      },
+      "char_start": 561,
+      "char_end": 594
+    },
+    {
+      "text": "Policy Expiration Date: 01/01/2025",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.4,
+        "width": 2.7,
+        "height": 0.25
+      },
+      "char_start": 595,
+      "char_end": 629
+    },
+    {
+      "text": "Combined Single Limit: 1,000,000",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.71,
+        "width": 2.6,
+        "height": 0.25
+      },
+      "char_start": 630,
+      "char_end": 662
+    },
+    {
+      "text": "Type of Insurance: Motor Truck Cargo",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.02,
+        "width": 2.9,
+        "height": 0.25
+      },
+      "char_start": 663,
+      "char_end": 699
+    },
+    {
+      "text": "Policy Number: MTC-5544332",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.32,
+        "width": 2.1,
+        "height": 0.25
+      },
+      "char_start": 700,
+      "char_end": 726
+    },
+    {
+      "text": "Cargo Limit: 250,000",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.63,
+        "width": 1.6,
+        "height": 0.25
+      },
+      "char_start": 727,
+      "char_end": 747
+    },
+    {
+      "text": "Description of Operations:",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.94,
+        "width": 2.1,
+        "height": 0.25
+      },
+      "char_start": 748,
+      "char_end": 774
+    },
+    {
+      "text": "Auto transport hauling. Certificate holder is named as additional",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.24,
+        "width": 5.2,
+        "height": 0.25
+      },
+      "char_start": 775,
+      "char_end": 840
+    },
+    {
+      "text": "insured with respect to the operations of the named insured.",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.55,
+        "width": 4.8,
+        "height": 0.25
+      },
+      "char_start": 841,
+      "char_end": 901
+    },
+    {
+      "text": "Certificate Holder: Pacific Auto Transport LLC",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.85,
+        "width": 3.7,
+        "height": 0.25
+      },
+      "char_start": 902,
+      "char_end": 948
+    },
+    {
+      "text": "9800 Wilshire Blvd #200",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.16,
+        "width": 1.8,
+        "height": 0.25
+      },
+      "char_start": 949,
+      "char_end": 972
+    },
+    {
+      "text": "Beverly Hills, CA 90210",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.47,
+        "width": 1.8,
+        "height": 0.25
+      },
+      "char_start": 973,
+      "char_end": 996
+    },
+    {
+      "text": "Should any of the above described policies be cancelled before the",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.77,
+        "width": 5.3,
+        "height": 0.25
+      },
+      "char_start": 997,
+      "char_end": 1063
+    },
+    {
+      "text": "expiration date thereof, notice will be delivered in accordance with",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.08,
+        "width": 5.4,
+        "height": 0.25
+      },
+      "char_start": 1064,
+      "char_end": 1132
+    },
+    {
+      "text": "the policy provisions.",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.39,
+        "width": 1.8,
+        "height": 0.25
+      },
+      "char_start": 1133,
+      "char_end": 1155
+    },
+    {
+      "text": "Authorized Representative",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.69,
+        "width": 2.0,
+        "height": 0.25
+      },
+      "char_start": 1156,
+      "char_end": 1181
+    }
+  ]
+}

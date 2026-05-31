@@ -18,6 +18,8 @@ Fixture files and their expected extraction values:
     super_dispatch_backlotcars.json   pay=1350.00   date=04/22/2024
     multi_vehicle_central_dispatch.json pay=4500.00 date=05/06/2024
     summary_with_detail_tables.json   pay=981.92    date contains "Feb. 16, 2025" (single load)
+    insurance_certificate.json        is_payment_document=False
+    bill_of_lading_no_payment.json    is_payment_document=False
 """
 
 from __future__ import annotations
@@ -510,3 +512,51 @@ class TestSummaryWithDetailExtraction:
         pay = result.loads[0].pay
         assert pay is not None
         assert pay.certainty == Certainty.HIGH
+
+
+class TestDocumentClassification:
+    """The LLM flags whether each document is a proof-of-payment document."""
+
+    @pytest.mark.parametrize(
+        "fixture_name, page_count",
+        [
+            ("central_dispatch_settlement.json", 1),
+            ("v2_dispatch_load.json", 2),
+            ("super_dispatch_backlotcars.json", 3),
+            ("cod_settlement_ocr.json", 1),
+            ("summary_with_detail_tables.json", 4),
+        ],
+        ids=["central_dispatch", "v2_dispatch", "super_dispatch", "cod", "summary"],
+    )
+    def test_payment_documents_classified_as_payment(
+        self, anthropic_extractor, fixture_name, page_count
+    ) -> None:
+        ocr = load_ocr_fixture(fixture_name)
+        result = anthropic_extractor.extract(ocr, page_count=page_count)
+
+        assert result.is_payment_document is True, (
+            f"{fixture_name} misclassified as non-payment "
+            f"(reason: {result.classification_reason!r})"
+        )
+
+    def test_insurance_certificate_classified_non_payment(
+        self, anthropic_extractor
+    ) -> None:
+        ocr = load_ocr_fixture("insurance_certificate.json")
+        result = anthropic_extractor.extract(ocr, page_count=1)
+
+        assert result.is_payment_document is False, (
+            f"Insurance certificate misclassified as payment document "
+            f"(reason: {result.classification_reason!r})"
+        )
+
+    def test_bill_of_lading_classified_non_payment(
+        self, anthropic_extractor
+    ) -> None:
+        ocr = load_ocr_fixture("bill_of_lading_no_payment.json")
+        result = anthropic_extractor.extract(ocr, page_count=1)
+
+        assert result.is_payment_document is False, (
+            f"Bill of lading misclassified as payment document "
+            f"(reason: {result.classification_reason!r})"
+        )

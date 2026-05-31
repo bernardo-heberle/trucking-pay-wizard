@@ -1255,6 +1255,103 @@ def _single_load_settlement() -> dict:
     )
 
 
+def _insurance_certificate() -> dict:
+    """A Certificate of Insurance — NOT a proof-of-payment document.
+
+    Truckers sometimes upload their COI instead of (or alongside) a settlement.
+    It names a carrier and an auto-transport policy but contains no carrier pay
+    amount and no proof that any payment was received.  The classifier must set
+    is_payment_document=False.
+
+    Expected: is_payment_document=False (no pay/date to extract).
+    """
+    return _build_fixture(
+        source_path="Certificate_of_Insurance.pdf",
+        content_hash="b00f00d1c0ffee00b00f00d1c0ffee00b00f00d1c0ffee00b00f00d1c0ffee00",
+        pages={
+            1: [
+                "CERTIFICATE OF LIABILITY INSURANCE",
+                "Date Issued: 04/15/2024",
+                "This certificate is issued as a matter of information only and confers",
+                "no rights upon the certificate holder. This certificate does not amend,",
+                "extend, or alter the coverage afforded by the policies below.",
+                "Producer: Midwest Commercial Insurance Agency",
+                "100 Insurance Plaza, Suite 400",
+                "Chicago, IL 60601",
+                "Insured: Eagle Express Inc",
+                "1200 Commerce Blvd Ste 300",
+                "Torrance, CA 90501",
+                "Insurer A: National Trucking Casualty Company",
+                "Coverages",
+                "Type of Insurance: Commercial Auto Liability",
+                "Policy Number: CATL-9988776",
+                "Policy Effective Date: 01/01/2024",
+                "Policy Expiration Date: 01/01/2025",
+                "Combined Single Limit: 1,000,000",
+                "Type of Insurance: Motor Truck Cargo",
+                "Policy Number: MTC-5544332",
+                "Cargo Limit: 250,000",
+                "Description of Operations:",
+                "Auto transport hauling. Certificate holder is named as additional",
+                "insured with respect to the operations of the named insured.",
+                "Certificate Holder: Pacific Auto Transport LLC",
+                "9800 Wilshire Blvd #200",
+                "Beverly Hills, CA 90210",
+                "Should any of the above described policies be cancelled before the",
+                "expiration date thereof, notice will be delivered in accordance with",
+                "the policy provisions.",
+                "Authorized Representative",
+            ],
+        },
+    )
+
+
+def _bill_of_lading_no_payment() -> dict:
+    """A signed Bill of Lading / delivery receipt — NOT proof of payment.
+
+    A BOL documents the condition and handoff of a vehicle.  It names the
+    carrier and the vehicle but states no carrier pay amount and is not proof
+    that the carrier received money.  The classifier must set
+    is_payment_document=False.
+
+    Expected: is_payment_document=False (no pay/date to extract).
+    """
+    return _build_fixture(
+        source_path="Bill_of_Lading_signed.pdf",
+        content_hash="dead10ccdead10ccdead10ccdead10ccdead10ccdead10ccdead10ccdead10cc",
+        pages={
+            1: [
+                "BILL OF LADING",
+                "Vehicle Condition and Inspection Report",
+                "Carrier: Eagle Express Inc",
+                "MC Number: 1234567",
+                "Driver: John Doe",
+                "Origin: Los Angeles, CA",
+                "Destination: Phoenix, AZ",
+                "Vehicle: 2019 Honda Civic",
+                "VIN: 2HGFC2F53KH012345",
+                "Color: Blue   Odometer: 42,180 mi",
+                "Condition at Pickup",
+                "Front: minor scratch on bumper",
+                "Driver Side: clean",
+                "Passenger Side: small door ding",
+                "Rear: clean",
+                "Roof / Glass: no cracks",
+                "Pickup acknowledged by shipper representative.",
+                "Shipper Signature: ____________________",
+                "Pickup Date: 04/15/2024",
+                "Condition at Delivery",
+                "No new damage noted on delivery inspection.",
+                "Vehicle received in same condition as pickup.",
+                "Consignee Signature: ____________________",
+                "Delivery Date: 04/18/2024",
+                "This document certifies the condition and transfer of the vehicle",
+                "described above. It is not an invoice or a statement of account.",
+            ],
+        },
+    )
+
+
 _ALL_FIXTURES = {
     "central_dispatch_settlement.json": _central_dispatch_settlement,
     "v2_dispatch_load.json": _v2_dispatch_load,
@@ -1273,6 +1370,9 @@ _ALL_FIXTURES = {
     "single_load_settlement.json": _single_load_settlement,
     # Summary page + detail tables (extract summary, ignore item-by-item detail)
     "summary_with_detail_tables.json": _summary_with_detail_tables,
+    # Non-payment documents (classifier must set is_payment_document=False)
+    "insurance_certificate.json": _insurance_certificate,
+    "bill_of_lading_no_payment.json": _bill_of_lading_no_payment,
 }
 
 

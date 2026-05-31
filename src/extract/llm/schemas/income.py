@@ -5,7 +5,7 @@ from decimal import Decimal, InvalidOperation
 from typing import Any
 
 from src.extract.exceptions import MalformedToolResponse
-from src.extract.models import Certainty, ExtractedField, ExtractedLoad
+from src.extract.models import Certainty, Classification, ExtractedField, ExtractedLoad
 
 from .base import ExtractionSchema
 
@@ -20,6 +20,33 @@ _TOOL_SCHEMA: dict[str, Any] = {
     "input_schema": {
         "type": "object",
         "properties": {
+            "is_payment_document": {
+                "type": "boolean",
+                "description": (
+                    "True if this document is some form of proof that the "
+                    "carrier received (or is owed) a payment — e.g. a settlement "
+                    "statement, dispatch/load sheet with a carrier pay amount, "
+                    "carrier statement, COD settlement, or remittance / "
+                    "advice-of-deposit notification.  False ONLY when the "
+                    "document clearly contains no proof of payment to a carrier "
+                    "(e.g. a bill of lading or rate confirmation with no payment "
+                    "amount, an insurance certificate, or an unrelated/misfiled "
+                    "document).  When uncertain, return true."
+                ),
+            },
+            "classification_confidence": {
+                "type": "number",
+                "description": (
+                    "Confidence 0.0-1.0 that the is_payment_document "
+                    "classification is correct."
+                ),
+            },
+            "classification_reason": {
+                "type": "string",
+                "description": (
+                    "One short sentence explaining the classification decision."
+                ),
+            },
             "loads": {
                 "type": "array",
                 "minItems": 1,
@@ -91,7 +118,7 @@ _TOOL_SCHEMA: dict[str, Any] = {
                 },
             },
         },
-        "required": ["loads"],
+        "required": ["is_payment_document", "loads"],
     },
 }
 
@@ -104,11 +131,32 @@ statements, and remittance advice / advice-of-deposit payment notifications \
 (e.g. from shippers such as Weyerhaeuser).
 
 Your task:
-- Extract the **total payment to carrier** (the dollar amount the carrier \
+- First, classify whether the document is a proof-of-payment document (set \
+is_payment_document) — see "Document classification" below.
+- Then extract the **total payment to carrier** (the dollar amount the carrier \
 receives) and **the most relevant date** for each load on the document.
 - Some documents list a single load; many settlement statements list several. \
 Return one entry per distinct load with its own pay and date. If the document \
 has only one load, return a single-element array.
+
+Document classification — is_payment_document:
+- Truckers sometimes upload the wrong files, so a packet may contain documents \
+that have nothing to do with proof of payment. Flag those.
+- Set is_payment_document = true when the document is any form of proof that a \
+carrier received (or is owed) a payment: settlement statements, dispatch/load \
+sheets showing a carrier pay amount, carrier statements, COD settlements, \
+remittance advice, or advice-of-deposit / payment notifications.
+- Set is_payment_document = false ONLY when the document clearly has no proof of \
+payment to a carrier — for example a bill of lading or rate confirmation with no \
+payment amount, an insurance certificate or COI, a driver's license, an inspection \
+report, or an unrelated / misfiled document.
+- ERR ON THE SIDE OF CAUTION: if you are unsure whether the document shows proof \
+of payment, return true. Only return false when you are confident the document is \
+not a payment document.
+- Always also return classification_confidence (0.0-1.0) and a one-sentence \
+classification_reason.
+- When is_payment_document is false there is usually no pay or date to extract — \
+return a single load with pay = null and date = null.
 
 Rules:
 - For pay: return the dollar amount exactly as it appears in the document, \
@@ -249,6 +297,31 @@ class IncomeDocumentSchema(ExtractionSchema):
 
     def system_prompt(self) -> str:
         return _SYSTEM_PROMPT
+
+    def parse_classification(self, tool_input: dict[str, Any]) -> Classification:
+        """Read the document-level classification fields from *tool_input*.
+
+        Defaults to ``is_payment_document=True`` when the flag is missing or not
+        a boolean, so an under-specified response keeps the document included
+        (err on the side of caution).
+        """
+        raw_flag = tool_input.get("is_payment_document", True)
+        is_payment = raw_flag if isinstance(raw_flag, bool) else True
+
+        raw_conf = tool_input.get("classification_confidence")
+        try:
+            confidence = float(raw_conf) if raw_conf is not None else None
+        except (TypeError, ValueError):
+            confidence = None
+
+        raw_reason = tool_input.get("classification_reason")
+        reason = raw_reason if isinstance(raw_reason, str) and raw_reason else None
+
+        return Classification(
+            is_payment_document=is_payment,
+            confidence=confidence,
+            reason=reason,
+        )
 
     def parse_tool_result(
         self,

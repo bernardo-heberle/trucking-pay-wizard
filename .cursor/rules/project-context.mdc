@@ -10,13 +10,14 @@ A standalone desktop tool that processes trucking income documents for legal sta
 ## Pipeline
 
 ```
-Ingestion → OCR → Extraction → Validation → Report Assembly
+Ingestion → OCR → Extraction (+ Classification) → Validation → Report Assembly
 ```
 
 - Per-document stages (Ingestion through Validation) are cacheable — only new/unprocessed documents re-run.
 - Report Assembly always rebuilds from the full set of cached results.
 - OCR provider: **Azure Document Intelligence** (credentials via `.env`).
 - Extraction provider: **Anthropic API** (Claude Haiku). OCR text is PII-sanitized before it leaves the machine.
+- The extraction step also **classifies** each document as a payment document or not (`is_payment_document` on `DocumentExtractionResult`), erring toward "payment document" when uncertain. Non-payment documents are excluded from the combined PDF but still listed (grayed out) in the spreadsheet.
 
 ## Session Model
 
@@ -32,9 +33,9 @@ The folder *is* the session — no database, no server.
 
 ## Scope
 
-**Active:** folder-based batch processing, OCR, field extraction (gross pay, net pay, dates), validation, report assembly, desktop GUI, standalone executable packaging.
+**Active:** folder-based batch processing, OCR, field extraction (gross pay, net pay, dates), document classification (payment vs. non-payment), validation, report assembly, desktop GUI, standalone executable packaging.
 
-**Not yet active:** document classification, template detection. Every input document is assumed to be a valid income document.
+**Not yet active:** template detection. Documents are classified as payment or non-payment, but specific document templates are not yet auto-detected.
 
 ## Delivery
 

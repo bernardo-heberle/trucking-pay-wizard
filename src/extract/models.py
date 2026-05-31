@@ -21,6 +21,20 @@ class Certainty(str, Enum):
 
 
 @dataclass
+class Classification:
+    """Whether a document is a proof-of-payment document, with provenance.
+
+    ``is_payment_document`` defaults to ``True`` (err on the side of inclusion):
+    a document is only excluded from the combined report when the LLM is
+    confident it carries no proof of payment to a carrier.
+    """
+
+    is_payment_document: bool = True
+    confidence: float | None = None
+    reason: str | None = None
+
+
+@dataclass
 class SourceSpan:
     """A page location for an extracted value — enough for PDF highlighting."""
 
@@ -97,6 +111,21 @@ class DocumentExtractionResult:
     loads: list[ExtractedLoad] = field(default_factory=list)
     page_count: int = 0
     extraction_error: str | None = None
+    is_payment_document: bool = True
+    classification_confidence: float | None = None
+    classification_reason: str | None = None
+
+    def has_extractable_values(self) -> bool:
+        """Return True when at least one load has a pay or date value.
+
+        A document classified as a payment document may still yield nothing
+        usable (the LLM found no amount or date); such documents are still
+        included in the combined PDF but flagged for manual review.
+        """
+        for load in self.loads:
+            if load.pay is not None or load.date is not None:
+                return True
+        return False
 
     def overall_certainty(self) -> Certainty:
         """Return the worst certainty across all loads.

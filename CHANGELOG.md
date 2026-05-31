@@ -5,6 +5,20 @@ Entries are written for staff using the app — not for developers.
 
 ---
 
+## [0.6.0] — 2026-05-31
+
+### Added
+- Added support for multi-page settlement remittance statements that begin with a summary page (such as the "Settlement at a glance" page on ArcBest/Panther statements). The tool now reads the net period pay-out and the period date from the summary page and ignores the detailed per-trip earning and deduction tables, so these documents report a single correct payment instead of being split into many line items.
+
+---
+
+## [0.5.0] — 2026-05-31
+
+### Changed
+- The combined PDF now includes only the pages up to the last highlighted value for documents where all fields were extracted with high confidence. Documents where extraction was uncertain or incomplete still include all pages, so staff can find and verify the relevant information manually.
+
+---
+
 ## [0.4.0] — 2026-05-25
 
 ### Added

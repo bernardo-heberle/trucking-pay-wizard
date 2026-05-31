@@ -1092,6 +1092,140 @@ def _multi_load_duplicate_date() -> dict:
     )
 
 
+def _summary_with_detail_tables() -> dict:
+    """Multi-page settlement remittance with a leading summary page.
+
+    Mirrors the ArcBest / Panther Expedite "Settlement Remittance" format:
+    page 1 is a "Settlement at a glance" summary that states the period's net
+    pay-out, and the following pages are item-by-item detail tables (per-trip
+    earnings, deductions, per-truck subtotals) that should be IGNORED.
+
+    The correct value is the net "Total Period Pay-Out" from the summary, not
+    the gross "Total Period Earnings", any per-trip linehaul/total amount, or
+    any detail-page subtotal.  The document is a single settlement -> one load.
+
+    All names, owner numbers, and addresses are synthetic.
+    Expected: pay=981.92, date contains "Feb. 16, 2025" (single load)
+    """
+    return _build_fixture(
+        source_path="Settlement Remittance Feb 16 2025.pdf",
+        content_hash="55ee66ff11aa22bb33cc44dd55ee66ff11aa22bb33cc44dd55ee66ff11aa22bb",
+        pages={
+            1: [
+                "ArcBest",
+                "More Than Logistics",
+                "AMERICAN EAGLE ENTERPRISE",
+                "4200 LOGISTICS WAY UNIT D",
+                "COLUMBUS, OH 43004",
+                "Owner No. 100482",
+                "Page: 1",
+                "Settlement Remittance",
+                "This is a summary of the activity on your account this period.",
+                "Settlement at a glance",
+                "Period ending Sunday, Feb. 16, 2025",
+                "Total Period Earnings:",
+                "$3,543.07",
+                "Total Period Deductions:",
+                "($2,561.15)",
+                "Total Period Pay-Out:",
+                "$981.92",
+                "Open Items",
+                "Total Outstanding On-Pro Earnings:",
+                "$0.00",
+                "Total Future Deductions:",
+                "($2,124.70)",
+                "Escrow Summary",
+                "Current Balance:",
+                "$8,000.00",
+                "Interest Earned Last Quarter:",
+                "$87.20",
+                "*Please see below for complete detail regarding this settlement statement.",
+                "Panther Expedite is a service of ArcBest Corporation.",
+            ],
+            2: [
+                "Owner No.100482",
+                "Settlement Remittance for the Period Ending Sunday, Feb. 16, 2025",
+                "On-Pro Earning Detail",
+                "Pro No. Date Delivered Driver Truck No. RPM Miles Linehaul FSC Amount Detention Total Paid",
+                "20250226538",
+                "02/11/2025 SAMPLE, DRIVER ONE",
+                "67458",
+                "1.50",
+                "388",
+                "$582.00",
+                "$236.00",
+                "$151.32",
+                "$969.32",
+                "20250226966",
+                "02/14/2025 SAMPLE, DRIVER ONE",
+                "67458",
+                "1.50",
+                "1,188",
+                "$1,782.00",
+                "$55.00",
+                "$3.04",
+                "$1,840.04",
+                "20250226741",
+                "02/11/2025 SAMPLE, DRIVER TWO",
+                "67512",
+                "1.50",
+                "336",
+                "$504.00",
+                "$131.04",
+                "$63.50",
+                "$698.01",
+                "Total: $3,507.37",
+                "ArcBest",
+                "Settlement Remittance for AMERICAN EAGLE ENTERPRISE",
+                "Page 2",
+            ],
+            3: [
+                "Owner No.100482",
+                "Settlement Remittance for the Period Ending Sunday, Feb. 16, 2025",
+                "Deduction Related Detail",
+                "Fixed Deductions",
+                "Truck No. Driver Deduction Detail Deduction Date Deduction Amount",
+                "67458",
+                "PHYS DAMAGE DEDUCT PLAN",
+                "02/17/2025",
+                "($44.62)",
+                "67458",
+                "NON-TRUCKING LIAB INS",
+                "02/17/2025",
+                "($45.00)",
+                "67512",
+                "SAMSARA MESSAGING PLAN",
+                "02/17/2025",
+                "($15.00)",
+                "Total: ($2,561.15)",
+                "ArcBest",
+                "Settlement Remittance for AMERICAN EAGLE ENTERPRISE",
+                "Page 3",
+            ],
+            4: [
+                "Owner No.100482",
+                "Settlement Remittance for the Period Ending Sunday, Feb. 16, 2025",
+                "Settlement by Truck Detail",
+                "Truck No. No. of Pros On Pro Earnings Off Pro Earnings Fixed Deductions Variable Deductions Total Paid",
+                "67458",
+                "2",
+                "$2,809.36",
+                "($1,261.75)",
+                "$1,547.61",
+                "67512",
+                "1",
+                "$698.01",
+                "($526.30)",
+                "$171.69",
+                "Total: $981.92",
+                "ArcBest",
+                "Settlement Remittance for AMERICAN EAGLE ENTERPRISE",
+                "Page 4",
+            ],
+        },
+    )
+
+
 def _single_load_settlement() -> dict:
     """A single-load settlement to confirm the new schema handles N=1.
 
@@ -1137,6 +1271,8 @@ _ALL_FIXTURES = {
     "multi_load_duplicate_pay.json": _multi_load_duplicate_pay,
     "multi_load_duplicate_date.json": _multi_load_duplicate_date,
     "single_load_settlement.json": _single_load_settlement,
+    # Summary page + detail tables (extract summary, ignore item-by-item detail)
+    "summary_with_detail_tables.json": _summary_with_detail_tables,
 }
 
 

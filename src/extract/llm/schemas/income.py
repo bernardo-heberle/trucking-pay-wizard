@@ -141,9 +141,21 @@ in the TOTAL; do not negate or adjust the TOTAL.
 - If the document shows a revision history with older amounts (e.g. $0.00 from \
 a previous revision), extract only the current/final amount — not the \
 historical one.
+- Some documents open with a settlement summary section (labeled, e.g., \
+"Settlement at a glance" or "a summary of the activity on your account this \
+period") that states the period's net pay-out, followed by pages of detailed \
+breakdown tables (per-trip earning rows, per-pro or per-truck subtotals, \
+deduction line items). When such a summary section is present, treat the whole \
+document as ONE settlement: return exactly one load whose pay is the net amount \
+paid out to the carrier from the summary (labeled, e.g., "Total Period Pay-Out", \
+"Total Pay-Out", "Net Pay", or "Total Paid"). Do NOT use the gross "Total Period \
+Earnings" figure, and do NOT create a separate load for each detail row — ignore \
+the item-by-item earning and deduction calculations on the detail pages.
 
 Disambiguation — Date:
 - Prefer "Pickup Date" or "Pickup Exactly" when present.
+- For settlement summaries with a leading summary section (see the pay rule \
+above), use the "Period ending" date shown in that summary.
 - If no pickup date is present, use the earliest date visible anywhere in the \
 document (e.g. a date labeled "electronically processed on", "payment date", \
 "transaction date", "invoice date", or "statement date").

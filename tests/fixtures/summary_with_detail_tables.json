@@ -1,0 +1,1268 @@
+{
+  "source_path": "Settlement Remittance Feb 16 2025.pdf",
+  "content_hash": "55ee66ff11aa22bb33cc44dd55ee66ff11aa22bb33cc44dd55ee66ff11aa22bb",
+  "pages": [
+    {
+      "page_number": 1,
+      "width_inches": 8.5,
+      "height_inches": 11.0,
+      "line_count": 29
+    },
+    {
+      "page_number": 2,
+      "width_inches": 8.5,
+      "height_inches": 11.0,
+      "line_count": 35
+    },
+    {
+      "page_number": 3,
+      "width_inches": 8.5,
+      "height_inches": 11.0,
+      "line_count": 21
+    },
+    {
+      "page_number": 4,
+      "width_inches": 8.5,
+      "height_inches": 11.0,
+      "line_count": 18
+    }
+  ],
+  "lines": [
+    {
+      "text": "ArcBest",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 0.5,
+        "width": 0.6,
+        "height": 0.25
+      },
+      "char_start": 0,
+      "char_end": 7
+    },
+    {
+      "text": "More Than Logistics",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 0.83,
+        "width": 1.5,
+        "height": 0.25
+      },
+      "char_start": 8,
+      "char_end": 27
+    },
+    {
+      "text": "AMERICAN EAGLE ENTERPRISE",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.16,
+        "width": 2.0,
+        "height": 0.25
+      },
+      "char_start": 28,
+      "char_end": 53
+    },
+    {
+      "text": "4200 LOGISTICS WAY UNIT D",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.48,
+        "width": 2.0,
+        "height": 0.25
+      },
+      "char_start": 54,
+      "char_end": 79
+    },
+    {
+      "text": "COLUMBUS, OH 43004",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.81,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 80,
+      "char_end": 98
+    },
+    {
+      "text": "Owner No. 100482",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.14,
+        "width": 1.3,
+        "height": 0.25
+      },
+      "char_start": 99,
+      "char_end": 115
+    },
+    {
+      "text": "Page: 1",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.47,
+        "width": 0.6,
+        "height": 0.25
+      },
+      "char_start": 116,
+      "char_end": 123
+    },
+    {
+      "text": "Settlement Remittance",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.79,
+        "width": 1.7,
+        "height": 0.25
+      },
+      "char_start": 124,
+      "char_end": 145
+    },
+    {
+      "text": "This is a summary of the activity on your account this period.",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.12,
+        "width": 5.0,
+        "height": 0.25
+      },
+      "char_start": 146,
+      "char_end": 208
+    },
+    {
+      "text": "Settlement at a glance",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.45,
+        "width": 1.8,
+        "height": 0.25
+      },
+      "char_start": 209,
+      "char_end": 231
+    },
+    {
+      "text": "Period ending Sunday, Feb. 16, 2025",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.78,
+        "width": 2.8,
+        "height": 0.25
+      },
+      "char_start": 232,
+      "char_end": 267
+    },
+    {
+      "text": "Total Period Earnings:",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.1,
+        "width": 1.8,
+        "height": 0.25
+      },
+      "char_start": 268,
+      "char_end": 290
+    },
+    {
+      "text": "$3,543.07",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.43,
+        "width": 0.7,
+        "height": 0.25
+      },
+      "char_start": 291,
+      "char_end": 300
+    },
+    {
+      "text": "Total Period Deductions:",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.76,
+        "width": 1.9,
+        "height": 0.25
+      },
+      "char_start": 301,
+      "char_end": 325
+    },
+    {
+      "text": "($2,561.15)",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.09,
+        "width": 0.9,
+        "height": 0.25
+      },
+      "char_start": 326,
+      "char_end": 337
+    },
+    {
+      "text": "Total Period Pay-Out:",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.41,
+        "width": 1.7,
+        "height": 0.25
+      },
+      "char_start": 338,
+      "char_end": 359
+    },
+    {
+      "text": "$981.92",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.74,
+        "width": 0.6,
+        "height": 0.25
+      },
+      "char_start": 360,
+      "char_end": 367
+    },
+    {
+      "text": "Open Items",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.07,
+        "width": 0.8,
+        "height": 0.25
+      },
+      "char_start": 368,
+      "char_end": 378
+    },
+    {
+      "text": "Total Outstanding On-Pro Earnings:",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.4,
+        "width": 2.7,
+        "height": 0.25
+      },
+      "char_start": 379,
+      "char_end": 413
+    },
+    {
+      "text": "$0.00",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.72,
+        "width": 0.4,
+        "height": 0.25
+      },
+      "char_start": 414,
+      "char_end": 419
+    },
+    {
+      "text": "Total Future Deductions:",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.05,
+        "width": 1.9,
+        "height": 0.25
+      },
+      "char_start": 420,
+      "char_end": 444
+    },
+    {
+      "text": "($2,124.70)",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.38,
+        "width": 0.9,
+        "height": 0.25
+      },
+      "char_start": 445,
+      "char_end": 456
+    },
+    {
+      "text": "Escrow Summary",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.71,
+        "width": 1.1,
+        "height": 0.25
+      },
+      "char_start": 457,
+      "char_end": 471
+    },
+    {
+      "text": "Current Balance:",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.03,
+        "width": 1.3,
+        "height": 0.25
+      },
+      "char_start": 472,
+      "char_end": 488
+    },
+    {
+      "text": "$8,000.00",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.36,
+        "width": 0.7,
+        "height": 0.25
+      },
+      "char_start": 489,
+      "char_end": 498
+    },
+    {
+      "text": "Interest Earned Last Quarter:",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.69,
+        "width": 2.3,
+        "height": 0.25
+      },
+      "char_start": 499,
+      "char_end": 528
+    },
+    {
+      "text": "$87.20",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.02,
+        "width": 0.5,
+        "height": 0.25
+      },
+      "char_start": 529,
+      "char_end": 535
+    },
+    {
+      "text": "*Please see below for complete detail regarding this settlement statement.",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.34,
+        "width": 5.9,
+        "height": 0.25
+      },
+      "char_start": 536,
+      "char_end": 610
+    },
+    {
+      "text": "Panther Expedite is a service of ArcBest Corporation.",
+      "page_number": 1,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.67,
+        "width": 4.2,
+        "height": 0.25
+      },
+      "char_start": 611,
+      "char_end": 664
+    },
+    {
+      "text": "Owner No.100482",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 0.5,
+        "width": 1.2,
+        "height": 0.25
+      },
+      "char_start": 666,
+      "char_end": 681
+    },
+    {
+      "text": "Settlement Remittance for the Period Ending Sunday, Feb. 16, 2025",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 0.77,
+        "width": 5.2,
+        "height": 0.25
+      },
+      "char_start": 682,
+      "char_end": 747
+    },
+    {
+      "text": "On-Pro Earning Detail",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.04,
+        "width": 1.7,
+        "height": 0.25
+      },
+      "char_start": 748,
+      "char_end": 769
+    },
+    {
+      "text": "Pro No. Date Delivered Driver Truck No. RPM Miles Linehaul FSC Amount Detention Total Paid",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.31,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 770,
+      "char_end": 860
+    },
+    {
+      "text": "20250226538",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.59,
+        "width": 0.9,
+        "height": 0.25
+      },
+      "char_start": 861,
+      "char_end": 872
+    },
+    {
+      "text": "02/11/2025 SAMPLE, DRIVER ONE",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.86,
+        "width": 2.3,
+        "height": 0.25
+      },
+      "char_start": 873,
+      "char_end": 902
+    },
+    {
+      "text": "67458",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.13,
+        "width": 0.4,
+        "height": 0.25
+      },
+      "char_start": 903,
+      "char_end": 908
+    },
+    {
+      "text": "1.50",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.4,
+        "width": 0.3,
+        "height": 0.25
+      },
+      "char_start": 909,
+      "char_end": 913
+    },
+    {
+      "text": "388",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.67,
+        "width": 0.2,
+        "height": 0.25
+      },
+      "char_start": 914,
+      "char_end": 917
+    },
+    {
+      "text": "$582.00",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.94,
+        "width": 0.6,
+        "height": 0.25
+      },
+      "char_start": 918,
+      "char_end": 925
+    },
+    {
+      "text": "$236.00",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.21,
+        "width": 0.6,
+        "height": 0.25
+      },
+      "char_start": 926,
+      "char_end": 933
+    },
+    {
+      "text": "$151.32",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.49,
+        "width": 0.6,
+        "height": 0.25
+      },
+      "char_start": 934,
+      "char_end": 941
+    },
+    {
+      "text": "$969.32",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.76,
+        "width": 0.6,
+        "height": 0.25
+      },
+      "char_start": 942,
+      "char_end": 949
+    },
+    {
+      "text": "20250226966",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.03,
+        "width": 0.9,
+        "height": 0.25
+      },
+      "char_start": 950,
+      "char_end": 961
+    },
+    {
+      "text": "02/14/2025 SAMPLE, DRIVER ONE",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.3,
+        "width": 2.3,
+        "height": 0.25
+      },
+      "char_start": 962,
+      "char_end": 991
+    },
+    {
+      "text": "67458",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.57,
+        "width": 0.4,
+        "height": 0.25
+      },
+      "char_start": 992,
+      "char_end": 997
+    },
+    {
+      "text": "1.50",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.84,
+        "width": 0.3,
+        "height": 0.25
+      },
+      "char_start": 998,
+      "char_end": 1002
+    },
+    {
+      "text": "1,188",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.11,
+        "width": 0.4,
+        "height": 0.25
+      },
+      "char_start": 1003,
+      "char_end": 1008
+    },
+    {
+      "text": "$1,782.00",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.39,
+        "width": 0.7,
+        "height": 0.25
+      },
+      "char_start": 1009,
+      "char_end": 1018
+    },
+    {
+      "text": "$55.00",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.66,
+        "width": 0.5,
+        "height": 0.25
+      },
+      "char_start": 1019,
+      "char_end": 1025
+    },
+    {
+      "text": "$3.04",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.93,
+        "width": 0.4,
+        "height": 0.25
+      },
+      "char_start": 1026,
+      "char_end": 1031
+    },
+    {
+      "text": "$1,840.04",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.2,
+        "width": 0.7,
+        "height": 0.25
+      },
+      "char_start": 1032,
+      "char_end": 1041
+    },
+    {
+      "text": "20250226741",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.47,
+        "width": 0.9,
+        "height": 0.25
+      },
+      "char_start": 1042,
+      "char_end": 1053
+    },
+    {
+      "text": "02/11/2025 SAMPLE, DRIVER TWO",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.74,
+        "width": 2.3,
+        "height": 0.25
+      },
+      "char_start": 1054,
+      "char_end": 1083
+    },
+    {
+      "text": "67512",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.01,
+        "width": 0.4,
+        "height": 0.25
+      },
+      "char_start": 1084,
+      "char_end": 1089
+    },
+    {
+      "text": "1.50",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.29,
+        "width": 0.3,
+        "height": 0.25
+      },
+      "char_start": 1090,
+      "char_end": 1094
+    },
+    {
+      "text": "336",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.56,
+        "width": 0.2,
+        "height": 0.25
+      },
+      "char_start": 1095,
+      "char_end": 1098
+    },
+    {
+      "text": "$504.00",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.83,
+        "width": 0.6,
+        "height": 0.25
+      },
+      "char_start": 1099,
+      "char_end": 1106
+    },
+    {
+      "text": "$131.04",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.1,
+        "width": 0.6,
+        "height": 0.25
+      },
+      "char_start": 1107,
+      "char_end": 1114
+    },
+    {
+      "text": "$63.50",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.37,
+        "width": 0.5,
+        "height": 0.25
+      },
+      "char_start": 1115,
+      "char_end": 1121
+    },
+    {
+      "text": "$698.01",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.64,
+        "width": 0.6,
+        "height": 0.25
+      },
+      "char_start": 1122,
+      "char_end": 1129
+    },
+    {
+      "text": "Total: $3,507.37",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.91,
+        "width": 1.3,
+        "height": 0.25
+      },
+      "char_start": 1130,
+      "char_end": 1146
+    },
+    {
+      "text": "ArcBest",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.19,
+        "width": 0.6,
+        "height": 0.25
+      },
+      "char_start": 1147,
+      "char_end": 1154
+    },
+    {
+      "text": "Settlement Remittance for AMERICAN EAGLE ENTERPRISE",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.46,
+        "width": 4.1,
+        "height": 0.25
+      },
+      "char_start": 1155,
+      "char_end": 1206
+    },
+    {
+      "text": "Page 2",
+      "page_number": 2,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 9.73,
+        "width": 0.5,
+        "height": 0.25
+      },
+      "char_start": 1207,
+      "char_end": 1213
+    },
+    {
+      "text": "Owner No.100482",
+      "page_number": 3,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 0.5,
+        "width": 1.2,
+        "height": 0.25
+      },
+      "char_start": 1215,
+      "char_end": 1230
+    },
+    {
+      "text": "Settlement Remittance for the Period Ending Sunday, Feb. 16, 2025",
+      "page_number": 3,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 0.9,
+        "width": 5.2,
+        "height": 0.25
+      },
+      "char_start": 1231,
+      "char_end": 1296
+    },
+    {
+      "text": "Deduction Related Detail",
+      "page_number": 3,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.3,
+        "width": 1.9,
+        "height": 0.25
+      },
+      "char_start": 1297,
+      "char_end": 1321
+    },
+    {
+      "text": "Fixed Deductions",
+      "page_number": 3,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.7,
+        "width": 1.3,
+        "height": 0.25
+      },
+      "char_start": 1322,
+      "char_end": 1338
+    },
+    {
+      "text": "Truck No. Driver Deduction Detail Deduction Date Deduction Amount",
+      "page_number": 3,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.1,
+        "width": 5.2,
+        "height": 0.25
+      },
+      "char_start": 1339,
+      "char_end": 1404
+    },
+    {
+      "text": "67458",
+      "page_number": 3,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.5,
+        "width": 0.4,
+        "height": 0.25
+      },
+      "char_start": 1405,
+      "char_end": 1410
+    },
+    {
+      "text": "PHYS DAMAGE DEDUCT PLAN",
+      "page_number": 3,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.9,
+        "width": 1.8,
+        "height": 0.25
+      },
+      "char_start": 1411,
+      "char_end": 1434
+    },
+    {
+      "text": "02/17/2025",
+      "page_number": 3,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.3,
+        "width": 0.8,
+        "height": 0.25
+      },
+      "char_start": 1435,
+      "char_end": 1445
+    },
+    {
+      "text": "($44.62)",
+      "page_number": 3,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.7,
+        "width": 0.6,
+        "height": 0.25
+      },
+      "char_start": 1446,
+      "char_end": 1454
+    },
+    {
+      "text": "67458",
+      "page_number": 3,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.1,
+        "width": 0.4,
+        "height": 0.25
+      },
+      "char_start": 1455,
+      "char_end": 1460
+    },
+    {
+      "text": "NON-TRUCKING LIAB INS",
+      "page_number": 3,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.5,
+        "width": 1.7,
+        "height": 0.25
+      },
+      "char_start": 1461,
+      "char_end": 1482
+    },
+    {
+      "text": "02/17/2025",
+      "page_number": 3,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.9,
+        "width": 0.8,
+        "height": 0.25
+      },
+      "char_start": 1483,
+      "char_end": 1493
+    },
+    {
+      "text": "($45.00)",
+      "page_number": 3,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.3,
+        "width": 0.6,
+        "height": 0.25
+      },
+      "char_start": 1494,
+      "char_end": 1502
+    },
+    {
+      "text": "67512",
+      "page_number": 3,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.7,
+        "width": 0.4,
+        "height": 0.25
+      },
+      "char_start": 1503,
+      "char_end": 1508
+    },
+    {
+      "text": "SAMSARA MESSAGING PLAN",
+      "page_number": 3,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.1,
+        "width": 1.8,
+        "height": 0.25
+      },
+      "char_start": 1509,
+      "char_end": 1531
+    },
+    {
+      "text": "02/17/2025",
+      "page_number": 3,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.5,
+        "width": 0.8,
+        "height": 0.25
+      },
+      "char_start": 1532,
+      "char_end": 1542
+    },
+    {
+      "text": "($15.00)",
+      "page_number": 3,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.9,
+        "width": 0.6,
+        "height": 0.25
+      },
+      "char_start": 1543,
+      "char_end": 1551
+    },
+    {
+      "text": "Total: ($2,561.15)",
+      "page_number": 3,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.3,
+        "width": 1.4,
+        "height": 0.25
+      },
+      "char_start": 1552,
+      "char_end": 1570
+    },
+    {
+      "text": "ArcBest",
+      "page_number": 3,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.7,
+        "width": 0.6,
+        "height": 0.25
+      },
+      "char_start": 1571,
+      "char_end": 1578
+    },
+    {
+      "text": "Settlement Remittance for AMERICAN EAGLE ENTERPRISE",
+      "page_number": 3,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.1,
+        "width": 4.1,
+        "height": 0.25
+      },
+      "char_start": 1579,
+      "char_end": 1630
+    },
+    {
+      "text": "Page 3",
+      "page_number": 3,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 8.5,
+        "width": 0.5,
+        "height": 0.25
+      },
+      "char_start": 1631,
+      "char_end": 1637
+    },
+    {
+      "text": "Owner No.100482",
+      "page_number": 4,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 0.5,
+        "width": 1.2,
+        "height": 0.25
+      },
+      "char_start": 1639,
+      "char_end": 1654
+    },
+    {
+      "text": "Settlement Remittance for the Period Ending Sunday, Feb. 16, 2025",
+      "page_number": 4,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 0.9,
+        "width": 5.2,
+        "height": 0.25
+      },
+      "char_start": 1655,
+      "char_end": 1720
+    },
+    {
+      "text": "Settlement by Truck Detail",
+      "page_number": 4,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.3,
+        "width": 2.1,
+        "height": 0.25
+      },
+      "char_start": 1721,
+      "char_end": 1747
+    },
+    {
+      "text": "Truck No. No. of Pros On Pro Earnings Off Pro Earnings Fixed Deductions Variable Deductions Total Paid",
+      "page_number": 4,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 1.7,
+        "width": 6.5,
+        "height": 0.25
+      },
+      "char_start": 1748,
+      "char_end": 1850
+    },
+    {
+      "text": "67458",
+      "page_number": 4,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.1,
+        "width": 0.4,
+        "height": 0.25
+      },
+      "char_start": 1851,
+      "char_end": 1856
+    },
+    {
+      "text": "2",
+      "page_number": 4,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.5,
+        "width": 0.1,
+        "height": 0.25
+      },
+      "char_start": 1857,
+      "char_end": 1858
+    },
+    {
+      "text": "$2,809.36",
+      "page_number": 4,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 2.9,
+        "width": 0.7,
+        "height": 0.25
+      },
+      "char_start": 1859,
+      "char_end": 1868
+    },
+    {
+      "text": "($1,261.75)",
+      "page_number": 4,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.3,
+        "width": 0.9,
+        "height": 0.25
+      },
+      "char_start": 1869,
+      "char_end": 1880
+    },
+    {
+      "text": "$1,547.61",
+      "page_number": 4,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 3.7,
+        "width": 0.7,
+        "height": 0.25
+      },
+      "char_start": 1881,
+      "char_end": 1890
+    },
+    {
+      "text": "67512",
+      "page_number": 4,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.1,
+        "width": 0.4,
+        "height": 0.25
+      },
+      "char_start": 1891,
+      "char_end": 1896
+    },
+    {
+      "text": "1",
+      "page_number": 4,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.5,
+        "width": 0.1,
+        "height": 0.25
+      },
+      "char_start": 1897,
+      "char_end": 1898
+    },
+    {
+      "text": "$698.01",
+      "page_number": 4,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 4.9,
+        "width": 0.6,
+        "height": 0.25
+      },
+      "char_start": 1899,
+      "char_end": 1906
+    },
+    {
+      "text": "($526.30)",
+      "page_number": 4,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.3,
+        "width": 0.7,
+        "height": 0.25
+      },
+      "char_start": 1907,
+      "char_end": 1916
+    },
+    {
+      "text": "$171.69",
+      "page_number": 4,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 5.7,
+        "width": 0.6,
+        "height": 0.25
+      },
+      "char_start": 1917,
+      "char_end": 1924
+    },
+    {
+      "text": "Total: $981.92",
+      "page_number": 4,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.1,
+        "width": 1.1,
+        "height": 0.25
+      },
+      "char_start": 1925,
+      "char_end": 1939
+    },
+    {
+      "text": "ArcBest",
+      "page_number": 4,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.5,
+        "width": 0.6,
+        "height": 0.25
+      },
+      "char_start": 1940,
+      "char_end": 1947
+    },
+    {
+      "text": "Settlement Remittance for AMERICAN EAGLE ENTERPRISE",
+      "page_number": 4,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 6.9,
+        "width": 4.1,
+        "height": 0.25
+      },
+      "char_start": 1948,
+      "char_end": 1999
+    },
+    {
+      "text": "Page 4",
+      "page_number": 4,
+      "bounding_box": {
+        "x": 1.0,
+        "y": 7.3,
+        "width": 0.5,
+        "height": 0.25
+      },
+      "char_start": 2000,
+      "char_end": 2006
+    }
+  ]
+}

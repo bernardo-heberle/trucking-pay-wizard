@@ -14,7 +14,7 @@ from src.report.pdf_builder import (
     _HIGHLIGHT_COLOR,
     build_pdf,
 )
-from tests.unit.report.conftest import make_extraction_result
+from tests.unit.report.conftest import make_extraction_result, make_load
 
 
 class TestCombinedPdfStructure:
@@ -32,9 +32,17 @@ class TestCombinedPdfStructure:
     def test_page_count_multiple_documents(
         self, synthetic_source_pdf: Path, synthetic_source_pdf_b: Path, tmp_path: Path
     ) -> None:
-        """1 (source_a) + 2 (source_b) = 3 total."""
+        """1 (source_a) + 2 (source_b) = 3 total.
+
+        r2's highlights are on page 2 so the HIGH-confidence limit is 2 (all pages included).
+        """
         r1 = make_extraction_result(synthetic_source_pdf, content_hash="h1")
-        r2 = make_extraction_result(synthetic_source_pdf_b, content_hash="h2", page_count=2)
+        r2 = make_extraction_result(
+            synthetic_source_pdf_b,
+            content_hash="h2",
+            page_count=2,
+            loads=[make_load(synthetic_source_pdf_b, pay_page=2, date_page=2)],
+        )
         out = tmp_path / "combined.pdf"
         build_pdf([r1, r2], out)
 
@@ -231,91 +239,132 @@ class TestHighlightAnnotationCleanliness:
 
 
 class TestPageTruncation:
-    """Tests for smart page truncation of long documents."""
+    """Tests for confidence-based page selection."""
 
-    def _make_long_result(
+    def _make_result(
         self,
         source_path: Path,
         *,
         page_count: int = 10,
         highlight_page: int | None = None,
+        high_confidence: bool = True,
     ) -> DocumentExtractionResult:
-        """Build a result for a long document, optionally with a span on *highlight_page*."""
+        """Build an extraction result for page-limit tests.
+
+        When *high_confidence* is True both pay and date carry HIGH certainty
+        so ``overall_certainty()`` returns HIGH and truncation applies.
+        When False, date is omitted so ``overall_certainty()`` returns
+        NOT_FOUND and all pages are kept.
+        When *highlight_page* is None both fields have no location data
+        (empty spans and source_page=None) — used to test the fallback path.
+        """
+        pay_certainty = Certainty.HIGH if high_confidence else Certainty.REVIEW
         if highlight_page is not None:
             pay = ExtractedField(
-                name="pay", value="500.00",
-                source_document=source_path.name, source_page=highlight_page,
+                name="pay",
+                value="500.00",
+                source_document=source_path.name,
+                source_page=highlight_page,
                 source_spans=[
                     SourceSpan(
                         page_number=highlight_page,
                         bounding_box=BoundingBox(x=1.0, y=4.5, width=4.0, height=0.25),
                     )
                 ],
-                certainty=Certainty.HIGH,
+                certainty=pay_certainty,
+            )
+            date: ExtractedField | None = (
+                ExtractedField(
+                    name="date",
+                    value="01/01/2024",
+                    source_document=source_path.name,
+                    source_page=highlight_page,
+                    source_spans=[
+                        SourceSpan(
+                            page_number=highlight_page,
+                            bounding_box=BoundingBox(x=1.0, y=6.0, width=3.5, height=0.25),
+                        )
+                    ],
+                    certainty=Certainty.HIGH,
+                )
+                if high_confidence
+                else None
             )
         else:
             pay = ExtractedField(
-                name="pay", value="500.00",
-                source_document=source_path.name, source_page=None,
+                name="pay",
+                value="500.00",
+                source_document=source_path.name,
+                source_page=None,
                 source_spans=[],
-                certainty=Certainty.HIGH,
+                certainty=pay_certainty,
             )
+            date = (
+                ExtractedField(
+                    name="date",
+                    value="01/01/2024",
+                    source_document=source_path.name,
+                    source_page=None,
+                    source_spans=[],
+                    certainty=Certainty.HIGH,
+                )
+                if high_confidence
+                else None
+            )
+
         return DocumentExtractionResult(
             source_path=source_path,
-            content_hash="longhash",
-            loads=[ExtractedLoad(index=1, pay=pay, date=None)],
+            content_hash="testhash",
+            loads=[ExtractedLoad(index=1, pay=pay, date=date)],
             page_count=page_count,
         )
 
-    def test_short_document_not_truncated(self, synthetic_source_pdf: Path) -> None:
-        """Documents with <= 3 pages are never truncated regardless of highlights."""
-        result = make_extraction_result(synthetic_source_pdf, page_count=3)
-        assert _compute_page_limit(result) == 3
-
-    def test_four_page_doc_is_above_threshold(self, synthetic_source_pdf_long: Path) -> None:
-        """4-page doc (just above the 3-page threshold) is truncated when highlight is early.
-
-        This is the exact threshold boundary: total == 4, highlight on page 1
-        → last+2 = 3, capped at 4, so result is 3.
-        """
-        result = self._make_long_result(synthetic_source_pdf_long, page_count=4, highlight_page=1)
-        assert _compute_page_limit(result) == 3
-
-    def test_three_page_doc_at_threshold_not_truncated(self, synthetic_source_pdf: Path) -> None:
-        """3-page doc at the truncation threshold must never be truncated."""
-        result = make_extraction_result(synthetic_source_pdf, page_count=3)
-        assert _compute_page_limit(result) == 3
-
-    def test_long_doc_with_highlight_truncated_to_last_plus_two(
+    def test_high_confidence_doc_truncated_to_last_highlight(
         self, synthetic_source_pdf_long: Path
     ) -> None:
-        """10-page doc with highlight on page 3 → keep pages 1-5 (3+2)."""
-        result = self._make_long_result(synthetic_source_pdf_long, page_count=10, highlight_page=3)
-        assert _compute_page_limit(result) == 5
+        """High-confidence 10-page doc with highlight on page 3 → limit is 3 (no +2 buffer)."""
+        result = self._make_result(synthetic_source_pdf_long, page_count=10, highlight_page=3)
 
-    def test_long_doc_no_highlights_keeps_all_pages(
+        assert _compute_page_limit(result) == 3
+
+    def test_high_confidence_short_doc_truncated(self, synthetic_source_pdf: Path) -> None:
+        """High-confidence 3-page doc is truncated even at short lengths — no length threshold."""
+        result = self._make_result(synthetic_source_pdf, page_count=3, highlight_page=1)
+
+        assert _compute_page_limit(result) == 1
+
+    def test_not_high_confidence_keeps_all_pages(self, synthetic_source_pdf_long: Path) -> None:
+        """Non-high-confidence doc keeps all pages regardless of where highlights are."""
+        result = self._make_result(
+            synthetic_source_pdf_long, page_count=10, highlight_page=3, high_confidence=False
+        )
+
+        assert _compute_page_limit(result) == 10
+
+    def test_high_confidence_no_location_data_keeps_all_pages(
         self, synthetic_source_pdf_long: Path
     ) -> None:
-        """10-page doc with no field location data must keep all pages."""
-        result = self._make_long_result(synthetic_source_pdf_long, page_count=10, highlight_page=None)
+        """High-confidence doc with no field location data falls back to all pages."""
+        result = self._make_result(synthetic_source_pdf_long, page_count=10, highlight_page=None)
+
         assert _compute_page_limit(result) == 10
 
     def test_truncation_capped_at_total_pages(self, synthetic_source_pdf_long: Path) -> None:
-        """Highlight on page 9 of a 10-page doc → last+2 would be 11, capped at 10."""
-        result = self._make_long_result(synthetic_source_pdf_long, page_count=10, highlight_page=9)
-        assert _compute_page_limit(result) == 10
+        """High-confidence doc with highlight on page 9 of 10 → limit is 9, not beyond total."""
+        result = self._make_result(synthetic_source_pdf_long, page_count=10, highlight_page=9)
+
+        assert _compute_page_limit(result) == 9
 
     def test_combined_pdf_page_count_reflects_truncation(
         self, synthetic_source_pdf_long: Path, tmp_path: Path
     ) -> None:
-        """Combined PDF must contain exactly 5 pages (not 10) for a truncated doc."""
-        result = self._make_long_result(synthetic_source_pdf_long, page_count=10, highlight_page=3)
+        """Combined PDF must contain exactly 3 pages for a high-confidence doc with highlight on page 3."""
+        result = self._make_result(synthetic_source_pdf_long, page_count=10, highlight_page=3)
         out = tmp_path / "combined.pdf"
         build_pdf([result], out)
 
         doc = fitz.open(str(out))
-        # 5 source pages (3 highlight page + 2 more), no index page
-        assert len(doc) == 5
+        assert len(doc) == 3
         doc.close()
 
     def test_page_offsets_use_truncated_count(
@@ -323,11 +372,12 @@ class TestPageTruncation:
     ) -> None:
         """Page offsets must account for the truncated page count of earlier docs."""
         r_short = make_extraction_result(synthetic_source_pdf, content_hash="short")
-        r_long = self._make_long_result(
+        r_long = self._make_result(
             synthetic_source_pdf_long, page_count=10, highlight_page=3
         )
-        # short doc is 1 page, long doc truncated to 5 pages
-        # short starts at 1, long starts at 2 (no index page)
+        # r_short: HIGH certainty, pay+date on page 1 → limit 1
+        # r_long: HIGH certainty, highlight page 3 → limit 3
+        # short starts at 1, long starts at 2
         out = tmp_path / "combined.pdf"
         _, offsets = build_pdf([r_short, r_long], out)
 
@@ -338,7 +388,7 @@ class TestPageTruncation:
         self, synthetic_source_pdf_long: Path, tmp_path: Path
     ) -> None:
         """Annotation for the highlighted field must be on the correct page in the combined PDF."""
-        result = self._make_long_result(
+        result = self._make_result(
             synthetic_source_pdf_long, page_count=10, highlight_page=3
         )
         out = tmp_path / "combined.pdf"

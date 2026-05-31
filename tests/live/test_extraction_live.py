@@ -17,6 +17,7 @@ Fixture files and their expected extraction values:
     v2_dispatch_load.json             pay=920.00    date contains "April 8, 2024"
     super_dispatch_backlotcars.json   pay=1350.00   date=04/22/2024
     multi_vehicle_central_dispatch.json pay=4500.00 date=05/06/2024
+    summary_with_detail_tables.json   pay=981.92    date contains "Feb. 16, 2025" (single load)
 """
 
 from __future__ import annotations
@@ -455,3 +456,57 @@ class TestDuplicateDateLiveExtraction:
             f"Both date loads resolved to the same y={load1_date.source_spans[0].bounding_box.y} — "
             "duplicate-date disambiguation failed"
         )
+
+
+class TestSummaryWithDetailExtraction:
+    """Settlement remittance with a summary page + item-by-item detail tables.
+
+    Page 1 is a "Settlement at a glance" summary stating the net pay-out
+    ($981.92) and the period-ending date. Pages 2-4 are detail tables (per-trip
+    earnings, deductions, per-truck subtotals) full of competing dollar amounts.
+
+    The correct extraction is the single net pay-out from the summary — not the
+    gross earnings ($3,543.07), not a per-trip linehaul/total amount, not a
+    detail subtotal — and the document is one settlement, so exactly one load.
+    """
+
+    def test_returns_single_load(self, anthropic_extractor) -> None:
+        ocr = load_ocr_fixture("summary_with_detail_tables.json")
+        result = anthropic_extractor.extract(ocr, page_count=4)
+
+        assert result.extraction_error is None
+        assert len(result.loads) == 1, (
+            f"Expected 1 load (summary settlement), got {len(result.loads)}: "
+            f"{[l.pay.value if l.pay else None for l in result.loads]}"
+        )
+
+    def test_pay_is_period_payout(self, anthropic_extractor) -> None:
+        ocr = load_ocr_fixture("summary_with_detail_tables.json")
+        result = anthropic_extractor.extract(ocr, page_count=4)
+
+        assert len(result.loads) == 1
+        pay = result.loads[0].pay
+        assert pay is not None
+        assert _normalize_pay_value(pay.value) == "981.92", (
+            f"Raw pay value from LLM: {pay.value!r}"
+        )
+
+    def test_date_is_period_ending(self, anthropic_extractor) -> None:
+        ocr = load_ocr_fixture("summary_with_detail_tables.json")
+        result = anthropic_extractor.extract(ocr, page_count=4)
+
+        assert len(result.loads) == 1
+        date = result.loads[0].date
+        assert date is not None
+        assert "Feb. 16, 2025" in date.value or "02/16/2025" in date.value, (
+            f"Raw date value from LLM: {date.value!r}"
+        )
+
+    def test_pay_certainty_is_high(self, anthropic_extractor) -> None:
+        ocr = load_ocr_fixture("summary_with_detail_tables.json")
+        result = anthropic_extractor.extract(ocr, page_count=4)
+
+        assert len(result.loads) == 1
+        pay = result.loads[0].pay
+        assert pay is not None
+        assert pay.certainty == Certainty.HIGH

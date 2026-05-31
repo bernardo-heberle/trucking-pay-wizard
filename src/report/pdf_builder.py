@@ -5,7 +5,7 @@ from pathlib import Path
 import fitz
 from loguru import logger
 
-from src.extract.models import DocumentExtractionResult, ExtractedField, ExtractedLoad
+from src.extract.models import Certainty, DocumentExtractionResult, ExtractedField, ExtractedLoad
 from src.report.exceptions import ReportAssemblyError
 
 _HIGHLIGHT_COLOR = (0.0, 0.75, 0.85)  # cyan — neutral "extracted" marker
@@ -17,10 +17,9 @@ def build_pdf(
 ) -> tuple[Path, dict[str, int]]:
     """Build a combined PDF with source pages and highlight annotations.
 
-    Long documents (more than 3 pages) are truncated to the last page that
-    carries a highlighted field plus two additional pages.  Documents with no
-    field location information are never truncated so staff can find and mark
-    the relevant pages manually.
+    High-confidence documents are truncated to the last page that carries a
+    highlighted field.  All other documents are included in full so staff can
+    find and mark the relevant pages manually.
 
     Returns ``(output_path, page_offsets)`` where *page_offsets* maps each
     ``source_path.name`` to its 1-indexed starting page in the combined PDF.
@@ -70,9 +69,6 @@ def build_pdf(
     return output_path, page_offsets
 
 
-_TRUNCATION_THRESHOLD = 3  # documents with more pages than this may be truncated
-
-
 def _all_fields(result: DocumentExtractionResult) -> list[ExtractedField]:
     """Return every pay and date field across all loads in *result*."""
     fields: list[ExtractedField] = []
@@ -87,19 +83,20 @@ def _all_fields(result: DocumentExtractionResult) -> list[ExtractedField]:
 def _compute_page_limit(result: DocumentExtractionResult) -> int:
     """Return the number of pages to include for *result* in the combined PDF.
 
-    If the document has more than ``_TRUNCATION_THRESHOLD`` pages AND at
-    least one field across any load carries page-location information, the
-    limit is the last highlighted page plus two more (capped at the total
-    page count).
+    High-confidence documents are truncated to the last highlighted page so
+    the combined report stays concise.  All other documents (REVIEW or
+    NOT_FOUND certainty) are included in full so staff can locate and verify
+    the relevant fields manually.
 
-    When no field location data is available the document is never truncated
-    — staff need all pages to locate and highlight fields manually.
+    When a high-confidence document has no field location data the full page
+    count is returned as a safe fallback.
     """
     total = result.page_count
-    if total <= _TRUNCATION_THRESHOLD:
+
+    if result.overall_certainty() != Certainty.HIGH:
         return total
 
-    # Collect the highest page number mentioned across all loads' fields.
+    # High-confidence: trim to the last page that carries a highlighted field.
     last_highlighted: int | None = None
     for field in _all_fields(result):
         for span in field.source_spans:
@@ -110,10 +107,9 @@ def _compute_page_limit(result: DocumentExtractionResult) -> int:
                 last_highlighted = field.source_page
 
     if last_highlighted is None:
-        # No location data — keep all pages so staff can find fields manually.
         return total
 
-    return min(last_highlighted + 2, total)
+    return min(last_highlighted, total)
 
 
 def _append_source_pages(
